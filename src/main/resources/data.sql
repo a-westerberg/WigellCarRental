@@ -1,7 +1,7 @@
 
 -- CUSTOMER
 INSERT INTO customer (personal_identity_number, first_name, last_name, email, phone_number, address) VALUES
-('19850101-1234', 'Anna', 'Svensson', 'anna.svensson@example.com', '+46701234567', 'Björkgatan 12, 21436 Malmö'),
+('19850101-1234', 'Anna', 'Swensson', 'anna.svensson@example.com', '+46701234567', 'Björkgatan 12, 21436 Malmö'),
 ('19900215-5678', 'Erik', 'Johansson', 'erik.johansson@example.com', '+46702345678', 'Storgatan 45, 11122 Stockholm'),
 ('19751230-9101', 'Maria', 'Lindberg', 'maria.lindberg@example.com', '+46703456789', 'Kullavägen 9, 43167 Mölndal'),
 ('19881122-3456', 'Johan', 'Karlsson', 'johan.karlsson@example.com', '+46704567890', 'Industrigatan 27, 60223 Norrköping'),
