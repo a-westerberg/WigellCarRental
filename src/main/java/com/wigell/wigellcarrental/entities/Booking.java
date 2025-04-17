@@ -35,6 +35,9 @@ public class Booking {
     @Column(name = "total_price", nullable = false)
     private BigDecimal totalPrice;
 
+    @Column(name = "active")
+    private Boolean isActive;
+
     public Booking() {
 
     }
@@ -91,6 +94,18 @@ public class Booking {
         this.customer = customer;
     }
 
+    public BigDecimal getTotalPrice() {
+        return totalPrice;
+    }
+
+    public Boolean getActive() {
+        return isActive;
+    }
+
+    public void setActive(Boolean active) {
+        isActive = active;
+    }
+
     @Override
     public String toString() {
         return "Booking{" +
@@ -101,6 +116,7 @@ public class Booking {
                 ", car=" + car +
                 ", customer=" + customer +
                 ", totalPrice=" + totalPrice +
+                ", isActive=" + isActive +
                 '}';
     }
 }
