@@ -1,6 +1,8 @@
 package com.wigell.wigellcarrental.controllers;
 
-import org.springframework.http.HttpStatus;
+import com.wigell.wigellcarrental.entities.Booking;
+import com.wigell.wigellcarrental.entities.Car;
+import com.wigell.wigellcarrental.entities.Customer;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -19,23 +21,23 @@ public class CustomerController {
     }
 
     @PostMapping("/addorder")//Skapa order (hyra bil)
-    public ResponseEntity<String> addOrder(@RequestBody Order order){
-        return new ResponseEntity<>(service.addOrder(order), HttpStatus.CREATED);
+    public ResponseEntity<String> addOrder(@RequestBody Booking booking){
+        return ResponseEntity.created(service.addOrder(booking));
     }
 
     //TODO: cancel med id
     @PutMapping("/cancelorder")//Avboka order
-    public ResponseEntity<String> cancelOrder(@RequestParam Integer orderId){
-        return ResponseEntity.ok(service.cancelOrder(orderId));
+    public ResponseEntity<String> cancelOrder(@RequestParam Integer bookingId){
+        return ResponseEntity.ok(service.cancelOrder(bookingId));
     }
 
     @GetMapping("/activeorders")//Se aktiva bokningar
-    public ResponseEntity<List<Order>>activeOrders(){
+    public ResponseEntity<List<Booking>>activeOrders(){
         return ResponseEntity.ok(service.activeOrders());
     }
 
     @GetMapping("/orders")//Se tidigare bokningar
-    public ResponseEntity<List<Order>>orders(){
+    public ResponseEntity<List<Booking>>orders(){
         return ResponseEntity.ok(service.orders());
     }
 

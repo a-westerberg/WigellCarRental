@@ -1,5 +1,7 @@
 package com.wigell.wigellcarrental.controllers;
 
+import com.wigell.wigellcarrental.entities.Car;
+import com.wigell.wigellcarrental.entities.Customer;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -40,7 +42,7 @@ public class AdminController {
     }
 
     @GetMapping("/allcars")//Lista samtliga bilar
-    public ResponseEntity<List<Cars>>getAllAvailableCars(){
+    public ResponseEntity<List<Car>>getAllAvailableCars(){
         return ResponseEntity.ok(service.getAllAvailableCars());
     }
 
@@ -72,8 +74,8 @@ public class AdminController {
 
     //TODO: PathVariable. Integer?
     @DeleteMapping("/removeorder")//Ta bort bokning från systemet
-    public ResponseEntity<String>removeOrder(@PathVariable Integer orderId){
-        return ResponseEntity.ok(service.removeOrder(orderId));
+    public ResponseEntity<String>removeOrder(@PathVariable Integer bookingId){
+        return ResponseEntity.ok(service.removeOrder(bookingId));
     }
 
     //TODO: LocalDate
