@@ -2,6 +2,9 @@ package com.wigell.wigellcarrental.entities;
 
 import jakarta.persistence.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 //WIG-5-AA (Hela klassen)
 @Entity
 @Table(name = "customer")
@@ -29,12 +32,11 @@ public class Customer {
     @Column(name = "address", nullable = false, length = 50)
     private String address;
 
-
     @OneToMany(mappedBy = "customer")
     private List<Booking> bookings;
 
     public Customer() {
-
+        bookings = new ArrayList<Booking>();
     }
 
     public Long getId() {
