@@ -1,4 +1,6 @@
 
+-- WIG-4-SJ
+
 -- CUSTOMER
 INSERT INTO customer (personal_identity_number, first_name, last_name, email, phone_number, address) VALUES
 ('19850101-1234', 'Anna', 'Swensson', 'anna.svensson@example.com', '+46701234567', 'Björkgatan 12, 21436 Malmö'),
