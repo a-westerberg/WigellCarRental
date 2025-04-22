@@ -8,6 +8,7 @@ import java.time.LocalDate;
 
 //WIG-5-AA
 @Entity
+@Table(name = "orders")
 public class Order {
 
     @Id

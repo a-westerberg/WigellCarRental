@@ -23,4 +23,9 @@ public class CarServiceImpl implements CarService{
     public List<Car> getAvailableCars() {
         return carRepository.findByStatus(CarStatus.AVAILABLE);
     }
+
+    //AA
+    public List<Car> getAllCars(){
+        return carRepository.findAll();
+    }
 }

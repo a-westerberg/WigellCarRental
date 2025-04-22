@@ -10,7 +10,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+
 import java.util.List;
 
 //SA
@@ -62,12 +62,13 @@ public class AdminController {
         List<Car> availableCars = carService.getAvailableCars();
         return ResponseEntity.ok(availableCars);
     }
-    /*
-    //SA
+
+    //SA //AA
     @GetMapping("/allcars")//Lista samtliga bilar
-    public ResponseEntity<List<Car>>getAllAvailableCars(){
-        return ResponseEntity.ok(service.getAllAvailableCars());
+    public ResponseEntity<List<Car>>getAllCars(){
+        return ResponseEntity.ok(carService.getAllCars());
     }
+    /*
     //SA
     @PostMapping("/addcar")//Lägg till bil
     public ResponseEntity<String>addCar(@RequestBody Car car){

@@ -8,7 +8,7 @@ import java.util.List;
 
 //WIG-5-AA (Hela klassen)
 @Entity
-@Table(name = "customer")
+@Table(name = "customers")
 public class Customer {
 
     @Id
