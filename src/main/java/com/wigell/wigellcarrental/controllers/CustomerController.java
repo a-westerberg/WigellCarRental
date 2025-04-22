@@ -1,6 +1,6 @@
 package com.wigell.wigellcarrental.controllers;
 
-import com.wigell.wigellcarrental.entities.Booking;
+
 import com.wigell.wigellcarrental.entities.Car;
 import com.wigell.wigellcarrental.entities.Customer;
 import org.springframework.http.ResponseEntity;

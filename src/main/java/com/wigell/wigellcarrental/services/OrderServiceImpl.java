@@ -1,5 +1,6 @@
 package com.wigell.wigellcarrental.services;
 
+import com.wigell.wigellcarrental.entities.Order;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
 import org.springframework.stereotype.Service;
 
@@ -17,9 +18,9 @@ public class OrderServiceImpl implements OrderService{
 
     @Override
     public List<Order> getActiveOrders() {
-        if(orderRepository.findAllActiveOrders().isEmpty()){
+        if(orderRepository.findAllByIsActiveTrue().isEmpty()){
             //exception
         }
-        return orderRepository.findAllActiveOrders();
+        return orderRepository.findAllByIsActiveTrue();
     }
 }

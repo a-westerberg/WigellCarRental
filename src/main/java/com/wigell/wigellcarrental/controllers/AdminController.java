@@ -2,6 +2,7 @@ package com.wigell.wigellcarrental.controllers;
 
 import com.wigell.wigellcarrental.entities.Car;
 import com.wigell.wigellcarrental.entities.Customer;
+import com.wigell.wigellcarrental.entities.Order;
 import com.wigell.wigellcarrental.services.OrderService;
 import com.wigell.wigellcarrental.services.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
