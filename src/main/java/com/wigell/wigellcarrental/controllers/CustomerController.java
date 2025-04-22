@@ -3,6 +3,7 @@ package com.wigell.wigellcarrental.controllers;
 import com.wigell.wigellcarrental.entities.Car;
 import com.wigell.wigellcarrental.entities.Customer;
 import com.wigell.wigellcarrental.entities.Order;
+import com.wigell.wigellcarrental.services.CarServiceImpl;
 import com.wigell.wigellcarrental.services.OrderService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -19,20 +20,24 @@ import java.util.List;
 //@PreAuthorize("USER")
 public class CustomerController {
 
-    //AWS
+    //AWS / WIG-26-SJ
     private final OrderService orderService;
+    private final CarServiceImpl carService;
 
     @Autowired
-    public CustomerController(OrderService orderService) {
+    public CustomerController(OrderService orderService, CarServiceImpl carService) {
         this.orderService = orderService;
+        this.carService = carService;
     }
 
     //Services
-    //SA
-    /*@GetMapping("/cars")//Lista tillgängliga bilar
+    //SA / WIG-26-SJ
+    @GetMapping("/cars")
     public ResponseEntity<List<Car>>allCars(){
-        return ResponseEntity.ok(service.getAllAvailableCars());
+        return ResponseEntity.ok(carService.getAvailableCars());
     }
+
+    /*
     //SA
     @PostMapping("/addorder")//Skapa order (hyra bil)
     public ResponseEntity<String> addOrder(@RequestBody Booking booking){
