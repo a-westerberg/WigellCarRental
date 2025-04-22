@@ -10,6 +10,7 @@ import org.springframework.web.bind.annotation.*;
 import java.time.LocalDate;
 import java.util.List;
 
+//SA
 @RestController
 @RequestMapping("/api/v1/admin")
 //@PreAuthorize("ADMIN")
@@ -24,76 +25,77 @@ public class AdminController {
         this.customerService = customerService;
     }
 
+    //SA
     @GetMapping("/customers")//Lista kunder
     public ResponseEntity<List<Customer>>customers(){
         return ResponseEntity.ok(customerService.getAllCustomers());
     }
     /*
-
+    //SA
     @GetMapping("/customer/{id}")//Lista specifik kund
     public ResponseEntity<Customer>getCustomer(@PathVariable String perNr){
         return ResponseEntity.ok(service.getCustomer(perNr));
     }
-
+    //SA
     @PostMapping("/addcustomer")//Lägga till ny kund
     public ResponseEntity<String>addCustomer(@RequestBody Customer customer){
         return ResponseEntity.created(service.addCustomer(customer));
     }
-
+    //SA
     @DeleteMapping("/removecustomer/{id}")//Radera befintlig kund
     public ResponseEntity<String>removeCustomer(@PathVariable String perNr){
         return ResponseEntity.ok(service.removeCustomer(perNr));
     }
-
+    //SA
     @GetMapping("/cars")//Lista tillgängliga bilar
     public ResponseEntity<List<Car>>getAllCars(){
         return ResponseEntity.ok(service.getAllAvailableCars());
     }
-
+    //SA
     @GetMapping("/allcars")//Lista samtliga bilar
     public ResponseEntity<List<Car>>getAllAvailableCars(){
         return ResponseEntity.ok(service.getAllAvailableCars());
     }
-
+    //SA
     @PostMapping("/addcar")//Lägg till bil
     public ResponseEntity<String>addCar(@RequestBody Car car){
         return ResponseEntity.ok(service.addCar(car));
     }
-
+    //SA
     @PutMapping("/updatecar")//Uppdatera bilinformation
     public ResponseEntity<Car>updateCar(@RequestBody Car car){
         return ResponseEntity.ok(service.updateCar(car));
     }
-
+    //SA
     //TODO: PathVariable. RegNr eller id?
     @DeleteMapping("/removecar")//Radera bil
     public ResponseEntity<String>removeCar(@PathVariable String regNr){
         return ResponseEntity.ok(service.removeCar(car));
     }
-
+    //SA
     @GetMapping("/activeorders")//Lista alla aktiva ordrar
     public ResponseEntity<List<Order>>getAllActiveOrders(){
         return ResponseEntity.ok(service.getActiveOrders());
     }
-
+    //SA
     @GetMapping("/orders")//Lista historiska ordrar
     public ResponseEntity<List<Order>>getAllOrders(){
         return ResponseEntity.ok(service.getAllOrders());
     }
-
+    //SA
     //TODO: PathVariable. Integer?
     @DeleteMapping("/removeorder")//Ta bort bokning från systemet
     public ResponseEntity<String>removeOrder(@PathVariable Integer bookingId){
         return ResponseEntity.ok(service.removeOrder(bookingId));
     }
-
+    //SA
     //TODO: LocalDate
     @DeleteMapping("/removeorders-beforedate/{date}")
     public ResponseEntity<String>removeOrdersBeforeDate(@PathVariable LocalDate date){
         return ResponseEntity.ok(service.removeOrdersBeforeDate(date));
     }
 
-
+    //SA
     @RequestMapping("/statistics")//String...  En oändlig array utan utsatt antal i, array oavsett om man skickar med en inparametrar
     public ResponseEntity<String> getStatistics(@RequestParam String choice, @RequestParam String... data){
         if(choice.contains("incomemonth")){//Total intäkt under en viss tidsperiod, månad och år

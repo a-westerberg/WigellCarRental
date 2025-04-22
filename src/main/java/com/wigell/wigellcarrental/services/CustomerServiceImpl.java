@@ -7,6 +7,7 @@ import org.springframework.stereotype.Service;
 
 import java.util.List;
 
+//SA
 @Service
 public class CustomerServiceImpl implements CustomerService{
 
@@ -17,6 +18,7 @@ public class CustomerServiceImpl implements CustomerService{
         this.customerRepository = customerRepository;
     }
 
+    //SA
     @Override
     public List<Customer> getAllCustomers() {
         if(customerRepository.findAll().isEmpty()) {
