@@ -1,5 +1,6 @@
 package com.wigell.wigellcarrental.repositories;
 
+import com.wigell.wigellcarrental.entities.Order;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
