@@ -38,6 +38,7 @@ public class CustomerController {
         return ResponseEntity.ok(carService.getAvailableCars());
     }
 
+
     /*
     //SA
     @PostMapping("/addorder")//Skapa order (hyra bil)
