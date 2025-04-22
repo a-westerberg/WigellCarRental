@@ -13,6 +13,7 @@ import org.springframework.security.core.context.SecurityContextHolder; */
 import org.springframework.web.bind.annotation.*;
 
 
+import java.security.Principal;
 import java.util.List;
 
 //SA
@@ -45,14 +46,14 @@ public class CustomerController {
     public ResponseEntity<String> addOrder(@RequestBody Booking booking){
         return ResponseEntity.created(service.addOrder(booking));
     }
-
+*/
     //SA
     @PutMapping("/cancelorder")//Avboka order
-    public ResponseEntity<String> cancelOrder(@RequestParam Integer bookingId){
-        return ResponseEntity.ok(service.cancelOrder(bookingId));
+    public ResponseEntity<String> cancelOrder(@RequestParam Long orderId, Principal principal) {
+        return ResponseEntity.ok(orderService.cancelOrder(orderId,principal));
     }
 
-    */
+
     //SA //AWS TODO Denna funkar inte försen vi har fixat security så kommer ligga utkommenderad. Även utkommenderat i import som behövs
     /** @GetMapping("/activeorders")//Se aktiva bokningar
     public ResponseEntity<List<Order>> getActiveOrders() {
