@@ -29,4 +29,11 @@ public class CustomerServiceImpl implements CustomerService{
         }
         return customerRepository.findAll();
     }
+
+    // WIG-27-SJ
+    @Override
+    public Customer getCustomerById(Long id) {
+        return customerRepository.findById(id).orElseThrow(() ->
+                new ResourceNotFoundException("Customer","id",id));
+    }
 }

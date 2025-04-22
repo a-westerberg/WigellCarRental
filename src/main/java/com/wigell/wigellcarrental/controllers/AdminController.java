@@ -38,12 +38,14 @@ public class AdminController {
     public ResponseEntity<List<Customer>>customers(){
         return ResponseEntity.ok(customerService.getAllCustomers());
     }
-    /*
-    //SA
-    @GetMapping("/customer/{id}")//Lista specifik kund
-    public ResponseEntity<Customer>getCustomer(@PathVariable String perNr){
-        return ResponseEntity.ok(service.getCustomer(perNr));
+
+    //SA / WIG-27-SJ
+    @GetMapping("/customer/{id}")
+    public ResponseEntity<Customer>getCustomer(@PathVariable Long id){
+        return ResponseEntity.ok(customerService.getCustomerById(id));
     }
+
+    /*
     //SA
     @PostMapping("/addcustomer")//Lägga till ny kund
     public ResponseEntity<String>addCustomer(@RequestBody Customer customer){
