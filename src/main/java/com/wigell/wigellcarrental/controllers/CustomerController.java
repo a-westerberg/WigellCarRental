@@ -1,12 +1,6 @@
 package com.wigell.wigellcarrental.controllers;
 
-import com.wigell.wigellcarrental.entities.Booking;
-import com.wigell.wigellcarrental.entities.Car;
-import com.wigell.wigellcarrental.entities.Customer;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
-import java.util.List;
 
 @RestController
 @RequestMapping("/api/v1")
@@ -21,7 +15,7 @@ public class CustomerController {
     }
 
     @PostMapping("/addorder")//Skapa order (hyra bil)
-    public ResponseEntity<String> addOrder(@RequestBody Booking booking){
+    public ResponseEntity<String> addOrder(@RequestBody Order booking){
         return ResponseEntity.created(service.addOrder(booking));
     }
 
@@ -32,12 +26,12 @@ public class CustomerController {
     }
 
     @GetMapping("/activeorders")//Se aktiva bokningar
-    public ResponseEntity<List<Booking>>activeOrders(){
+    public ResponseEntity<List<Order>>activeOrders(){
         return ResponseEntity.ok(service.activeOrders());
     }
 
     @GetMapping("/orders")//Se tidigare bokningar
-    public ResponseEntity<List<Booking>>orders(){
+    public ResponseEntity<List<Order>>orders(){
         return ResponseEntity.ok(service.orders());
     }
 

@@ -33,10 +33,10 @@ public class Customer {
     private String address;
 
     @OneToMany(mappedBy = "customer")
-    private List<Booking> bookings;
+    private List<Order> orders;
 
     public Customer() {
-        bookings = new ArrayList<Booking>();
+        orders = new ArrayList<Order>();
     }
 
     public Long getId() {
@@ -95,12 +95,12 @@ public class Customer {
         this.address = address;
     }
 
-    public List<Booking> getBookings() {
-        return bookings;
+    public List<Order> getBookings() {
+        return orders;
     }
 
-    public void setBookings(List<Booking> bookings) {
-        this.bookings = bookings;
+    public void setBookings(List<Order> orders) {
+        this.orders = orders;
     }
 
     @Override
@@ -113,7 +113,7 @@ public class Customer {
                 ", email='" + email + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", address='" + address + '\'' +
-                ", bookings=" + bookings +
+                ", orders=" + orders +
                 '}';
     }
 }

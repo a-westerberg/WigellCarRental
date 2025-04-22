@@ -3,6 +3,8 @@ package com.wigell.wigellcarrental.entities;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 //WIG-5-AA
 @Entity
@@ -27,8 +29,11 @@ public class Car {
     @Column(name = "pricePerDay")
     private BigDecimal pricePerDay;
 
-    public Car() {
+   @OneToMany(mappedBy = "car")
+   private List<Order> orders;
 
+    public Car() {
+        orders = new ArrayList<Order>();
     }
 
     public Long getId() {
