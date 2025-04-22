@@ -26,12 +26,10 @@ public class Order {
     private LocalDate endDate;
 
     @ManyToOne
-    @JsonIgnore
     @JoinColumn(name = "car_id")
     private Car car;
 
     @ManyToOne
-    @JsonIgnore
     @JoinColumn(name = "customer_id")
     private Customer customer;
 
@@ -116,8 +114,8 @@ public class Order {
                 ", bookedAt=" + bookedAt +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
-                ", car=" + car +
-                ", customer=" + customer +
+                ", car=" + (car != null ? car.getId() : null)  +
+                ", customer=" + (customer != null ? customer.getId() : null) +
                 ", totalPrice=" + totalPrice +
                 ", isActive=" + isActive +
                 '}';

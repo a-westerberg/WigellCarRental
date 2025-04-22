@@ -1,5 +1,6 @@
 package com.wigell.wigellcarrental.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -33,6 +34,7 @@ public class Customer {
     private String address;
 
     @OneToMany(mappedBy = "customer")
+    @JsonIgnore //Just nu visas inte ordrar när man tar fram customer utan man behöver gå via /orders för att se dem. Vill vi fortsätta ha det så?
     private List<Order> orders;
 
     public Customer() {
@@ -95,11 +97,11 @@ public class Customer {
         this.address = address;
     }
 
-    public List<Order> getBookings() {
+    public List<Order> getOrder() {
         return orders;
     }
 
-    public void setBookings(List<Order> orders) {
+    public void setOrder(List<Order> orders) {
         this.orders = orders;
     }
 
@@ -113,7 +115,6 @@ public class Customer {
                 ", email='" + email + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", address='" + address + '\'' +
-                ", orders=" + orders +
                 '}';
     }
 }
