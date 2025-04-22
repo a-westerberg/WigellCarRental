@@ -1,8 +1,12 @@
 package com.wigell.wigellcarrental.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+import com.wigell.wigellcarrental.enums.CarStatus;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
+import java.util.ArrayList;
+import java.util.List;
 
 //WIG-5-AA
 @Entity
@@ -21,14 +25,20 @@ public class Car {
     @Column(name = "registration_number", nullable = false, length = 7)
     private String registrationNumber;
 
-/*    @Column(name = "status", nullable = false)
-    private CarStatus status;*/
+    //WIG-7-AA
+    @Column(name = "status", nullable = false)
+    @Enumerated(EnumType.STRING)
+    private CarStatus status;
 
     @Column(name = "pricePerDay")
     private BigDecimal pricePerDay;
 
-    public Car() {
+   @OneToMany(mappedBy = "car")
+   @JsonIgnore //listar inte upp alla bokningar så fort man tar upp en bil. Vill vi att den ska göra det?
+   private List<Order> orders;
 
+    public Car() {
+        orders = new ArrayList<Order>();
     }
 
     public Long getId() {
@@ -63,13 +73,13 @@ public class Car {
         this.registrationNumber = registrationNumber;
     }
 
-/*    public CarStatus getStatus() {
+    public CarStatus getStatus() {
         return status;
     }
 
     public void setStatus(CarStatus status) {
         this.status = status;
-    }*/
+    }
 
     public BigDecimal getPricePerDay() {
         return pricePerDay;
@@ -79,6 +89,14 @@ public class Car {
         this.pricePerDay = pricePerDay;
     }
 
+    public List<Order> getOrders() {
+        return orders;
+    }
+
+    public void setOrders(List<Order> orders) {
+        this.orders = orders;
+    }
+
     @Override
     public String toString() {
         return "Car{" +
@@ -86,7 +104,7 @@ public class Car {
                 ", make='" + make + '\'' +
                 ", model='" + model + '\'' +
                 ", registrationNumber='" + registrationNumber + '\'' +
-               /* ", status=" + status +*/
+                ", status=" + status +
                 ", pricePerDay=" + pricePerDay +
                 '}';
     }

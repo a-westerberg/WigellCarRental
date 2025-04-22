@@ -1,5 +1,6 @@
 package com.wigell.wigellcarrental.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -7,7 +8,7 @@ import java.time.LocalDate;
 
 //WIG-5-AA
 @Entity
-public class Booking {
+public class Order {
 
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
@@ -38,7 +39,7 @@ public class Booking {
     @Column(name = "active")
     private Boolean isActive;
 
-    public Booking() {
+    public Order() {
 
     }
 
@@ -108,13 +109,13 @@ public class Booking {
 
     @Override
     public String toString() {
-        return "Booking{" +
+        return "Order{" +
                 "id=" + id +
                 ", bookedAt=" + bookedAt +
                 ", startDate=" + startDate +
                 ", endDate=" + endDate +
-                ", car=" + car +
-                ", customer=" + customer +
+                ", car=" + (car != null ? car.getId() : null)  +
+                ", customer=" + (customer != null ? customer.getId() : null) +
                 ", totalPrice=" + totalPrice +
                 ", isActive=" + isActive +
                 '}';

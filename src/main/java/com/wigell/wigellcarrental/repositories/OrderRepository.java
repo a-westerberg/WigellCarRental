@@ -7,6 +7,7 @@ import org.springframework.stereotype.Repository;
 
 import java.util.List;
 
+//SA
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
     @Query("SELECT order from Order order WHERE order.isActive = true")

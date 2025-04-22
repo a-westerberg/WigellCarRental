@@ -1,5 +1,6 @@
 package com.wigell.wigellcarrental.entities;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.util.ArrayList;
@@ -23,20 +24,21 @@ public class Customer {
     @Column(name = "last_name", nullable = false, length = 50)
     private String lastName;
 
-    @Column(name = "email", nullable = false, length = 50, unique = true)
+    @Column(name = "email", nullable = false, length = 50)
     private String email;
 
-    @Column(name = "phone_number", nullable = false, length = 15, unique = true)
+    @Column(name = "phone_number", nullable = false, length = 15)
     private String phoneNumber;
 
     @Column(name = "address", nullable = false, length = 50)
     private String address;
 
     @OneToMany(mappedBy = "customer")
-    private List<Booking> bookings;
+    @JsonIgnore //Just nu visas inte ordrar när man tar fram customer utan man behöver gå via /orders för att se dem. Vill vi fortsätta ha det så?
+    private List<Order> orders;
 
     public Customer() {
-        bookings = new ArrayList<Booking>();
+        orders = new ArrayList<Order>();
     }
 
     public Long getId() {
@@ -95,12 +97,12 @@ public class Customer {
         this.address = address;
     }
 
-    public List<Booking> getBookings() {
-        return bookings;
+    public List<Order> getOrder() {
+        return orders;
     }
 
-    public void setBookings(List<Booking> bookings) {
-        this.bookings = bookings;
+    public void setOrder(List<Order> orders) {
+        this.orders = orders;
     }
 
     @Override
@@ -113,7 +115,6 @@ public class Customer {
                 ", email='" + email + '\'' +
                 ", phoneNumber='" + phoneNumber + '\'' +
                 ", address='" + address + '\'' +
-                ", bookings=" + bookings +
                 '}';
     }
 }
