@@ -1,6 +1,7 @@
 package com.wigell.wigellcarrental.services;
 
 import com.wigell.wigellcarrental.entities.Customer;
+import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,7 +23,7 @@ public class CustomerServiceImpl implements CustomerService{
     @Override
     public List<Customer> getAllCustomers() {
         if(customerRepository.findAll().isEmpty()) {
-            //Exception
+            throw new ResourceNotFoundException("List","customers",0);
         }
         return customerRepository.findAll();
     }

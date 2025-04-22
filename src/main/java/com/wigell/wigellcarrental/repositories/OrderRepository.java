@@ -9,5 +9,5 @@ import java.util.List;
 //SA
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    List<Order>findAllByIsActiveTrue();
+    List<Order>findAllByIsActiveTrue();//SA
 }
