@@ -9,6 +9,7 @@ import java.util.List;
 //SA
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
+    List<Order>findAllByIsActiveTrue();//SA
     //AWS
     List<Order> findByCustomer_PersonalIdentityNumberAndIsActiveTrue(String personalIdentityNumber);
 }
