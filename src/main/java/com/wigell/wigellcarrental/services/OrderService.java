@@ -6,5 +6,6 @@ import java.util.List;
 
 //SA
 public interface OrderService {
-    List<Order> getActiveOrdersForCustomer(String personalIdentityNumber);
+    List<Order> getActiveOrders();//SA
+    List<Order> getActiveOrdersForCustomer(String personalIdentityNumber);//AWS
 }

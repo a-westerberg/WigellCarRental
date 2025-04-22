@@ -2,13 +2,15 @@ package com.wigell.wigellcarrental.controllers;
 
 import com.wigell.wigellcarrental.entities.Car;
 import com.wigell.wigellcarrental.entities.Customer;
+import com.wigell.wigellcarrental.entities.Order;
+import com.wigell.wigellcarrental.services.OrderService;
 import com.wigell.wigellcarrental.services.CarService;
 import com.wigell.wigellcarrental.services.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
-import java.time.LocalDate;
+
 import java.util.List;
 
 //SA
@@ -21,12 +23,15 @@ public class AdminController {
     //Car service, Customer service, Order service?
     private final CustomerService customerService;
     private final CarService carService;            //aws
+    private OrderService orderService;
 
     @Autowired
-    public AdminController(CustomerService customerService, CarService carService) {
+    public AdminController(OrderService orderService, CustomerService customerService,CarService carService) {
+        this.orderService = orderService;
         this.customerService = customerService;
         this.carService = carService;
     }
+
 
     //SA
     @GetMapping("/customers")//Lista kunder
@@ -57,12 +62,13 @@ public class AdminController {
         List<Car> availableCars = carService.getAvailableCars();
         return ResponseEntity.ok(availableCars);
     }
-    /*
-    //SA
+
+    //SA //AA
     @GetMapping("/allcars")//Lista samtliga bilar
-    public ResponseEntity<List<Car>>getAllAvailableCars(){
-        return ResponseEntity.ok(service.getAllAvailableCars());
+    public ResponseEntity<List<Car>>getAllCars(){
+        return ResponseEntity.ok(carService.getAllCars());
     }
+    /*
     //SA
     @PostMapping("/addcar")//Lägg till bil
     public ResponseEntity<String>addCar(@RequestBody Car car){
@@ -79,11 +85,13 @@ public class AdminController {
     public ResponseEntity<String>removeCar(@PathVariable String regNr){
         return ResponseEntity.ok(service.removeCar(car));
     }
+    */
     //SA
     @GetMapping("/activeorders")//Lista alla aktiva ordrar
     public ResponseEntity<List<Order>>getAllActiveOrders(){
-        return ResponseEntity.ok(service.getActiveOrders());
+        return ResponseEntity.ok(orderService.getActiveOrders());
     }
+/*
     //SA
     @GetMapping("/orders")//Lista historiska ordrar
     public ResponseEntity<List<Order>>getAllOrders(){

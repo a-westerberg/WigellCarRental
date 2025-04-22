@@ -10,6 +10,7 @@ import java.util.List;
 
 //WIG-5-AA
 @Entity
+@Table(name = "cars")
 public class Car {
 
     @Id
@@ -26,7 +27,7 @@ public class Car {
     private String registrationNumber;
 
     //WIG-7-AA
-    @Column(name = "status", nullable = false)
+    @Column(name = "status", nullable = true) //set nullable = true när detta lgas i i sql
     @Enumerated(EnumType.STRING)
     private CarStatus status;
 
