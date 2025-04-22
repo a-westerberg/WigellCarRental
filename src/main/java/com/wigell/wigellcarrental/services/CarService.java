@@ -8,4 +8,7 @@ import java.util.List;
 public interface CarService {
     //AWS
     List<Car> getAvailableCars();
+
+    //AA
+    public List<Car> getAllCars();
 }

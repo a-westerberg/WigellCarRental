@@ -10,6 +10,7 @@ import java.util.List;
 
 //WIG-5-AA
 @Entity
+@Table(name = "cars")
 public class Car {
 
     @Id
