@@ -4,6 +4,7 @@ import com.wigell.wigellcarrental.entities.Car;
 import com.wigell.wigellcarrental.entities.Customer;
 import com.wigell.wigellcarrental.entities.Order;
 import com.wigell.wigellcarrental.services.OrderService;
+import com.wigell.wigellcarrental.services.CarService;
 import com.wigell.wigellcarrental.services.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
@@ -20,13 +21,15 @@ public class AdminController {
 
     //Services
     //Car service, Customer service, Order service?
+    private final CustomerService customerService;
+    private final CarService carService;            //aws
     private OrderService orderService;
-    private CustomerService customerService;
 
     @Autowired
-    public AdminController(OrderService orderService, CustomerService customerService) {
+    public AdminController(OrderService orderService, CustomerService customerService,CarService carService) {
         this.orderService = orderService;
         this.customerService = customerService;
+        this.carService = carService;
     }
 
 
@@ -35,48 +38,54 @@ public class AdminController {
     public ResponseEntity<List<Customer>>customers(){
         return ResponseEntity.ok(customerService.getAllCustomers());
     }
-/*
-        @GetMapping("/customer/{id}")//Lista specifik kund
-        public ResponseEntity<Customer>getCustomer(@PathVariable String perNr){
-            return ResponseEntity.ok(service.getCustomer(perNr));
-        }
-        //SA
-        @PostMapping("/addcustomer")//Lägga till ny kund
-        public ResponseEntity<String>addCustomer(@RequestBody Customer customer){
-            return ResponseEntity.created(service.addCustomer(customer));
-        }
-        //SA
-        @DeleteMapping("/removecustomer/{id}")//Radera befintlig kund
-        public ResponseEntity<String>removeCustomer(@PathVariable String perNr){
-            return ResponseEntity.ok(service.removeCustomer(perNr));
-        }
-        //SA
-        @GetMapping("/cars")//Lista tillgängliga bilar
-        public ResponseEntity<List<Car>>getAllCars(){
-            return ResponseEntity.ok(service.getAllAvailableCars());
-        }
-        //SA
-        @GetMapping("/allcars")//Lista samtliga bilar
-        public ResponseEntity<List<Car>>getAllAvailableCars(){
-            return ResponseEntity.ok(service.getAllAvailableCars());
-        }
-        //SA
-        @PostMapping("/addcar")//Lägg till bil
-        public ResponseEntity<String>addCar(@RequestBody Car car){
-            return ResponseEntity.ok(service.addCar(car));
-        }
-        //SA
-        @PutMapping("/updatecar")//Uppdatera bilinformation
-        public ResponseEntity<Car>updateCar(@RequestBody Car car){
-            return ResponseEntity.ok(service.updateCar(car));
-        }
-        //SA
-        //TODO: PathVariable. RegNr eller id?
-        @DeleteMapping("/removecar")//Radera bil
-        public ResponseEntity<String>removeCar(@PathVariable String regNr){
-            return ResponseEntity.ok(service.removeCar(car));
-        }
+    /*
+    //SA
+    @GetMapping("/customer/{id}")//Lista specifik kund
+    public ResponseEntity<Customer>getCustomer(@PathVariable String perNr){
+        return ResponseEntity.ok(service.getCustomer(perNr));
+    }
+    //SA
+    @PostMapping("/addcustomer")//Lägga till ny kund
+    public ResponseEntity<String>addCustomer(@RequestBody Customer customer){
+        return ResponseEntity.created(service.addCustomer(customer));
+    }
+    //SA
+    @DeleteMapping("/removecustomer/{id}")//Radera befintlig kund
+    public ResponseEntity<String>removeCustomer(@PathVariable String perNr){
+        return ResponseEntity.ok(service.removeCustomer(perNr));
+    }
+
+     */
+    //SA // AWS
+    @GetMapping("/cars")//Lista tillgängliga bilar
+    public ResponseEntity<List<Car>>getAllAvailableCars(){
+        List<Car> availableCars = carService.getAvailableCars();
+        return ResponseEntity.ok(availableCars);
+    }
+    /*
+    //SA
+    @GetMapping("/allcars")//Lista samtliga bilar
+    public ResponseEntity<List<Car>>getAllAvailableCars(){
+        return ResponseEntity.ok(service.getAllAvailableCars());
+    }
+    //SA
+    @PostMapping("/addcar")//Lägg till bil
+    public ResponseEntity<String>addCar(@RequestBody Car car){
+        return ResponseEntity.ok(service.addCar(car));
+    }
+    //SA
+    @PutMapping("/updatecar")//Uppdatera bilinformation
+    public ResponseEntity<Car>updateCar(@RequestBody Car car){
+        return ResponseEntity.ok(service.updateCar(car));
+    }
+    //SA
+    //TODO: PathVariable. RegNr eller id?
+    @DeleteMapping("/removecar")//Radera bil
+    public ResponseEntity<String>removeCar(@PathVariable String regNr){
+        return ResponseEntity.ok(service.removeCar(car));
+    }
     */
+    //SA
     @GetMapping("/activeorders")//Lista alla aktiva ordrar
     public ResponseEntity<List<Order>>getAllActiveOrders(){
         return ResponseEntity.ok(orderService.getActiveOrders());
