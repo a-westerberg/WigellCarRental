@@ -2,9 +2,12 @@ package com.wigell.wigellcarrental.services;
 
 import com.wigell.wigellcarrental.entities.Order;
 
+import java.security.Principal;
 import java.util.List;
 
 //SA
 public interface OrderService {
     List<Order> getActiveOrdersForCustomer(String personalIdentityNumber);
+
+    String cancelOrder(Long orderId, Principal principal);//SA
 }
