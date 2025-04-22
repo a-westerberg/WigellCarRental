@@ -2,6 +2,8 @@ package com.wigell.wigellcarrental.controllers;
 
 import com.wigell.wigellcarrental.entities.Car;
 import com.wigell.wigellcarrental.entities.Customer;
+import com.wigell.wigellcarrental.services.CustomerService;
+import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -15,11 +17,18 @@ public class AdminController {
 
     //Services
     //Car service, Customer service, Order service?
+    private CustomerService customerService;
 
-    /*@GetMapping("/customers")//Lista kunder
-    public ResponseEntity<List<Customer>>customers(){
-        return ResponseEntity.ok(service.getAllCustomers());
+    @Autowired
+    public AdminController(CustomerService customerService) {
+        this.customerService = customerService;
     }
+
+    @GetMapping("/customers")//Lista kunder
+    public ResponseEntity<List<Customer>>customers(){
+        return ResponseEntity.ok(customerService.getAllCustomers());
+    }
+    /*
 
     @GetMapping("/customer/{id}")//Lista specifik kund
     public ResponseEntity<Customer>getCustomer(@PathVariable String perNr){
