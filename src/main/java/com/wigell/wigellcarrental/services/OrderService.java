@@ -7,4 +7,5 @@ import java.util.List;
 //SA
 public interface OrderService {
     List<Order> getActiveOrders();
+    List<Order> getActiveOrdersForCustomer(String personalIdentityNumber);
 }
