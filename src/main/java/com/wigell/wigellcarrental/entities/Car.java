@@ -35,7 +35,6 @@ public class Car {
     private BigDecimal pricePerDay;
 
    @OneToMany(mappedBy = "car")
-   @JsonIgnore //listar inte upp alla bokningar så fort man tar upp en bil. Vill vi att den ska göra det?
    private List<Order> orders;
 
     public Car() {
@@ -90,6 +89,8 @@ public class Car {
         this.pricePerDay = pricePerDay;
     }
 
+    //Just nu visas inte ordrar när man tar fram customer utan man behöver gå via /orders för att se dem. Vill vi fortsätta ha det så?
+    @JsonIgnore
     public List<Order> getOrders() {
         return orders;
     }
