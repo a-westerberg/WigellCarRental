@@ -9,12 +9,12 @@ public interface CarService {
     //AWS
     List<Car> getAvailableCars();
 
-    //AA
+    //WIG-20-AA
     String deleteCar(String input);
 
-    //AA
-    public List<Car> getAllCars();
+    //WIG-17-AA
+    List<Car> getAllCars();
 
-    //AA
+    //WIG-18-AA
     Car addCar(Car car);
 }

@@ -29,7 +29,7 @@ public class CarServiceImpl implements CarService{
         return carRepository.findByStatus(CarStatus.AVAILABLE);
     }
 
-    //AA
+    //WIG-17-AA
     public List<Car> getAllCars(){
         return carRepository.findAll();
     }
