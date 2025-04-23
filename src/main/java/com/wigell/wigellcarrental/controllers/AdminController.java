@@ -11,6 +11,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
 
+import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 
 //SA
@@ -38,12 +40,14 @@ public class AdminController {
     public ResponseEntity<List<Customer>>customers(){
         return ResponseEntity.ok(customerService.getAllCustomers());
     }
-    /*
-    //SA
-    @GetMapping("/customer/{id}")//Lista specifik kund
-    public ResponseEntity<Customer>getCustomer(@PathVariable String perNr){
-        return ResponseEntity.ok(service.getCustomer(perNr));
+
+    //SA / WIG-27-SJ
+    @GetMapping("/customer/{id}")
+    public ResponseEntity<Customer>getCustomer(@PathVariable Long id){
+        return ResponseEntity.ok(customerService.getCustomerById(id));
     }
+
+    /*
     //SA
     @PostMapping("/addcustomer")//Lägga till ny kund
     public ResponseEntity<String>addCustomer(@RequestBody Customer customer){
@@ -103,13 +107,15 @@ public class AdminController {
     public ResponseEntity<String>removeOrder(@PathVariable Integer bookingId){
         return ResponseEntity.ok(service.removeOrder(bookingId));
     }
+    */
+
     //SA
     //TODO: LocalDate
     @DeleteMapping("/removeorders-beforedate/{date}")
-    public ResponseEntity<String>removeOrdersBeforeDate(@PathVariable LocalDate date){
-        return ResponseEntity.ok(service.removeOrdersBeforeDate(date));
+    public ResponseEntity<String>removeOrdersBeforeDate(@PathVariable LocalDate date, Principal principal){
+        return ResponseEntity.ok(orderService.removeOrdersBeforeDate(date,principal));
     }
-
+/*
     //SA
     @RequestMapping("/statistics")//String...  En oändlig array utan utsatt antal i, array oavsett om man skickar med en inparametrar
     public ResponseEntity<String> getStatistics(@RequestParam String choice, @RequestParam String... data){
