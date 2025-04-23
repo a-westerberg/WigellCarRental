@@ -72,12 +72,13 @@ public class AdminController {
     public ResponseEntity<List<Car>>getAllCars(){
         return ResponseEntity.ok(carService.getAllCars());
     }
-    /*
+
     //SA
     @PostMapping("/addcar")//Lägg till bil
-    public ResponseEntity<String>addCar(@RequestBody Car car){
-        return ResponseEntity.ok(service.addCar(car));
+    public ResponseEntity<Car>addCar(@RequestBody Car car){
+        return ResponseEntity.ok(carService.addCar(car));
     }
+    /*
     //SA
     @PutMapping("/updatecar")//Uppdatera bilinformation
     public ResponseEntity<Car>updateCar(@RequestBody Car car){

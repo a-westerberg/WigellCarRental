@@ -11,4 +11,6 @@ public interface CarService {
 
     //AA
     public List<Car> getAllCars();
+
+    Car addCar(Car car);
 }

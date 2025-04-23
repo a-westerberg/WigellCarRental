@@ -28,4 +28,40 @@ public class CarServiceImpl implements CarService{
     public List<Car> getAllCars(){
         return carRepository.findAll();
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    //AA
+    public Car addCar(Car car) {
+
+        return carRepository.save(car);
+    }
 }
