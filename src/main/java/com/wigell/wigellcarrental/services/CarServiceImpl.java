@@ -2,11 +2,14 @@ package com.wigell.wigellcarrental.services;
 
 import com.wigell.wigellcarrental.entities.Car;
 import com.wigell.wigellcarrental.enums.CarStatus;
+import com.wigell.wigellcarrental.exceptions.InvalidInputException;
+import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
+import java.util.Optional;
 
 //SA
 @Service
@@ -31,6 +34,25 @@ public class CarServiceImpl implements CarService{
 
     //AA
     public String deleteCar(String input) {
+        Car carToDelete = findCarToDelete(input);
+        carRepository.delete(carToDelete);
+        return  isInputId(input) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
+    }
+    //AA
+    private boolean isInputId(String input) {
+        if (input == null || input.isEmpty()) {
+            throw new InvalidInputException("Car","Input", input);
+        }
+        return input.matches("\\d+");
+    }
 
+    //AA
+    private Car findCarToDelete(String input) {
+        if (isInputId(input)) {
+            Long id = Long.parseLong(input);
+            return carRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Car", "id", id));
+        } else {
+            return carRepository.findByRegistrationNumber(input).orElseThrow(() -> new ResourceNotFoundException("Car", "Registration Number", input));
+        }
     }
 }
