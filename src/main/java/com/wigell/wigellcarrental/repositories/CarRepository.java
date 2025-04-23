@@ -14,9 +14,7 @@ public interface CarRepository extends JpaRepository<Car,Long> {
     // AWS
     List<Car> findByStatus(CarStatus status);
 
-    //AA
-    Optional<Car> findById(long id);
 
-    //AA
+    //WIG-20-AA
     Optional<Car> findByRegistrationNumber(String registrationNumber);
 }
