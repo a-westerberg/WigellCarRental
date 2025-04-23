@@ -71,7 +71,6 @@ public class CarServiceImpl implements CarService{
 
     //WIG-18-AA
     private void validateAddCarInput(Car car) {
-        MicroMethods.validateData("Car id", "id", car.getId());
         MicroMethods.validateData("Car registration number", "registrationNumber", car.getRegistrationNumber());
         MicroMethods.validateData("Car status", "status", car.getStatus());
         MicroMethods.validateData("Car make", "make", car.getMake());
