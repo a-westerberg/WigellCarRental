@@ -8,10 +8,8 @@ public class MicroMethods {
 
     // WIG-28-SJ & WIG-18-AA (instansof String)
     public static <T> void validateData(String resource, String field, T value) {
-        if (value == null) {
-            if (value == null || (value instanceof String && ((String) value).isBlank())) {
-                throw new InvalidInputException(resource, field, value);
-            }
+        if (value == null || (value instanceof String && ((String) value).isBlank())) {
+            throw new InvalidInputException(resource, field, value);
         }
     }
 
