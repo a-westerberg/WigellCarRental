@@ -12,6 +12,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -61,6 +62,17 @@ public class OrderServiceImpl implements OrderService{
 
         }
         return "Order not found";
+    }
+
+    //SA
+    @Override
+    public String removeOrdersBeforeDate(LocalDate date, Principal principal) {
+        List<Order>orders = orderRepository.findAllByEndDateBefore(date);
+        if(orders.isEmpty()){
+            return "No orders before "+date+" found";
+        }
+        orderRepository.deleteAll(orders);
+        return "All orders before "+date+" removed";
     }
 
     // WIG-28-SJ
