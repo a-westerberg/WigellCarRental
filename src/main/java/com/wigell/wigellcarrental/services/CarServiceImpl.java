@@ -35,6 +35,10 @@ public class CarServiceImpl implements CarService{
     //AA
     public String deleteCar(String input) {
         Car carToDelete = findCarToDelete(input);
+        if (!carToDelete.getOrders().isEmpty()) {
+            throw new RuntimeException("Cannot delete car with active orders.");
+            //TODO bygg bort så att denna kontroll inte ska behövas. Antingen koppla isär order och bil eller radera även ordrarna.
+        }
         carRepository.delete(carToDelete);
         return  isInputId(input) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
     }
