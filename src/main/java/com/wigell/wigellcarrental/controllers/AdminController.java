@@ -84,13 +84,13 @@ public class AdminController {
     public ResponseEntity<Car>updateCar(@RequestBody Car car){
         return ResponseEntity.ok(service.updateCar(car));
     }
-    //SA
-    //TODO: PathVariable. RegNr eller id?
-    @DeleteMapping("/removecar")//Radera bil
-    public ResponseEntity<String>removeCar(@PathVariable String regNr){
-        return ResponseEntity.ok(service.removeCar(car));
-    }
     */
+    //SA //AA
+    @DeleteMapping("/removecar/{idOrRegistrationNumber}")//Radera bil
+    public ResponseEntity<String>removeCar(@PathVariable String idOrRegistrationNumber){
+        return ResponseEntity.ok(carService.deleteCar(idOrRegistrationNumber));
+    }
+
     //SA
     @GetMapping("/activeorders")//Lista alla aktiva ordrar
     public ResponseEntity<List<Order>>getAllActiveOrders(){

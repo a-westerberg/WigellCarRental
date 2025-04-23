@@ -10,7 +10,11 @@ public interface CarService {
     List<Car> getAvailableCars();
 
     //AA
+    String deleteCar(String input);
+
+    //AA
     public List<Car> getAllCars();
 
+    //AA
     Car addCar(Car car);
 }
