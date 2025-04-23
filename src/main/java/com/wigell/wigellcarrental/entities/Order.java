@@ -1,6 +1,5 @@
 package com.wigell.wigellcarrental.entities;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;
 
 import java.math.BigDecimal;
@@ -27,17 +26,17 @@ public class Order {
     private LocalDate endDate;
 
     @ManyToOne
-    @JoinColumn(name = "car_id")
+    @JoinColumn(name = "car_id", nullable = false)
     private Car car;
 
     @ManyToOne
-    @JoinColumn(name = "customer_id")
+    @JoinColumn(name = "customer_id",nullable = false)
     private Customer customer;
 
     @Column(name = "total_price", nullable = false)
     private BigDecimal totalPrice;
 
-    @Column(name = "active")
+    @Column(name = "active", nullable = false)
     private Boolean isActive;
 
     public Order() {
@@ -100,11 +99,11 @@ public class Order {
         return totalPrice;
     }
 
-    public Boolean getActive() {
+    public Boolean getIsActive() {
         return isActive;
     }
 
-    public void setActive(Boolean active) {
+    public void setIsActive(Boolean active) {
         isActive = active;
     }
 

@@ -13,4 +13,5 @@ public interface OrderService {
     String cancelOrder(Long orderId, Principal principal);//SA
 
     String removeOrdersBeforeDate(LocalDate date, Principal principal);
+    Order addOrder(Order order); // WIG-28-SJ
 }

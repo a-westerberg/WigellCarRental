@@ -6,7 +6,9 @@ import com.wigell.wigellcarrental.entities.Customer;
 import com.wigell.wigellcarrental.entities.Order;
 import com.wigell.wigellcarrental.services.CarServiceImpl;
 import com.wigell.wigellcarrental.services.OrderService;
+import com.wigell.wigellcarrental.services.OrderServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 /* import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder; */
@@ -23,11 +25,11 @@ import java.util.List;
 public class CustomerController {
 
     //AWS / WIG-26-SJ
-    private final OrderService orderService;
+    private final OrderServiceImpl orderService;
     private final CarServiceImpl carService;
 
     @Autowired
-    public CustomerController(OrderService orderService, CarServiceImpl carService) {
+    public CustomerController(OrderServiceImpl orderService, CarServiceImpl carService) {
         this.orderService = orderService;
         this.carService = carService;
     }
@@ -40,13 +42,13 @@ public class CustomerController {
     }
 
 
-    /*
-    //SA
-    @PostMapping("/addorder")//Skapa order (hyra bil)
-    public ResponseEntity<String> addOrder(@RequestBody Booking booking){
-        return ResponseEntity.created(service.addOrder(booking));
+
+    //SA / WIG-28-SJ
+    @PostMapping("/addorder")
+    public ResponseEntity<Order> addOrder(@RequestBody Order order){
+        return new ResponseEntity<>(orderService.addOrder(order), HttpStatus.CREATED);
     }
-*/
+
     //SA
     @PutMapping("/cancelorder")//Avboka order
     public ResponseEntity<String> cancelOrder(@RequestParam Long orderId, Principal principal) {
