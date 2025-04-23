@@ -10,4 +10,5 @@ public interface OrderService {
     List<Order> getActiveOrders();//SA
     List<Order> getActiveOrdersForCustomer(String personalIdentityNumber);//AWS
     String cancelOrder(Long orderId, Principal principal);//SA
+    Order addOrder(Order order); // WIG-28-SJ
 }
