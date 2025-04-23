@@ -8,6 +8,7 @@ import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
+import com.wigell.wigellcarrental.services.utilities.MicroMethods;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -85,22 +86,14 @@ public class OrderServiceImpl implements OrderService{
 
     // WIG-28-SJ
     public Order validateOrder(Order order) {
-        validateData("Booking day", "bookedAt", order.getBookedAt());
-        validateData("Start date", "startDate", order.getStartDate());
-        validateData("End date", "endDate", order.getEndDate());
-        validateData("Car ID", "car", order.getCar().getId());
-        validateData("Customer ID", "customer", order.getCustomer().getId());
-        validateData("Total price", "totalPrice", order.getTotalPrice());
-        validateData("Status", "isActive", order.getIsActive());
+        MicroMethods.validateData("Booking day", "bookedAt", order.getBookedAt());
+        MicroMethods.validateData("Start date", "startDate", order.getStartDate());
+        MicroMethods.validateData("End date", "endDate", order.getEndDate());
+        MicroMethods.validateData("Car ID", "car", order.getCar().getId());
+        MicroMethods.validateData("Customer ID", "customer", order.getCustomer().getId());
+        MicroMethods.validateData("Total price", "totalPrice", order.getTotalPrice());
+        MicroMethods.validateData("Status", "isActive", order.getIsActive());
         return order;
-    }
-
-    // WIG-28-SJ
-    public <T> T validateData(String resource, String field, T value) {
-        if (value == null) {
-            throw new InvalidInputException(resource, field, value);
-        }
-        return value;
     }
 
     // WIG-28-SJ
