@@ -28,4 +28,9 @@ public class CarServiceImpl implements CarService{
     public List<Car> getAllCars(){
         return carRepository.findAll();
     }
+
+    //AA
+    public String deleteCar(String input) {
+
+    }
 }

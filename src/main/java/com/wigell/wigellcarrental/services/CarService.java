@@ -10,5 +10,9 @@ public interface CarService {
     List<Car> getAvailableCars();
 
     //AA
-    public List<Car> getAllCars();
+    List<Car> getAllCars();
+
+    //AA
+    String deleteCar(String input);
+
 }
