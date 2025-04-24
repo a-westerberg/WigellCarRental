@@ -83,6 +83,16 @@ public class OrderServiceImpl implements OrderService{
         return orderRepository.save(order);
     }
 
+    @Override
+    public List<Order> getAllOrdersHistory() {
+        //Bara ordrar som har slutdatum innan nuvarande datum
+        //return orderRepository.findAllByEndDateBefore(LocalDate.now());
+        //Ska ge ordrar som hänt innan och de som är aktiva nu
+        return orderRepository.findAllByEndDateBeforeOrStartDateBefore(LocalDate.now(), LocalDate.now());
+        //Kan då kolla ordar som är aktiva också, kan bli strul med att de som lagts in har end_date passerat men fortfarande är aktiva
+        //return orderRepository.findAllByEndDateBeforeAndIsActiveOrStartDateBeforeAndIsActive(LocalDate.now(),true,LocalDate.now(),true);
+    }
+
     // WIG-28-SJ
     public Order validateOrder(Order order) {
         MicroMethods.validateData("Booking day", "bookedAt", order.getBookedAt());
