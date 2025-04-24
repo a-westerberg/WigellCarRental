@@ -34,9 +34,6 @@ public class MicroMethods {
     //SA
     public static BigDecimal calculateCancellationFee(Order orderToCancel){
         long days = ChronoUnit.DAYS.between(orderToCancel.getStartDate(), orderToCancel.getEndDate());
-        //BigDecimal fivePercent = orderToCancel.getTotalPrice().multiply(BigDecimal.valueOf(0.05));
-
-        //BigDecimal cancellationFee = orderToCancel.getTotalPrice().multiply(BigDecimal.valueOf(0.05).multiply(BigDecimal.valueOf(days)));
         return orderToCancel.getTotalPrice().multiply(BigDecimal.valueOf(0.05).multiply(BigDecimal.valueOf(days)));
     }
 
