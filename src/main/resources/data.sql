@@ -10,12 +10,12 @@ INSERT INTO customers (personal_identity_number, first_name, last_name, email, p
 ('19950505-7890', 'Elin', 'Andersson', 'elin.andersson@example.com', '+46705678901', 'Solrosvägen 5, 90347 Umeå');
 
 -- CAR
-INSERT INTO cars (make, model, registration_number, price_per_day) VALUES
-('Volvo', '740', 'ABC1234', 999.00),
-('BMW', 'Z8', 'DEF5678', 699.00),
-('Tesla', 'Roadster', 'TES1234', 899.00),
-('Audi', 'Quattro', 'AUD4567', 749.00),
-('Kia', 'Ceed', 'KIA8901', 549.00);
+INSERT INTO cars (make, model, registration_number, price_per_day,status) VALUES
+('Volvo', '740', 'ABC1234', 999.00,'IN_SERVICE'),
+('BMW', 'Z8', 'DEF5678', 699.00,'IN_SERVICE'),
+('Tesla', 'Roadster', 'TES1234', 899.00,'BOOKED'),
+('Audi', 'Quattro', 'AUD4567', 749.00,'AVAILABLE'),
+('Kia', 'Ceed', 'KIA8901', 549.00,'BOOKED');
 
 -- BOOKING
 INSERT INTO orders (booked_at, start_date, end_date, car_id, customer_id, total_price, active) VALUES
