@@ -96,12 +96,13 @@ public class AdminController {
     public ResponseEntity<List<Order>>getAllActiveOrders(){
         return ResponseEntity.ok(orderService.getActiveOrders());
     }
-/*
+
     //SA
     @GetMapping("/orders")//Lista historiska ordrar
     public ResponseEntity<List<Order>>getAllOrders(){
-        return ResponseEntity.ok(service.getAllOrders());
+        return ResponseEntity.ok(orderService.getAllOrdersHistory());
     }
+    /*
     //SA
     //TODO: PathVariable. Integer?
     @DeleteMapping("/removeorder")//Ta bort bokning från systemet

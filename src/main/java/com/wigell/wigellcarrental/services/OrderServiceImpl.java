@@ -83,6 +83,14 @@ public class OrderServiceImpl implements OrderService{
         return orderRepository.save(order);
     }
 
+    @Override
+    public List<Order> getAllOrdersHistory() {
+                if(orderRepository.findAll().isEmpty()){
+            throw new ResourceNotFoundException("List","orders",0);
+        }
+        return orderRepository.findAll();
+    }
+
     // WIG-28-SJ
     public Order validateOrder(Order order) {
         MicroMethods.validateData("Booking day", "bookedAt", order.getBookedAt());
