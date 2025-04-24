@@ -10,4 +10,5 @@ public interface CustomerRepository extends JpaRepository<Customer,Long> {
 
     // WIG-27-SJ
     Customer findById(long id);
+
 }

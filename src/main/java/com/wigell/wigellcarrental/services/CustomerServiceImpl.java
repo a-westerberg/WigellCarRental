@@ -1,6 +1,7 @@
 package com.wigell.wigellcarrental.services;
 
 import com.wigell.wigellcarrental.entities.Customer;
+import com.wigell.wigellcarrental.entities.Order;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -35,5 +36,18 @@ public class CustomerServiceImpl implements CustomerService{
     public Customer getCustomerById(Long id) {
         return customerRepository.findById(id).orElseThrow(() ->
                 new ResourceNotFoundException("Customer","id",id));
+    }
+
+    @Override
+    public String removeCustomerById(Long id) {
+        Customer customerToRemove = customerRepository.findById(id).orElseThrow(
+                ()-> new ResourceNotFoundException("Customer","id",id));
+
+        List<Order> ordersToRemove = customerToRemove.getOrder();
+        if (ordersToRemove != null) {
+            //TODO Ska Orders CustomerId kunna vara Null?
+        }
+
+        return "Customer " + customerToRemove.getPersonalIdentityNumber() + " has been deleted.";
     }
 }
