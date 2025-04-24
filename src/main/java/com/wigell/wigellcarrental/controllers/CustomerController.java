@@ -5,6 +5,7 @@ import com.wigell.wigellcarrental.entities.Car;
 import com.wigell.wigellcarrental.entities.Customer;
 import com.wigell.wigellcarrental.entities.Order;
 import com.wigell.wigellcarrental.services.CarServiceImpl;
+import com.wigell.wigellcarrental.services.CustomerServiceImpl;
 import com.wigell.wigellcarrental.services.OrderService;
 import com.wigell.wigellcarrental.services.OrderServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +28,13 @@ public class CustomerController {
     //AWS / WIG-26-SJ
     private final OrderServiceImpl orderService;
     private final CarServiceImpl carService;
+    private final CustomerServiceImpl customerService;
 
     @Autowired
-    public CustomerController(OrderServiceImpl orderService, CarServiceImpl carService) {
+    public CustomerController(OrderServiceImpl orderService, CarServiceImpl carService, CustomerServiceImpl customerService) {
         this.orderService = orderService;
         this.carService = carService;
+        this.customerService = customerService;
     }
 
     //Services
@@ -72,9 +75,11 @@ public class CustomerController {
     public ResponseEntity<List<Booking>>orders(){
         return ResponseEntity.ok(service.orders());
     }
-    //SA
-    @PutMapping("/updateinfo")//Uppdatera sin information (dock ej personnumret)
+    */
+
+    //SA / WIG-29-SJ
+    @PutMapping("/updateinfo")
     public ResponseEntity<Customer>updateInfo(@RequestBody Customer customer){
-        return ResponseEntity.ok(service.updateInfo(customer));
-    }*/
+        return ResponseEntity.ok(customerService.updateCustomer(customer));
+    }
 }
