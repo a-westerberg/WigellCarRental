@@ -5,6 +5,7 @@ import com.wigell.wigellcarrental.entities.Car;
 import com.wigell.wigellcarrental.entities.Customer;
 import com.wigell.wigellcarrental.entities.Order;
 import com.wigell.wigellcarrental.services.CarServiceImpl;
+import com.wigell.wigellcarrental.services.CustomerService;
 import com.wigell.wigellcarrental.services.OrderService;
 import com.wigell.wigellcarrental.services.OrderServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -27,11 +28,13 @@ public class CustomerController {
     //AWS / WIG-26-SJ
     private final OrderServiceImpl orderService;
     private final CarServiceImpl carService;
+    private final CustomerService customerService;
 
     @Autowired
-    public CustomerController(OrderServiceImpl orderService, CarServiceImpl carService) {
+    public CustomerController(OrderServiceImpl orderService, CarServiceImpl carService, CustomerService customerService) {
         this.orderService = orderService;
         this.carService = carService;
+        this.customerService = customerService;
     }
 
     //Services
@@ -70,7 +73,7 @@ public class CustomerController {
     //SA //AA
     @GetMapping("/orders")//Se tidigare bokningar
     public ResponseEntity<List<Order>>getOrders(Principal principal){
-        return ResponseEntity.ok(orderService.orders(principal));
+        return ResponseEntity.ok(customerService.getOrders(principal));
     }
     /*
     //SA

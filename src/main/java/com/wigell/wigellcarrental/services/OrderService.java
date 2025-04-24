@@ -15,5 +15,4 @@ public interface OrderService {
     String removeOrdersBeforeDate(LocalDate date, Principal principal);
     Order addOrder(Order order); // WIG-28-SJ
 
-    List<Order> getOrders(Principal principal); //WIG-22-AA
 }
