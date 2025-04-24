@@ -73,7 +73,7 @@ public class OrderServiceImpl implements OrderService{
             }
 
         }
-        return "Order not found";
+        return "Couldn't' find order with id: " + orderId;
     }
 
     //SA
@@ -81,10 +81,10 @@ public class OrderServiceImpl implements OrderService{
     public String removeOrdersBeforeDate(LocalDate date, Principal principal) {
         List<Order>orders = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(date);
         if(orders.isEmpty()){
-            return "No inactive orders before '"+date+"' found";
+            return "Found no inactive orders before '"+date+"'";
         }
         orderRepository.deleteAll(orders);
-        return "All inactive orders before '"+date+"' removed";
+        return "All inactive orders before '"+date+"' has been removed";
     }
 
     // WIG-28-SJ
