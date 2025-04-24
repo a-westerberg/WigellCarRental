@@ -3,6 +3,7 @@ package com.wigell.wigellcarrental.services;
 import com.wigell.wigellcarrental.entities.Car;
 import com.wigell.wigellcarrental.entities.Customer;
 import com.wigell.wigellcarrental.entities.Order;
+import com.wigell.wigellcarrental.enums.CarStatus;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
@@ -11,6 +12,7 @@ import com.wigell.wigellcarrental.services.utilities.MicroMethods;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.util.List;
@@ -52,10 +54,20 @@ public class OrderServiceImpl implements OrderService{
         if (order.isPresent()) {
             //TODO: fixa när säkerhets läggs in då principal är null just nu utan den
             if (order.get().getCustomer().getPersonalIdentityNumber().equals(principal.getName())) {
-                Order orderToCancel = order.get();
-                orderToCancel.setIsActive(false);
-                orderRepository.save(order.get());
-                return "Order with id '"+orderId+"' is cancelled";
+                if(order.get().getStartDate().isBefore(LocalDate.now()) && order.get().getEndDate().isAfter(LocalDate.now())){
+                    return "Order has already started and can't then be cancelled";
+
+                } else if (order.get().getEndDate().isBefore(LocalDate.now())) {
+                    return "Order has already ended";
+
+                } else {
+                    Order orderToCancel = order.get();
+                    orderToCancel.setTotalPrice(MicroMethods.calculateCancellationFee(orderToCancel));
+                    orderToCancel.setIsActive(false);
+                    orderRepository.save(order.get());
+                    return "Order with id '" + orderId + "' is cancelled";
+
+                }
             }else {
                 return "No order for '" + principal.getName() + "' with id: " + orderId;
             }
