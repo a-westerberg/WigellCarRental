@@ -14,5 +14,5 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     //AWS
     List<Order> findByCustomer_PersonalIdentityNumberAndIsActiveTrue(String personalIdentityNumber);
 
-    List<Order>findAllByEndDateBefore(LocalDate beforeThisDate);//SA
+    List<Order>findAllByEndDateBeforeAndIsActiveFalse(LocalDate beforeThisDate);//SA
 }

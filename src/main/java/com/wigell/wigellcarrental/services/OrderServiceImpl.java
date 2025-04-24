@@ -67,12 +67,12 @@ public class OrderServiceImpl implements OrderService{
     //SA
     @Override
     public String removeOrdersBeforeDate(LocalDate date, Principal principal) {
-        List<Order>orders = orderRepository.findAllByEndDateBefore(date);
+        List<Order>orders = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(date);
         if(orders.isEmpty()){
-            return "No orders before "+date+" found";
+            return "No inactive orders before '"+date+"' found";
         }
         orderRepository.deleteAll(orders);
-        return "All orders before "+date+" removed";
+        return "All inactive orders before '"+date+"' removed";
     }
 
     // WIG-28-SJ
