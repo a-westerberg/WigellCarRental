@@ -15,6 +15,4 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
     List<Order> findByCustomer_PersonalIdentityNumberAndIsActiveTrue(String personalIdentityNumber);
 
     List<Order>findAllByEndDateBefore(LocalDate beforeThisDate);//SA
-    List<Order>findAllByEndDateBeforeOrStartDateBefore(LocalDate endDate,LocalDate startDate);
-    List<Order>findAllByEndDateBeforeAndIsActiveOrStartDateBeforeAndIsActive(LocalDate endDate,Boolean active,LocalDate startDate,Boolean active2);
 }
