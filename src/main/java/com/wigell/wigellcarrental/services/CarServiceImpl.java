@@ -8,6 +8,7 @@ import com.wigell.wigellcarrental.exceptions.InvalidInputException;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.exceptions.UniqueConflictException;
 import com.wigell.wigellcarrental.repositories.CarRepository;
+import com.wigell.wigellcarrental.repositories.OrderRepository;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -21,11 +22,13 @@ import java.util.Optional;
 public class CarServiceImpl implements CarService{
     // AWS
     private final CarRepository carRepository;
+    private final OrderRepository orderRepository;
 
     // AWS
     @Autowired
-    public CarServiceImpl(CarRepository carRepository) {
+    public CarServiceImpl(CarRepository carRepository, OrderRepository orderRepository) {
         this.carRepository = carRepository;
+        this.orderRepository = orderRepository;
     }
     // AWS
     public List<Car> getAvailableCars() {
@@ -96,6 +99,7 @@ public class CarServiceImpl implements CarService{
         for (Order order : orders) {
             if (order.getEndDate().isBefore(today)) {
                 order.setCar(null);
+                orderRepository.save(order);
             }
             if (!today.isBefore(order.getStartDate()) && !today.isAfter(order.getEndDate())) {
                 throw new ConflictException("Car cannot be deleted due to ongoing booking.");
@@ -103,6 +107,7 @@ public class CarServiceImpl implements CarService{
             if (order.getStartDate().isAfter(today)) {
                 Car carToReplaceWith = carRepository.findFirstByStatus(CarStatus.AVAILABLE).orElseThrow(() ->new ResourceNotFoundException("Car","Car Status", "Available"));
                 order.setCar(carToReplaceWith);
+                orderRepository.save(order);
             }
         }
     }
