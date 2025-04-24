@@ -107,8 +107,11 @@ public class CarServiceImpl implements CarService{
             if (order.getStartDate().isAfter(today)) {
                 Car carToReplaceWith = carRepository.findFirstByStatus(CarStatus.AVAILABLE).orElseThrow(() ->new ResourceNotFoundException("Car","Car Status", "Available"));
                 order.setCar(carToReplaceWith);
+                System.out.println(carToReplaceWith.toString());
                 orderRepository.save(order);
             }
+
+            //TODO Uppdatera så att inte kan försöka lägga till sig själv som första bil som är ledig.
         }
     }
 }
