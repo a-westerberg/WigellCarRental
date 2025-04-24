@@ -10,4 +10,7 @@ public interface CustomerService {
 
     // WIG-27-SJ
     Customer getCustomerById(Long id);
+
+    // WIG-29-SJ
+    Customer updateCustomer(Customer customer);
 }
