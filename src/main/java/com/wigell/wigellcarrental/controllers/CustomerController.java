@@ -50,8 +50,8 @@ public class CustomerController {
     }
 
     //SA
-    @PutMapping("/cancelorder")//Avboka order
-    public ResponseEntity<String> cancelOrder(@RequestParam Long orderId, Principal principal) {
+    @PutMapping("/cancelorder/{orderId}")//Avboka order
+    public ResponseEntity<String> cancelOrder(@PathVariable Long orderId, Principal principal) {
         return ResponseEntity.ok(orderService.cancelOrder(orderId,principal));
     }
 

@@ -1,6 +1,11 @@
 package com.wigell.wigellcarrental.services.utilities;
 
+import com.wigell.wigellcarrental.entities.Order;
 import com.wigell.wigellcarrental.exceptions.InvalidInputException;
+
+import java.math.BigDecimal;
+import java.time.temporal.ChronoUnit;
+
 // WIG-28-SJ
 public class MicroMethods {
 
@@ -10,6 +15,15 @@ public class MicroMethods {
             throw new InvalidInputException(resource, field, value);
         }
         return value;
+    }
+
+    //SA
+    public static BigDecimal calculateCancellationFee(Order orderToCancel){
+        long days = ChronoUnit.DAYS.between(orderToCancel.getStartDate(), orderToCancel.getEndDate());
+        //BigDecimal fivePercent = orderToCancel.getTotalPrice().multiply(BigDecimal.valueOf(0.05));
+
+        //BigDecimal cancellationFee = orderToCancel.getTotalPrice().multiply(BigDecimal.valueOf(0.05).multiply(BigDecimal.valueOf(days)));
+        return orderToCancel.getTotalPrice().multiply(BigDecimal.valueOf(0.05).multiply(BigDecimal.valueOf(days)));
     }
 
 
