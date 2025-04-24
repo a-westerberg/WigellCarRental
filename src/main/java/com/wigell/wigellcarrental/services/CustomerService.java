@@ -13,4 +13,7 @@ public interface CustomerService {
 
     //WIG-30-SJ
     public String removeCustomerById(Long id);
+
+    // WIG-29-SJ
+    Customer updateCustomer(Customer customer);
 }
