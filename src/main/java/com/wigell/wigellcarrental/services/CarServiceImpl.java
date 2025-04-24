@@ -1,7 +1,9 @@
 package com.wigell.wigellcarrental.services;
 
 import com.wigell.wigellcarrental.entities.Car;
+import com.wigell.wigellcarrental.entities.Order;
 import com.wigell.wigellcarrental.enums.CarStatus;
+import com.wigell.wigellcarrental.exceptions.ConflictException;
 import com.wigell.wigellcarrental.exceptions.InvalidInputException;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.exceptions.UniqueConflictException;
@@ -10,6 +12,7 @@ import com.wigell.wigellcarrental.services.utilities.MicroMethods;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
@@ -38,8 +41,7 @@ public class CarServiceImpl implements CarService{
     public String deleteCar(String input) {
         Car carToDelete = findCarToDelete(input);
         if (!carToDelete.getOrders().isEmpty()) {
-            throw new RuntimeException("Cannot delete car with orders.");
-            //TODO bygg bort så att denna kontroll inte ska behövas. Antingen koppla isär order och bil eller radera även ordrarna.
+            processOrderList(carToDelete.getOrders());
         }
         carRepository.delete(carToDelete);
         return  isInputId(input) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
@@ -85,6 +87,23 @@ public class CarServiceImpl implements CarService{
         Optional<Car> result = carRepository.findByRegistrationNumber(input);
         if (result.isPresent()) {
             throw new UniqueConflictException("Registration number",input);
+        }
+    }
+
+    //WIG-37-AA
+    private void processOrderList(List<Order> orders) {
+        LocalDate today = LocalDate.now();
+        for (Order order : orders) {
+            if (order.getEndDate().isBefore(today)) {
+                order.setCar(null);
+            }
+            if (!today.isBefore(order.getStartDate()) && !today.isAfter(order.getEndDate())) {
+                throw new ConflictException("Car cannot be deleted due to ongoing booking.");
+            }
+            if (order.getStartDate().isAfter(today)) {
+                Car carToReplaceWith = carRepository.findFirstByAvailableTrue().orElseThrow(() ->new ResourceNotFoundException("Car","Car Status", "Available"));
+                order.setCar(carToReplaceWith);
+            }
         }
     }
 }
