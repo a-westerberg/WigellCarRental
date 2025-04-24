@@ -19,5 +19,5 @@ public interface CarRepository extends JpaRepository<Car,Long> {
     Optional<Car> findByRegistrationNumber(String registrationNumber);
 
     //WIG-37-AA
-    Optional<Car> findFirstByAvailableTrue();
+    Optional<Car> findFirstByStatus(CarStatus carStatus);
 }

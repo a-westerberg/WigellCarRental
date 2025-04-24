@@ -101,7 +101,7 @@ public class CarServiceImpl implements CarService{
                 throw new ConflictException("Car cannot be deleted due to ongoing booking.");
             }
             if (order.getStartDate().isAfter(today)) {
-                Car carToReplaceWith = carRepository.findFirstByAvailableTrue().orElseThrow(() ->new ResourceNotFoundException("Car","Car Status", "Available"));
+                Car carToReplaceWith = carRepository.findFirstByStatus(CarStatus.AVAILABLE).orElseThrow(() ->new ResourceNotFoundException("Car","Car Status", "Available"));
                 order.setCar(carToReplaceWith);
             }
         }
