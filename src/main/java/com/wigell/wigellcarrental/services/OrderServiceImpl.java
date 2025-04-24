@@ -109,5 +109,18 @@ public class OrderServiceImpl implements OrderService{
         return order;
     }
 
+    //WIG-22-AA
+    public List<Order> getOrders(Principal principal) {
+        LocalDate today = LocalDate.now();
+        List<Order> ordersToReturn;
+        Optional<Customer> customer = customerRepository.findByPersonalIdentityNumber(principal.getName());
+        if(customer.isPresent()){
+            //TODO gör en queri-metod i repositoryt som tar in id och dagens datum och får ut lista med ordrar innan dagens datum från användaren.
+            ordersToReturn = customer.get().getOrders();
+        }
+
+
+    }
+
 
 }
