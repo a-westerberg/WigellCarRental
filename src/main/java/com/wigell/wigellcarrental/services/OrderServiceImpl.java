@@ -103,6 +103,47 @@ public class OrderServiceImpl implements OrderService{
         return orderRepository.findAll();
     }
 
+    @Override
+    public String updateOrderStatus(Long orderId, String status, Principal principal) {
+        Optional<Order>optionalOrder = orderRepository.findById(orderId);
+        if (optionalOrder.isPresent()) {
+            Order orderToUpdate = optionalOrder.get();
+
+            if(!status.equals("away") && !status.equals("back") && !status.equals("service")){
+                return "Invalid status, there is 'away', 'back' and 'service'";
+            }
+
+            //TODO: Ha en för service?
+            switch (status) {
+                case "away" -> {
+                    orderToUpdate.setIsActive(true);
+                    orderRepository.save(orderToUpdate);
+                    orderToUpdate.getCar().setStatus(CarStatus.BOOKED);
+                    carRepository.save(orderToUpdate.getCar());
+                }
+                case "back" -> {
+                    orderToUpdate.setIsActive(false);
+                    orderRepository.save(orderToUpdate);
+                    orderToUpdate.getCar().setStatus(CarStatus.AVAILABLE);
+                    carRepository.save(orderToUpdate.getCar());
+                }
+                case "service" -> {
+                    orderToUpdate.setIsActive(false);
+                    orderRepository.save(orderToUpdate);
+                    orderToUpdate.getCar().setStatus(CarStatus.IN_SERVICE);
+                    carRepository.save(orderToUpdate.getCar());
+                }
+            }
+
+            return "Order with id '" + orderId + "' has been updated" +
+                    "\nOrder status: "+orderToUpdate.getIsActive().toString()+
+                    "\nCar registration: " +orderToUpdate.getCar().getRegistrationNumber()+
+                    "\nCar status: "+orderToUpdate.getCar().getStatus().toString()
+                    ;
+        }
+        return "Order with id '"+orderId+"' not found";
+    }
+
     // WIG-28-SJ
     public Order validateOrder(Order order) {
         MicroMethods.validateData("Booking day", "bookedAt", order.getBookedAt());
