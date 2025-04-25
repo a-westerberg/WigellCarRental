@@ -111,9 +111,7 @@ public class OrderServiceImpl implements OrderService{
                 order.getCustomer().getOrder().remove(order);
                 customerRepository.save(order.getCustomer());
             }
-            //Kan inte ha detta då car och customer inte kan vara null på Order
-            /*order.setCar(null);
-            order.setCustomer(null);*/
+
             orderRepository.save(order);
         }
         orderRepository.deleteAll(orders);
