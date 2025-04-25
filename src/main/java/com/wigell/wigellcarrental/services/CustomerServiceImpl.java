@@ -2,6 +2,7 @@ package com.wigell.wigellcarrental.services;
 
 import com.wigell.wigellcarrental.entities.Customer;
 import com.wigell.wigellcarrental.entities.Order;
+import com.wigell.wigellcarrental.exceptions.ConflictException;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
@@ -98,7 +99,7 @@ public class CustomerServiceImpl implements CustomerService{
         Customer customerToRemove = customerRepository.findById(id).orElseThrow(
                 ()-> new ResourceNotFoundException("Customer","id",id));
 
-        List<Order> ordersToEdit = customerToRemove.getOrder();
+        List<Order> ordersToEdit = customerToRemove.getOrders();
         boolean hasActiveOrders = ordersToEdit.stream()
                 .anyMatch(Order::getIsActive);
 
