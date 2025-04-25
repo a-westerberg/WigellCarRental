@@ -4,6 +4,7 @@ import com.wigell.wigellcarrental.entities.Car;
 import com.wigell.wigellcarrental.entities.Customer;
 import com.wigell.wigellcarrental.entities.Order;
 import com.wigell.wigellcarrental.enums.CarStatus;
+import com.wigell.wigellcarrental.exceptions.ConflictException;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
@@ -16,8 +17,11 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 //SA
 @Service
@@ -146,9 +150,7 @@ public class OrderServiceImpl implements OrderService{
             }
 
             //TODO: Ha en för service?
-            //TODO: add so when "back" the car is example still booked if it's booked for the same day and dosen't need service
-                ///Might then just use "away" on it after
-            //TODO: if car booked for same day but car is in service, change car for it's orders
+            //TODO: Add so if a car is in service it's later orders are changed to another car that is available under those orders time periods
             switch (status) {
                 case "away" -> {
                     orderToUpdate.setIsActive(true);
@@ -164,14 +166,108 @@ public class OrderServiceImpl implements OrderService{
                 }
                 case "service" -> {
                     orderToUpdate.setIsActive(false);
-                    LocalDate startDate = orderToUpdate.getStartDate();
-                    LocalDate endDate = orderToUpdate.getEndDate();
-                    ///Ska hämta en tillgänglig bil
-                //Vill hitta bil som är tillgänglig mellan de bokade dagarna som denna bil var bookad för
-
                     orderRepository.save(orderToUpdate);
-                    orderToUpdate.getCar().setStatus(CarStatus.IN_SERVICE);
-                    carRepository.save(orderToUpdate.getCar());
+
+                    /*
+                    1. Hämtar en order
+                    2. Sätter den in inActive
+                    3. Hämtar bilen den ordern har
+                    4. Sätter bilen på service
+                    5. Vill hämta andra ordrar denna bilen har
+                    6. Vill ändra dem ordrarna
+                    7. Hämtar en bil som har status AVAILABLE och som inte bokad under x-x datum
+                    8. Vill på ordrar bilen hade byta ut den bilen till en annan, flytta ordrar till en annan bil
+                    9. spara allt
+                     */
+
+                    Car carToService = orderToUpdate.getCar();
+                    carToService.setStatus(CarStatus.IN_SERVICE);
+                    carRepository.save(carToService);
+
+                    if(!carToService.getOrders().isEmpty()) {
+                        LocalDate startDate = orderToUpdate.getStartDate();
+                        LocalDate endDate = orderToUpdate.getEndDate();
+                        System.out.println("StartDate:"+startDate+"\nEndDate:"+endDate);
+
+                        //Får fortfarande Volvo även fast den har en order 4/6-8/6 och en som använder bil som ska bytas ut har tid 2/6-5/6
+                        /*List<Car> availableCars = carRepository.findAvailableCarsForDateRange(
+                                startDate, endDate, CarStatus.AVAILABLE
+                        );*/
+
+                        List<Car>avCars = new ArrayList<>();
+                        for(Car car : carRepository.findAll()){
+                            if(car.getStatus() == CarStatus.AVAILABLE){
+                                System.out.println("Car that has status Av------------------------------------------");
+                                for(Order carOrder : car.getOrders()){
+                                    if(carOrder.getIsActive().equals(true)){
+                                        System.out.println("Active orders on car--------------------");
+                                        //TODO: fix so booked cars can't be used, can be further down
+                                        boolean isBooked = false;
+
+                                        if (carOrder.getStartDate().isBefore(startDate)) {
+                                            if (carOrder.getEndDate().isBefore(endDate)) {
+                                                System.out.println("Car booked1");
+                                                isBooked = true;
+                                            } else if (carOrder.getEndDate().isAfter(endDate)) {
+                                                System.out.println("Car booked2");
+                                                isBooked = true;
+                                            }
+                                        }
+
+                                        if (carOrder.getStartDate().isAfter(startDate) && carOrder.getEndDate().isAfter(endDate)) {
+                                            if (carOrder.getStartDate().isBefore(endDate)) {
+                                                System.out.println("Car booked4");
+                                                isBooked = true;
+                                            }
+                                        }
+
+                                        if (carOrder.getStartDate().isAfter(startDate) && carOrder.getEndDate().isBefore(endDate)) {
+                                            System.out.println("Car booked3");
+                                            isBooked = true;
+                                        }
+
+
+                                        if (!isBooked) {
+                                            System.out.println("Av car");
+                                            avCars.add(car);
+                                            System.out.println("Av car size:" + avCars.size());
+                                            break;
+                                        }
+
+
+
+
+                                    }
+
+                                }
+
+                            }
+                        }
+
+                        for (Car car : avCars) {
+                            System.out.println("Available car: " + car.getRegistrationNumber());
+                        }
+
+                        if (avCars.isEmpty()) {
+                            throw new ConflictException("There are other order that this car is booked to but there are not other cars available");
+                        }
+
+
+                        Random random = new Random();
+                        for (Order carOrder : carToService.getOrders()) {
+
+                            if(carOrder.getIsActive().equals(true) && carOrder.getStartDate().isAfter(LocalDate.now())){
+
+                                Car replacement = avCars.get(random.nextInt(avCars.size()));
+                                carOrder.setCar(replacement);
+                                long days = ChronoUnit.DAYS.between(carOrder.getStartDate(), carOrder.getEndDate());
+                                carOrder.setTotalPrice(replacement.getPricePerDay().multiply(BigDecimal.valueOf(days)));
+                                orderRepository.save(carOrder);
+                            }
+                        }
+                    }
+
+
                 }
             }
 
