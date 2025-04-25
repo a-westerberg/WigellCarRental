@@ -8,6 +8,7 @@ import com.wigell.wigellcarrental.services.CarService;
 import com.wigell.wigellcarrental.services.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -18,7 +19,7 @@ import java.util.List;
 //SA
 @RestController
 @RequestMapping("/api/v1/admin")
-//@PreAuthorize("ADMIN")
+//@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     //Services
