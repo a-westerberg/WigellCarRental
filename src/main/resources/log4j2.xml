@@ -1,0 +1,32 @@
+
+<!-- WIG-71-AA -->
+<configuration status="info">
+
+    <properties>
+        <property name="layout">
+            %style{%d}{blue} <!--[%t]--> %highlight{%-5level} %style{%logger}{white} - %highlight{%style{%msg}{bold}}%n
+        </property>
+    </properties>
+
+    <Appenders>
+        <Console name="Console" target="SYSTEM_OUT">
+            <PatternLayout pattern="${layout}" disableAnsi="false" noConsoleNoAnsi="false" />
+        </Console>
+
+        <File name="LogFile" filename="logs/user-analyze.log">
+            <PatternLayout pattern="${layout}"/>
+        </File>
+    </Appenders>
+
+    <Loggers>
+        <Root level="info">
+            <AppenderRef ref="Console"/>
+        </Root>
+
+        <Logger name="userlog" level="info" additivity="false">
+            <AppenderRef ref="LogFile"/>
+            <AppenderRef ref="Console"/>
+        </Logger>
+    </Loggers>
+
+</configuration>
