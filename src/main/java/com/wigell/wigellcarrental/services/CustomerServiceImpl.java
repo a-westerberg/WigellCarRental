@@ -94,7 +94,7 @@ public class CustomerServiceImpl implements CustomerService{
     //WIG-22-AA
     public List<Order> getOrders(Principal principal) {
         LocalDate today = LocalDate.now();
-        Optional<Customer> customer = customerRepository.findByPersonalIdentityNumber(principal.getName());
+        Optional<Customer> customer = customerRepository.findByPersonalIdentityNumber(principal.getName()/*"19751230-9101"*/);
         if(customer.isPresent()){
             return orderRepository.findByCustomer_PersonalIdentityNumberAndEndDateBefore(customer.get().getPersonalIdentityNumber(), today);
         }
