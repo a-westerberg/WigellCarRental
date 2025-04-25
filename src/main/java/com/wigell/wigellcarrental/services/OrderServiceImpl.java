@@ -115,6 +115,9 @@ public class OrderServiceImpl implements OrderService{
             }
 
             //TODO: Ha en för service?
+            //TODO: add so when "back" the car is example still booked if it's booked for the same day and dosen't need service
+                ///Might then just use "away" on it after
+            //TODO: if car booked for same day but car is in service, change car for it's orders
             switch (status) {
                 case "away" -> {
                     orderToUpdate.setIsActive(true);
@@ -130,6 +133,11 @@ public class OrderServiceImpl implements OrderService{
                 }
                 case "service" -> {
                     orderToUpdate.setIsActive(false);
+                    LocalDate startDate = orderToUpdate.getStartDate();
+                    LocalDate endDate = orderToUpdate.getEndDate();
+                    ///Ska hämta en tillgänglig bil
+                //Vill hitta bil som är tillgänglig mellan de bokade dagarna som denna bil var bookad för
+
                     orderRepository.save(orderToUpdate);
                     orderToUpdate.getCar().setStatus(CarStatus.IN_SERVICE);
                     carRepository.save(orderToUpdate.getCar());
