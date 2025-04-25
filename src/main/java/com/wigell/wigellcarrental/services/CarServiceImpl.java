@@ -44,7 +44,7 @@ public class CarServiceImpl implements CarService{
     public String deleteCar(String input) {
         Car carToDelete = findCarToDelete(input);
         if (!carToDelete.getOrders().isEmpty()) {
-            processOrderList(carToDelete.getOrders());
+            processOrderList(carToDelete.getOrders(), carToDelete.getId());
         }
         carRepository.delete(carToDelete);
         return  isInputId(input) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
@@ -94,7 +94,7 @@ public class CarServiceImpl implements CarService{
     }
 
     //WIG-37-AA
-    private void processOrderList(List<Order> orders) {
+    private void processOrderList(List<Order> orders, Long id) {
         LocalDate today = LocalDate.now();
         for (Order order : orders) {
             if (order.getEndDate().isBefore(today)) {
@@ -105,13 +105,11 @@ public class CarServiceImpl implements CarService{
                 throw new ConflictException("Car cannot be deleted due to ongoing booking.");
             }
             if (order.getStartDate().isAfter(today)) {
-                Car carToReplaceWith = carRepository.findFirstByStatus(CarStatus.AVAILABLE).orElseThrow(() ->new ResourceNotFoundException("Car","Car Status", "Available"));
+                Car carToReplaceWith = carRepository.findFirstByStatusAndIdNot(CarStatus.AVAILABLE,id).orElseThrow(() ->new ResourceNotFoundException("Car","Car Status", "Available"));
                 order.setCar(carToReplaceWith);
                 System.out.println(carToReplaceWith.toString());
                 orderRepository.save(order);
             }
-
-            //TODO Uppdatera så att inte kan försöka lägga till sig själv som första bil som är ledig.
         }
     }
 }
