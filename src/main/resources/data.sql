@@ -10,12 +10,12 @@ INSERT INTO customers (personal_identity_number, first_name, last_name, email, p
 ('19950505-7890', 'Elin', 'Andersson', 'elin.andersson@example.com', '+46705678901', 'Solrosvägen 5, 90347 Umeå');
 
 -- CAR
-INSERT INTO cars (make, model, registration_number, price_per_day) VALUES
-('Volvo', '740', 'ABC1234', 999.00),
-('BMW', 'Z8', 'DEF5678', 699.00),
-('Tesla', 'Roadster', 'TES1234', 899.00),
-('Audi', 'Quattro', 'AUD4567', 749.00),
-('Kia', 'Ceed', 'KIA8901', 549.00);
+INSERT INTO cars (make, model, registration_number, price_per_day,status) VALUES
+('Volvo', '740', 'ABC1234', 999.00,'AVAILABLE'),
+('BMW', 'Z8', 'DEF5678', 699.00,'BOOKED'),--BOOKED när vi lämnar in
+('Tesla', 'Roadster', 'TES1234', 899.00,'IN_SERVICE'),
+('Audi', 'Quattro', 'AUD4567', 749.00,'BOOKED'),
+('Kia', 'Ceed', 'KIA8901', 549.00,'IN_SERVICE');
 
 -- BOOKING
 INSERT INTO orders (booked_at, start_date, end_date, car_id, customer_id, total_price, active) VALUES
@@ -23,4 +23,7 @@ INSERT INTO orders (booked_at, start_date, end_date, car_id, customer_id, total_
 ('2025-01-15', '2025-01-22', '2025-01-26', 2, 2, 2796.00, false),
 ('2025-04-01', '2025-04-05', '2025-04-15', 3, 3, 8990.00, true),
 ('2025-03-28', '2025-04-01', '2025-04-07', 4, 4, 4494.00, true),
-('2025-04-05', '2025-06-06', '2025-06-12', 5, 5, 3294.00, true);
+('2025-04-05', '2025-04-06', '2025-04-12', 5, 5, 3294.00, true),
+('2025-04-24', '2025-05-08', '2025-05-17', 2, 2, 6291.00, true),
+('2025-04-12', '2025-04-22', '2025-04-30', 4, 3, 5992.00, true),
+('2025-05-28', '2025-06-02', '2025-06-05', 3, 1, 2697.00, true);

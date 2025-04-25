@@ -14,4 +14,7 @@ public interface CustomerService {
     Customer getCustomerById(Long id);
 
     List<Order> getOrders(Principal principal); //WIG-22-AA
+
+    // WIG-29-SJ
+    Customer updateCustomer(Customer customer);
 }
