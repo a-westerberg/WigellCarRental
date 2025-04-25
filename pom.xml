@@ -35,10 +35,10 @@
             <artifactId>spring-boot-starter-data-jpa</artifactId>
         </dependency>
         <!-- Ut kommenterar för tillfället -->
-       <!-- <dependency>
+       <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-security</artifactId>
-        </dependency>-->
+        </dependency>
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-web</artifactId>
@@ -55,11 +55,11 @@
             <scope>test</scope>
         </dependency>
         <!--Ut kommenterat för tillfället  -->
-       <!-- <dependency>
+       <dependency>
             <groupId>org.springframework.security</groupId>
             <artifactId>spring-security-test</artifactId>
             <scope>test</scope>
-        </dependency>-->
+        </dependency>
     </dependencies>
 
     <build>

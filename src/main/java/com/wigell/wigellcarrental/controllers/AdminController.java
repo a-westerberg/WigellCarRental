@@ -8,6 +8,7 @@ import com.wigell.wigellcarrental.services.CarService;
 import com.wigell.wigellcarrental.services.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -18,7 +19,7 @@ import java.util.List;
 //SA
 @RestController
 @RequestMapping("/api/v1/admin")
-//@PreAuthorize("ADMIN")
+//@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     //Services
@@ -53,13 +54,16 @@ public class AdminController {
     public ResponseEntity<String>addCustomer(@RequestBody Customer customer){
         return ResponseEntity.created(service.addCustomer(customer));
     }
-    //SA
-    @DeleteMapping("/removecustomer/{id}")//Radera befintlig kund
-    public ResponseEntity<String>removeCustomer(@PathVariable String perNr){
-        return ResponseEntity.ok(service.removeCustomer(perNr));
+    */
+
+
+    //SA / WIG-30-SJ
+    @DeleteMapping("/removecustomer/{id}")
+    public ResponseEntity<String>removeCustomer(@PathVariable Long id){
+        return ResponseEntity.ok(customerService.removeCustomerById(id));
     }
 
-     */
+
     //SA // AWS
     @GetMapping("/cars")//Lista tillgängliga bilar
     public ResponseEntity<List<Car>>getAllAvailableCars(){

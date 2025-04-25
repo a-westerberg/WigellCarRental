@@ -1,8 +1,10 @@
 package com.wigell.wigellcarrental.services;
 
 import com.wigell.wigellcarrental.entities.Customer;
+import com.wigell.wigellcarrental.entities.Order;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
+import com.wigell.wigellcarrental.repositories.OrderRepository;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -13,13 +15,15 @@ import java.util.List;
 @Service
 public class CustomerServiceImpl implements CustomerService{
 
+    private final OrderRepository orderRepository;
     //SA
     private CustomerRepository customerRepository;
 
     //SA
     @Autowired
-    public CustomerServiceImpl(CustomerRepository customerRepository) {
+    public CustomerServiceImpl(CustomerRepository customerRepository, OrderRepository orderRepository) {
         this.customerRepository = customerRepository;
+        this.orderRepository = orderRepository;
     }
 
     //SA
@@ -49,37 +53,85 @@ public class CustomerServiceImpl implements CustomerService{
         Customer existingCustomer = customerRepository.findById(customer.getId()).orElseThrow(()->
                 new ResourceNotFoundException("Customer","id",customer.getId()));
 
-        if (MicroMethods.validateForUpdate(customer.getFirstName())) {
+        if (MicroMethods.validateNotNull(customer.getFirstName())) {
             existingCustomer.setFirstName(customer.getFirstName());
         }
-        if (MicroMethods.validateForUpdate(customer.getLastName())) {
+        if (MicroMethods.validateNotNull(customer.getLastName())) {
             existingCustomer.setLastName(customer.getLastName());
         }
         /*
         // WIG-29-SJ
         // If values of Email & Phone needs to be unique. If not, remove code later.
-        if (MicroMethods.validateForUpdate(customer.getEmail())) {
+        if (MicroMethods.validateNotNull(customer.getEmail())) {
             MicroMethods.validateUniqueValue("email", customer.getEmail(), customerRepository::existsByEmail);
             existingCustomer.setEmail(customer.getEmail());
         }
 
-        if (MicroMethods.validateForUpdate(customer.getPhoneNumber())) {
+        if (MicroMethods.validateNotNull(customer.getPhoneNumber())) {
             MicroMethods.validateUniqueValue("phoneNumber", customer.getPhoneNumber(), customerRepository::existsByPhoneNumber);
             existingCustomer.setPhoneNumber(customer.getPhoneNumber());
         }
         */
 
-        if (MicroMethods.validateForUpdate(customer.getEmail())) {
+        if (MicroMethods.validateNotNull(customer.getEmail())) {
             existingCustomer.setEmail(customer.getEmail());
         }
-        if (MicroMethods.validateForUpdate(customer.getPhoneNumber())) {
+        if (MicroMethods.validateNotNull(customer.getPhoneNumber())) {
             existingCustomer.setPhoneNumber(customer.getPhoneNumber());
         }
-        if (MicroMethods.validateForUpdate(customer.getAddress())) {
+        if (MicroMethods.validateNotNull(customer.getAddress())) {
             existingCustomer.setAddress(customer.getAddress());
         }
 
         return existingCustomer;
+    }
+
+
+    // WIG-30-SJ
+    @Override
+    public String removeCustomerById(Long id) {
+        Customer customerToRemove = customerRepository.findById(id).orElseThrow(
+                ()-> new ResourceNotFoundException("Customer","id",id));
+
+        List<Order> ordersToEdit = customerToRemove.getOrder();
+        boolean hasActiveOrders = ordersToEdit.stream()
+                .anyMatch(Order::getIsActive);
+
+        if (hasActiveOrders) {
+            throw new ConflictException("Customer with active orders can't be deleted!");
+        }
+
+        MicroMethods.disconnectKeys(
+                ordersToEdit,
+                order -> order.setCustomer(null),
+                order -> orderRepository.save(order)
+        );
+
+        /*
+        //V1
+        for (Order orderToEdit : ordersToEdit) {
+            orderToEdit.setCustomer(null);
+            orderRepository.save(orderToEdit);
+        }
+
+
+
+        for (Order orderToEdit : ordersToEdit) {
+            if (orderToEdit.getIsActive() == true) {
+                throw new ConflictException("Customer with active orders can't be deleted!");
+            } else {
+                MicroMethods.disconnectKeys(
+                        ordersToEdit,
+                        order -> order.setCustomer(null),
+                        order -> orderRepository.save(order)
+                );
+            }
+        }
+
+         */
+
+        customerRepository.delete(customerToRemove);
+        return "Customer " + customerToRemove.getPersonalIdentityNumber() + " has been deleted.";
     }
 
 }
