@@ -2,8 +2,6 @@ package com.wigell.wigellcarrental.services;
 
 import com.wigell.wigellcarrental.entities.Customer;
 import com.wigell.wigellcarrental.entities.Order;
-import com.wigell.wigellcarrental.exceptions.ConflictException;
-import com.wigell.wigellcarrental.exceptions.InvalidInputException;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
