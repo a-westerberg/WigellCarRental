@@ -11,6 +11,7 @@ public interface CustomerRepository extends JpaRepository<Customer,Long> {
     // WIG-27-SJ
     Customer findById(long id);
 
+
     /*
     // WIG-29-SJ
     // If values of Email & Phone needs to be unique. If not, remove code later.

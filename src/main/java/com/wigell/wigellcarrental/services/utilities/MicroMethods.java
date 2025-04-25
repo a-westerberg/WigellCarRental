@@ -8,6 +8,9 @@ import java.time.temporal.ChronoUnit;
 
 import com.wigell.wigellcarrental.exceptions.UniqueConflictException;
 
+import java.util.List;
+import java.util.function.Consumer;
+
 // WIG-28-SJ
 public class MicroMethods {
 
@@ -19,7 +22,7 @@ public class MicroMethods {
     }
 
     // WIG-29-SJ
-    public static boolean validateForUpdate(Object value) {
+    public static boolean validateNotNull (Object value) {
         return value != null && (!(value instanceof String && ((String) value).isEmpty()));
     }
 
@@ -35,6 +38,14 @@ public class MicroMethods {
     public static BigDecimal calculateCancellationFee(Order orderToCancel){
         long days = ChronoUnit.DAYS.between(orderToCancel.getStartDate(), orderToCancel.getEndDate());
         return orderToCancel.getTotalPrice().multiply(BigDecimal.valueOf(0.05).multiply(BigDecimal.valueOf(days)));
+    }
+
+    // WIG-30-SJ
+    public static <T> void disconnectKeys (List<T> entities, Consumer<T> disconnectAction, Consumer<T> saveAction) {
+        for (T entity : entities) {
+            disconnectAction.accept(entity);
+            saveAction.accept(entity);
+        }
     }
 
 
