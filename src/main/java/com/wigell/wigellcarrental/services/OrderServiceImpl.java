@@ -58,7 +58,7 @@ public class OrderServiceImpl implements OrderService{
 
         Order orderToCancel = optionalOrder.get();
         //TODO: fixa när säkerhets läggs in då principal är null just nu utan den
-        if(!orderToCancel.getCustomer().getPersonalIdentityNumber().equals("19850101-1234")){
+        if(!orderToCancel.getCustomer().getPersonalIdentityNumber().equals(principal.getName())){
             return "No order for '" + principal.getName() + "' with id: " + orderId;
         }
 
