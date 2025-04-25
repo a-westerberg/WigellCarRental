@@ -9,6 +9,7 @@ import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
+import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -50,30 +51,48 @@ public class OrderServiceImpl implements OrderService{
     //SA
     @Override
     public String cancelOrder(Long orderId, Principal principal) {
-        Optional<Order> order = orderRepository.findById(orderId);
-        if (order.isPresent()) {
-            //TODO: fixa när säkerhets läggs in då principal är null just nu utan den
-            if (order.get().getCustomer().getPersonalIdentityNumber().equals(principal.getName())) {
-                if(order.get().getStartDate().isBefore(LocalDate.now()) && order.get().getEndDate().isAfter(LocalDate.now())){
-                    return "Order has already started and can't then be cancelled";
-
-                } else if (order.get().getEndDate().isBefore(LocalDate.now())) {
-                    return "Order has already ended";
-
-                } else {
-                    Order orderToCancel = order.get();
-                    orderToCancel.setTotalPrice(MicroMethods.calculateCancellationFee(orderToCancel));
-                    orderToCancel.setIsActive(false);
-                    orderRepository.save(order.get());
-                    return "Order with id '" + orderId + "' is cancelled";
-
-                }
-            }else {
-                return "No order for '" + principal.getName() + "' with id: " + orderId;
-            }
-
+        Optional<Order> optionalOrder = orderRepository.findById(orderId);
+        if(optionalOrder.isEmpty()){
+            return "Couldn't' find order with id: " + orderId;
         }
-        return "Couldn't' find order with id: " + orderId;
+
+        Order orderToCancel = optionalOrder.get();
+        //TODO: fixa när säkerhets läggs in då principal är null just nu utan den
+        if(!orderToCancel.getCustomer().getPersonalIdentityNumber().equals("19850101-1234")){
+            return "No order for '" + principal.getName() + "' with id: " + orderId;
+        }
+
+        LocalDate today = LocalDate.now();
+        if(orderToCancel.getStartDate().isBefore(today) && orderToCancel.getEndDate().isAfter(today)){
+            return "Order has already started and can't then be cancelled";
+        } else if (orderToCancel.getEndDate().isBefore(today)) {
+            return "Order has already ended";
+        }
+
+        BigDecimal cancellationFee = MicroMethods.calculateCancellationFee(orderToCancel);
+        orderToCancel.setTotalPrice(cancellationFee);
+        orderToCancel.setIsActive(false);
+
+        for(Order carOrder : orderToCancel.getCar().getOrders()){
+            if(carOrder.getId().equals(orderToCancel.getId())){
+                carOrder.setTotalPrice(cancellationFee);
+                carOrder.setIsActive(false);
+                break;
+            }
+        }
+        for(Order customerOrder : orderToCancel.getCustomer().getOrder()){
+            if(customerOrder.getId().equals(orderToCancel.getId())){
+                customerOrder.setTotalPrice(cancellationFee);
+                customerOrder.setIsActive(false);
+                break;
+            }
+        }
+
+        orderRepository.save(orderToCancel);
+        carRepository.save(orderToCancel.getCar());
+        customerRepository.save(orderToCancel.getCustomer());
+
+        return "Order with id '" + orderId + "' is cancelled";
     }
 
     //SA
@@ -82,6 +101,20 @@ public class OrderServiceImpl implements OrderService{
         List<Order>orders = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(date);
         if(orders.isEmpty()){
             return "Found no inactive orders before '"+date+"'";
+        }
+        for (Order order : orders) {
+            if(order.getCar() != null){
+                order.getCar().getOrders().remove(order);
+                carRepository.save(order.getCar());
+            }
+            if(order.getCustomer() != null){
+                order.getCustomer().getOrder().remove(order);
+                customerRepository.save(order.getCustomer());
+            }
+            //Kan inte ha detta då car och customer inte kan vara null på Order
+            /*order.setCar(null);
+            order.setCustomer(null);*/
+            orderRepository.save(order);
         }
         orderRepository.deleteAll(orders);
         return "All inactive orders before '"+date+"' has been removed";
