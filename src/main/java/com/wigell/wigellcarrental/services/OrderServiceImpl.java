@@ -184,15 +184,15 @@ public class OrderServiceImpl implements OrderService{
                     carToService.setStatus(CarStatus.IN_SERVICE);
                     carRepository.save(carToService);
 
-                    if(!carToService.getOrders().isEmpty()) {
+                    /*if(!carToService.getOrders().isEmpty()) {
                         LocalDate startDate = orderToUpdate.getStartDate();
                         LocalDate endDate = orderToUpdate.getEndDate();
                         System.out.println("StartDate:"+startDate+"\nEndDate:"+endDate);
 
                         //Får fortfarande Volvo även fast den har en order 4/6-8/6 och en som använder bil som ska bytas ut har tid 2/6-5/6
-                        /*List<Car> availableCars = carRepository.findAvailableCarsForDateRange(
+                        *//*List<Car> availableCars = carRepository.findAvailableCarsForDateRange(
                                 startDate, endDate, CarStatus.AVAILABLE
-                        );*/
+                        );*//*
 
                         List<Car>avCars = new ArrayList<>();
                         for(Car car : carRepository.findAll()){
@@ -266,6 +266,7 @@ public class OrderServiceImpl implements OrderService{
                             }
                         }
                     }
+                    */
 
 
                 }
@@ -278,6 +279,25 @@ public class OrderServiceImpl implements OrderService{
                     ;
         }
         return "Order with id '"+orderId+"' not found";
+    }
+
+    @Override
+    public String updateOrderCar(Long orderId, Long carId, Principal principal) {
+        Optional<Order>optionalOrder = orderRepository.findById(orderId);
+        Optional<Car>optionalCar = carRepository.findById(carId);
+        if(optionalOrder.isPresent() && optionalCar.isPresent()){
+            if(optionalCar.get().getStatus().equals(CarStatus.AVAILABLE)) {
+                Order orderToUpdate = optionalOrder.get();
+                Car carToUpdate = optionalCar.get();
+                orderToUpdate.setCar(carToUpdate);
+                orderRepository.save(orderToUpdate);
+                carRepository.save(carToUpdate);
+                return "Updated order:" + orderId + " to have car " + carToUpdate.getRegistrationNumber();
+            }else {
+                return "Car with id '"+carId+"' is not available";
+            }
+        }
+        return "Could not find car or order with those id:\nOrder:"+orderId+"\nCar:"+carId;
     }
 
     // WIG-28-SJ

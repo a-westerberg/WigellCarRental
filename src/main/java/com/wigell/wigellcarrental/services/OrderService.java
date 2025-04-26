@@ -18,4 +18,6 @@ public interface OrderService {
     List<Order> getAllOrdersHistory();//SA
 
     String updateOrderStatus(Long orderId, String status, Principal principal);//SA
+
+    String updateOrderCar(Long orderId, Long carId, Principal principal);//SA
 }
