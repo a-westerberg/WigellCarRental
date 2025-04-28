@@ -134,17 +134,20 @@ public class AdminController {
         return ResponseEntity.ok(orderService.updateOrderCar(orderId,carId,principal));
     }
 
-    /*
+
     //SA
     @RequestMapping("/statistics")//String...  En oändlig array utan utsatt antal i, array oavsett om man skickar med en inparametrar
     public ResponseEntity<String> getStatistics(@RequestParam String choice, @RequestParam String... data){
+
+        /*
         if(choice.contains("incomemonth")){//Total intäkt under en viss tidsperiod, månad och år
             return ResponseEntity.ok(service.getIncomeOnMoth(data[0],data[1]));
 
-        } else if (choice.contains("brand")) {//mest hyrda bilmärke under en viss period, brand, datum1 och 2
-            return ResponseEntity.ok(service.getPopularBrand(data[0],data[1],data[2]));
+        } else */
+        if (choice.contains("brand")) {//mest hyrda bilmärke under en viss period, brand, datum1 och 2
+            return ResponseEntity.ok(orderService.getPopularBrand(data[0],data[1]));
 
-        } else if (choice.contains("car")) {//Antal gånger varje bil hyrts ut, bils-regNr
+        } /* else if (choice.contains("car")) {//Antal gånger varje bil hyrts ut, bils-regNr
             return ResponseEntity.ok(service.getRented(data[0]));
 
         } else if (choice.contains("rentalperiod")) {//vanligaste hyresperiod (antal dagar)
@@ -159,10 +162,12 @@ public class AdminController {
         } else {
             return ResponseEntity.notFound(service.notfound());//Ok att göra?
         }
+        */
 
 //egen package med ValueObjects utanför entities, en klass för varje
+        return ResponseEntity.ok("Mop");
     }
 
-         */
+
 
 }

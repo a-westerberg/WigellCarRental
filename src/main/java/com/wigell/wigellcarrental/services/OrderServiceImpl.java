@@ -20,10 +20,8 @@ import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Random;
+import java.util.*;
+import java.util.stream.Collectors;
 
 //SA
 @Service
@@ -209,6 +207,22 @@ public class OrderServiceImpl implements OrderService{
         return "Order with id '" + orderId + "' not found";
     }
 
+    //WIG-85-AA
+    @Override
+    public String getPopularBrand(String startDate, String endDate) {
+        LocalDate startPeriod = MicroMethods.parseStringToDate(startDate);
+        LocalDate endPeriod = MicroMethods.parseStringToDate(endDate);
+
+        List<Order> orders = getOrdersBetweenDates(startPeriod, endPeriod);
+        if (orders.isEmpty()) {
+            return "No orders found for the selected period.";
+        }
+
+        Map<String, Long> makeCountMap = countMakes(orders);
+
+        return buildResultStringToMakeStatistics(makeCountMap);
+    }
+
     // WIG-28-SJ
     public Order validateOrder(Order order) {
         MicroMethods.validateData("Booking day", "bookedAt", order.getBookedAt());
@@ -233,6 +247,32 @@ public class OrderServiceImpl implements OrderService{
         order.setCustomer(customer);
 
         return order;
+    }
+
+    //WIG-AA-85
+    private List<Order> getOrdersBetweenDates(LocalDate startDate, LocalDate endDate) {
+        return orderRepository.findOverlappingOrders(startDate, endDate);
+    }
+
+    //WIG-85-AA
+    private Map<String, Long> countMakes (List<Order> orders) {
+        return orders.stream()
+                .collect(Collectors.groupingBy(
+                        order -> order.getCar().getMake(),
+                        Collectors.counting()
+                ));
+    }
+
+    //WIG-85-AA
+    private String buildResultStringToMakeStatistics(Map<String, Long> makeCountMap) {
+        StringBuilder result = new StringBuilder();
+        makeCountMap.entrySet().stream()
+                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
+                .forEach(entry -> result.append(entry.getKey())
+                        .append(": ")
+                        .append(entry.getValue())
+                        .append('\n'));
+        return result.toString();
     }
 
 

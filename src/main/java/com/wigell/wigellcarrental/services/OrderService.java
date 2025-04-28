@@ -20,4 +20,7 @@ public interface OrderService {
     String updateOrderStatus(Long orderId, String status, Principal principal);//SA
 
     String updateOrderCar(Long orderId, Long carId, Principal principal);//SA
+
+    //WIG-85-AA
+    String getPopularBrand(String startDate, String endDate);
 }
