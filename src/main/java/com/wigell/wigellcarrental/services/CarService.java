@@ -18,4 +18,6 @@ public interface CarService {
 
     //WIG-18-AA
     Car addCar(Car car, Principal principal);
+
+    String incomeOnCars();//SA
 }
