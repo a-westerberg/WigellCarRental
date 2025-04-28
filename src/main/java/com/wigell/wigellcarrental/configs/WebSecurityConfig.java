@@ -34,4 +34,3 @@ public class WebSecurityConfig {
         //Ändra till authenticated när UserDetailsService är inlagt, ta in PreAuthorize i controller klasserna också
     }
 }
-//.ignoringRequestMatchers("/h2-console/**")//på csrf, men den verkar inte behövas
