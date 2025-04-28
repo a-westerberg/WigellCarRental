@@ -4,11 +4,14 @@ import com.wigell.wigellcarrental.entities.Car;
 import com.wigell.wigellcarrental.entities.Customer;
 import com.wigell.wigellcarrental.entities.Order;
 import com.wigell.wigellcarrental.enums.CarStatus;
+import com.wigell.wigellcarrental.exceptions.ConflictException;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,8 +19,11 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
+import java.util.Random;
 
 //SA
 @Service
@@ -26,6 +32,9 @@ public class OrderServiceImpl implements OrderService{
     private final OrderRepository orderRepository;
     private final CarRepository carRepository;
     private final CustomerRepository customerRepository;
+
+    //WIG-71-AA
+    private static final Logger USER_ANALYZER_LOGGER = LogManager.getLogger("userlog");
 
     //AWS
     @Autowired
@@ -132,6 +141,72 @@ public class OrderServiceImpl implements OrderService{
             throw new ResourceNotFoundException("List","orders",0);
         }
         return orderRepository.findAll();
+    }
+
+    //SA
+    @Override
+    public String updateOrderStatus(Long orderId, String status, Principal principal) {
+        Optional<Order>optionalOrder = orderRepository.findById(orderId);
+        if (optionalOrder.isPresent()) {
+            Order orderToUpdate = optionalOrder.get();
+
+            if(!status.equals("away") && !status.equals("back") && !status.equals("service")){
+                return "Invalid status, there is 'away', 'back' and 'service'";
+            }
+
+            switch (status) {
+                case "away" -> {
+                    orderToUpdate.setIsActive(true);
+                    orderRepository.save(orderToUpdate);
+                    orderToUpdate.getCar().setStatus(CarStatus.BOOKED);
+                    carRepository.save(orderToUpdate.getCar());
+                }
+                case "back" -> {
+                    orderToUpdate.setIsActive(false);
+                    orderRepository.save(orderToUpdate);
+                    orderToUpdate.getCar().setStatus(CarStatus.AVAILABLE);
+                    carRepository.save(orderToUpdate.getCar());
+                }
+                case "service" -> {
+                    orderToUpdate.setIsActive(false);
+                    orderRepository.save(orderToUpdate);
+                    Car carToService = orderToUpdate.getCar();
+                    carToService.setStatus(CarStatus.IN_SERVICE);
+                    carRepository.save(carToService);
+
+                }
+            }
+
+            return "Order with id '" + orderId + "' has been updated" +
+                    "\nOrder status: "+orderToUpdate.getIsActive().toString()+
+                    "\nCar registration: " +orderToUpdate.getCar().getRegistrationNumber()+
+                    "\nCar status: "+orderToUpdate.getCar().getStatus().toString();
+        }
+        return "Order with id '"+orderId+"' not found";
+    }
+
+    @Override
+    public String updateOrderCar(Long orderId, Long carId, Principal principal) {
+        Optional<Order>optionalOrder = orderRepository.findById(orderId);
+        Optional<Car>optionalCar = carRepository.findById(carId);
+
+        if(optionalOrder.isPresent() ){
+            if(optionalCar.isPresent()) {
+                if (optionalCar.get().getStatus().equals(CarStatus.AVAILABLE)) {
+                    Order orderToUpdate = optionalOrder.get();
+                    Car carToUpdate = optionalCar.get();
+                    orderToUpdate.setCar(carToUpdate);
+                    orderRepository.save(orderToUpdate);
+                    carRepository.save(carToUpdate);
+                    return "Updated order '" + orderId + "' to have car " + carToUpdate.getRegistrationNumber();
+                } else {
+                    return "Car with id '" + carId + "' is not available";
+                }
+            }else {
+                return "Car with id '" + carId + "' not found";
+            }
+        }
+        return "Order with id '" + orderId + "' not found";
     }
 
     // WIG-28-SJ

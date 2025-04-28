@@ -121,6 +121,18 @@ public class AdminController {
     public ResponseEntity<String>removeOrdersBeforeDate(@PathVariable LocalDate date, Principal principal){
         return ResponseEntity.ok(orderService.removeOrdersBeforeDate(date,principal));
     }
+
+    //SA
+    @PutMapping("/updateorderstatus/{orderId}/{status}")
+    public ResponseEntity<String>updateOrderStatus(@PathVariable Long orderId, @PathVariable String status,Principal principal){
+        return ResponseEntity.ok(orderService.updateOrderStatus(orderId,status,principal));
+    }
+
+    //SA
+    @PutMapping("/updateordercar/{orderId}/{carId}")
+    public ResponseEntity<String>updateOrderCar(@PathVariable Long orderId, @PathVariable Long carId,Principal principal){
+        return ResponseEntity.ok(orderService.updateOrderCar(orderId,carId,principal));
+    }
 /*
     //SA
     @RequestMapping("/statistics")//String...  En oändlig array utan utsatt antal i, array oavsett om man skickar med en inparametrar
