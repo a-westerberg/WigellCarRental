@@ -13,6 +13,7 @@ import com.wigell.wigellcarrental.services.utilities.MicroMethods;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.security.Principal;
 import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
@@ -48,7 +49,7 @@ public class CarServiceImpl implements CarService{
     }
 
     //WIG-20-AA
-    public String deleteCar(String input) {
+    public String deleteCar(String input, Principal principal) {
         Car carToDelete = findCarToDelete(input);
         if (!carToDelete.getOrders().isEmpty()) {
             processOrderList(carToDelete.getOrders(), carToDelete.getId());
@@ -59,7 +60,7 @@ public class CarServiceImpl implements CarService{
     }
 
     //WIG-18-AA
-    public Car addCar(Car car) {
+    public Car addCar(Car car, Principal principal) {
         validateAddCarInput(car);
         return carRepository.save(car);
     }
