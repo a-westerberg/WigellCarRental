@@ -62,11 +62,10 @@ public class OrderServiceImpl implements OrderService{
     public String cancelOrder(Long orderId, Principal principal) {
         Optional<Order> optionalOrder = orderRepository.findById(orderId);
         if(optionalOrder.isEmpty()){
-            return "Couldn't' find order with id: " + orderId;
+            throw new ResourceNotFoundException("Order","id",orderId);
         }
 
         Order orderToCancel = optionalOrder.get();
-        //TODO: fixa när säkerhets läggs in då principal är null just nu utan den
         if(!orderToCancel.getCustomer().getPersonalIdentityNumber().equals(principal.getName())){
             return "No order for '" + principal.getName() + "' with id: " + orderId;
         }
@@ -101,6 +100,7 @@ public class OrderServiceImpl implements OrderService{
         carRepository.save(orderToCancel.getCar());
         customerRepository.save(orderToCancel.getCustomer());
 
+        USER_ANALYZER_LOGGER.info("User '{}' cancelled order with ID '{}'. Cancellation fee: {}", principal.getName(), orderId, cancellationFee);
         return "Order with id '" + orderId + "' is cancelled";
     }
 
@@ -124,6 +124,7 @@ public class OrderServiceImpl implements OrderService{
             orderRepository.save(order);
         }
         orderRepository.deleteAll(orders);
+        USER_ANALYZER_LOGGER.info("User '{}' removed all orders before '{}'", principal.getName(), date);
         return "All inactive orders before '"+date+"' has been removed";
     }
 
@@ -135,9 +136,10 @@ public class OrderServiceImpl implements OrderService{
         return orderRepository.save(order);
     }
 
+    //SA
     @Override
     public List<Order> getAllOrdersHistory() {
-                if(orderRepository.findAll().isEmpty()){
+        if(orderRepository.findAll().isEmpty()){
             throw new ResourceNotFoundException("List","orders",0);
         }
         return orderRepository.findAll();
@@ -177,12 +179,22 @@ public class OrderServiceImpl implements OrderService{
                 }
             }
 
+            USER_ANALYZER_LOGGER.info("User '{}' has updated order with ID '{}'" +
+                            "\n\tOrder status: {}" +
+                            "\n\tRegistation: {}" +
+                            "\n\tCar status: {}",
+                    principal.getName(),
+                    orderId,
+                    orderToUpdate.getIsActive().toString(),
+                    orderToUpdate.getCar().getRegistrationNumber(),
+                    orderToUpdate.getCar().getStatus().toString());
+
             return "Order with id '" + orderId + "' has been updated" +
                     "\nOrder status: "+orderToUpdate.getIsActive().toString()+
                     "\nCar registration: " +orderToUpdate.getCar().getRegistrationNumber()+
                     "\nCar status: "+orderToUpdate.getCar().getStatus().toString();
         }
-        return "Order with id '"+orderId+"' not found";
+        throw new ResourceNotFoundException("Order","id",orderId);
     }
 
     @Override
@@ -198,15 +210,16 @@ public class OrderServiceImpl implements OrderService{
                     orderToUpdate.setCar(carToUpdate);
                     orderRepository.save(orderToUpdate);
                     carRepository.save(carToUpdate);
+                    USER_ANALYZER_LOGGER.info("User '{}' updated order with ID '{}' to have the car with registration number: {}",principal.getName(),orderId,carToUpdate.getRegistrationNumber());
                     return "Updated order '" + orderId + "' to have car " + carToUpdate.getRegistrationNumber();
                 } else {
                     return "Car with id '" + carId + "' is not available";
                 }
             }else {
-                return "Car with id '" + carId + "' not found";
+                throw new ResourceNotFoundException("Car","id",carId);
             }
         }
-        return "Order with id '" + orderId + "' not found";
+        throw new ResourceNotFoundException("Order","id",orderId);
     }
 
     // WIG-28-SJ
