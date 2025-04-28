@@ -4,6 +4,7 @@ import com.wigell.wigellcarrental.entities.Order;
 import com.wigell.wigellcarrental.exceptions.InvalidInputException;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 
 import com.wigell.wigellcarrental.exceptions.UniqueConflictException;
@@ -45,6 +46,15 @@ public class MicroMethods {
         for (T entity : entities) {
             disconnectAction.accept(entity);
             saveAction.accept(entity);
+        }
+    }
+
+    //WIG-85-AA
+    public static LocalDate parseStringToDate(String date) {
+        try {
+            return LocalDate.parse(date);
+        } catch (Exception e) {
+            throw new InvalidInputException("brand","date", date);
         }
     }
 
