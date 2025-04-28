@@ -7,6 +7,8 @@ import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -19,6 +21,9 @@ public class CustomerServiceImpl implements CustomerService{
     private final OrderRepository orderRepository;
     //SA
     private CustomerRepository customerRepository;
+
+    //WIG-71-AA
+    private static final Logger USER_ANALYZER_LOGGER = LogManager.getLogger("userlog");
 
     //SA
     @Autowired

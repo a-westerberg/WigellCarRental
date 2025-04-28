@@ -17,12 +17,18 @@ import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
 
+import org.apache.logging.log4j.Logger;
+import org.apache.logging.log4j.LogManager;
+
 //SA
 @Service
 public class CarServiceImpl implements CarService{
     // AWS
     private final CarRepository carRepository;
     private final OrderRepository orderRepository;
+
+    //WIG-71-AA
+    private static final Logger USER_ANALYZER_LOGGER = LogManager.getLogger("userlog");
 
     // AWS
     @Autowired
@@ -47,6 +53,7 @@ public class CarServiceImpl implements CarService{
             processOrderList(carToDelete.getOrders(), carToDelete.getId());
         }
         carRepository.delete(carToDelete);
+        USER_ANALYZER_LOGGER.info("A car with id {} and the registration number {} has been deleted", carToDelete.getId(), carToDelete.getRegistrationNumber());
         return  isInputId(input) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
     }
 
