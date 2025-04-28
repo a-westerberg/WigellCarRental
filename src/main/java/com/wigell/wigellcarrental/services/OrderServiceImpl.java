@@ -151,6 +151,8 @@ public class OrderServiceImpl implements OrderService{
         Optional<Order>optionalOrder = orderRepository.findById(orderId);
         if (optionalOrder.isPresent()) {
             Order orderToUpdate = optionalOrder.get();
+            boolean wasIsActive = orderToUpdate.getIsActive();
+            CarStatus oldCarStatus = orderToUpdate.getCar().getStatus();
 
             if(!status.equals("away") && !status.equals("back") && !status.equals("service")){
                 return "Invalid status, there is 'away', 'back' and 'service'";
@@ -180,13 +182,15 @@ public class OrderServiceImpl implements OrderService{
             }
 
             USER_ANALYZER_LOGGER.info("User '{}' has updated order with ID '{}'" +
-                            "\n\tOrder status: {}" +
+                            "\n\tOrder status: {} -> {}" +
                             "\n\tRegistation: {}" +
-                            "\n\tCar status: {}",
+                            "\n\tCar status: {} -> {}",
                     principal.getName(),
                     orderId,
+                    wasIsActive,
                     orderToUpdate.getIsActive().toString(),
                     orderToUpdate.getCar().getRegistrationNumber(),
+                    oldCarStatus.toString(),
                     orderToUpdate.getCar().getStatus().toString());
 
             return "Order with id '" + orderId + "' has been updated" +
@@ -207,10 +211,21 @@ public class OrderServiceImpl implements OrderService{
                 if (optionalCar.get().getStatus().equals(CarStatus.AVAILABLE)) {
                     Order orderToUpdate = optionalOrder.get();
                     Car carToUpdate = optionalCar.get();
+
+                    Car oldCar = orderToUpdate.getCar();
+
                     orderToUpdate.setCar(carToUpdate);
                     orderRepository.save(orderToUpdate);
                     carRepository.save(carToUpdate);
-                    USER_ANALYZER_LOGGER.info("User '{}' updated order with ID '{}' to have the car with registration number: {}",principal.getName(),orderId,carToUpdate.getRegistrationNumber());
+                    USER_ANALYZER_LOGGER.info("User '{}' updated order with ID '{}' " +
+                                    "\n\tCar ID: {} -> {}" +
+                                    "\n\tCar, registration number: {} -> {}",
+                            principal.getName(),
+                            orderId,
+                            oldCar.getId(),
+                            carToUpdate.getId(),
+                            oldCar.getRegistrationNumber(),
+                            carToUpdate.getRegistrationNumber());
                     return "Updated order '" + orderId + "' to have car " + carToUpdate.getRegistrationNumber();
                 } else {
                     return "Car with id '" + carId + "' is not available";
