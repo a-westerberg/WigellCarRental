@@ -23,7 +23,6 @@ import java.util.List;
 //SA
 @RestController
 @RequestMapping("/api/v1")
-//@PreAuthorize("hasRole('USER')")
 public class CustomerController {
 
     //AWS / WIG-26-SJ
