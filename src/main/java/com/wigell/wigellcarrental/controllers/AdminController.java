@@ -19,7 +19,6 @@ import java.util.List;
 //SA
 @RestController
 @RequestMapping("/api/v1/admin")
-//@PreAuthorize("hasRole('ADMIN')")
 public class AdminController {
 
     //Services
@@ -134,13 +133,10 @@ public class AdminController {
         return ResponseEntity.ok(orderService.updateOrderCar(orderId,carId,principal));
     }
 
-
     //SA
     @RequestMapping("/statistics")//String...  En oändlig array utan utsatt antal i, array oavsett om man skickar med en inparametrar
     public ResponseEntity<String> getStatistics(@RequestParam String choice, @RequestParam String... data){
-
-        /*
-        if(choice.contains("incomemonth")){//Total intäkt under en viss tidsperiod, månad och år
+        /*if(choice.contains("incomemonth")){//Total intäkt under en viss tidsperiod, månad och år
             return ResponseEntity.ok(service.getIncomeOnMoth(data[0],data[1]));
 
         } else */
@@ -156,18 +152,15 @@ public class AdminController {
         } else if (choice.contains("costperorder")) {//genomsnittlig kostnad per hyresorder
             return ResponseEntity.ok(service.costPerOrder());
 
-        } else if (choice.contains("incomecar")) {//Total intäkt per bil, en eller flera bilar?
-            return ResponseEntity.ok(service.incomeOnCar(data[0]));
+        } else*/
+        if (choice.contains("incomecar")) {//Total intäkt per bil och hur många gånger de hyrts ut
+            return ResponseEntity.ok(carService.incomeOnCars());
 
-        } else {
+        } /*else {
             return ResponseEntity.notFound(service.notfound());//Ok att göra?
-        }
-        */
-
+        }*/
+        return ResponseEntity.ok("Ta bort senare/Choice for "+choice+" not found");
 //egen package med ValueObjects utanför entities, en klass för varje
-        return ResponseEntity.ok("Mop");
     }
-
-
 
 }

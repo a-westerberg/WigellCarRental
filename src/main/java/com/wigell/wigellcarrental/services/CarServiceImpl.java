@@ -14,6 +14,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
 import java.util.Optional;
@@ -62,6 +63,26 @@ public class CarServiceImpl implements CarService{
     public Car addCar(Car car, Principal principal) {
         validateAddCarInput(car);
         return carRepository.save(car);
+    }
+
+    //SA
+    @Override
+    public String incomeOnCars() {
+        List<Car> cars = carRepository.findAll();
+        StringBuilder output = new StringBuilder();
+        for (Car car : cars) {
+            BigDecimal totalIncome = BigDecimal.valueOf(0);
+            for (Order order : car.getOrders()) {
+                totalIncome = totalIncome.add(order.getTotalPrice());
+            }
+
+            output.append("Car ID: ").append(car.getId()).append("\n")
+                    .append("Registration number: ").append(car.getRegistrationNumber()).append("\n")
+                    .append("Rented number: ").append(car.getOrders().size()).append("\n")
+                    .append("Total income: ").append(totalIncome).append("\n")
+                    .append("----------------------------\n");
+        }
+        return output.toString();
     }
 
     //WIG-20-AA
