@@ -3,18 +3,22 @@
 <configuration status="info">
 
     <properties>
-        <property name="layout">
-            %style{%d}{blue} <!--[%t]--> %highlight{%-5level} %style{%logger}{white} - %highlight{%style{%msg}{bold}}%n
+        <property name="consoleLayout">
+            %style{%d{yyyy-MM-dd HH:mm:ss}}{blue} %highlight{%-5level} %style{%logger}{white} - %highlight{%style{%msg}{bold}}%n
+        </property>
+
+        <property name="fileLayout">
+            %d{yyyy-MM-dd HH:mm:ss} %-5level %logger - %msg%n
         </property>
     </properties>
 
     <Appenders>
         <Console name="Console" target="SYSTEM_OUT">
-            <PatternLayout pattern="${layout}" disableAnsi="false" noConsoleNoAnsi="false" />
+            <PatternLayout pattern="${consoleLayout}" disableAnsi="false" noConsoleNoAnsi="false" />
         </Console>
 
         <File name="LogFile" filename="logs/user-analyze.log">
-            <PatternLayout pattern="${layout}"/>
+            <PatternLayout pattern="${fileLayout}"/>
         </File>
     </Appenders>
 

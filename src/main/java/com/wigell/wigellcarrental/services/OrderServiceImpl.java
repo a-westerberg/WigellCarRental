@@ -9,6 +9,8 @@ import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
+import org.apache.logging.log4j.LogManager;
+import org.apache.logging.log4j.Logger;
 import org.aspectj.weaver.ast.Or;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -26,6 +28,9 @@ public class OrderServiceImpl implements OrderService{
     private final OrderRepository orderRepository;
     private final CarRepository carRepository;
     private final CustomerRepository customerRepository;
+
+    //WIG-71-AA
+    private static final Logger USER_ANALYZER_LOGGER = LogManager.getLogger("userlog");
 
     //AWS
     @Autowired
