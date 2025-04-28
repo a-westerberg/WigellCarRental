@@ -79,7 +79,7 @@ public class AdminController {
 
     //SA //AA
     @PostMapping("/addcar")//Lägg till bil
-    public ResponseEntity<Car>addCar(@RequestBody Car car){
+    public ResponseEntity<Car>addCar(@RequestBody Car car, Principal principal){
         return ResponseEntity.ok(carService.addCar(car));
     }
     /*
@@ -91,7 +91,7 @@ public class AdminController {
     */
     //SA //AA
     @DeleteMapping("/removecar/{idOrRegistrationNumber}")//Radera bil
-    public ResponseEntity<String>removeCar(@PathVariable String idOrRegistrationNumber){
+    public ResponseEntity<String>removeCar(@PathVariable String idOrRegistrationNumber, Principal principal){
         return ResponseEntity.ok(carService.deleteCar(idOrRegistrationNumber));
     }
 
