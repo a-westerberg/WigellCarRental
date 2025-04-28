@@ -133,7 +133,8 @@ public class AdminController {
     public ResponseEntity<String>updateOrderCar(@PathVariable Long orderId, @PathVariable Long carId,Principal principal){
         return ResponseEntity.ok(orderService.updateOrderCar(orderId,carId,principal));
     }
-/*
+
+    /*
     //SA
     @RequestMapping("/statistics")//String...  En oändlig array utan utsatt antal i, array oavsett om man skickar med en inparametrar
     public ResponseEntity<String> getStatistics(@RequestParam String choice, @RequestParam String... data){
@@ -158,7 +159,10 @@ public class AdminController {
         } else {
             return ResponseEntity.notFound(service.notfound());//Ok att göra?
         }
+
 //egen package med ValueObjects utanför entities, en klass för varje
-    }*/
+    }
+
+         */
 
 }
