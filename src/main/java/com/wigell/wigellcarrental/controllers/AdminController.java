@@ -133,18 +133,15 @@ public class AdminController {
     public ResponseEntity<String>updateOrderCar(@PathVariable Long orderId, @PathVariable Long carId,Principal principal){
         return ResponseEntity.ok(orderService.updateOrderCar(orderId,carId,principal));
     }
-/*
+
     //SA
     @RequestMapping("/statistics")//String...  En oändlig array utan utsatt antal i, array oavsett om man skickar med en inparametrar
     public ResponseEntity<String> getStatistics(@RequestParam String choice, @RequestParam String... data){
-        if(choice.contains("incomemonth")){//Total intäkt under en viss tidsperiod, månad och år
+        /*if(choice.contains("incomemonth")){//Total intäkt under en viss tidsperiod, månad och år
             return ResponseEntity.ok(service.getIncomeOnMoth(data[0],data[1]));
 
         } else if (choice.contains("brand")) {//mest hyrda bilmärke under en viss period, brand, datum1 och 2
             return ResponseEntity.ok(service.getPopularBrand(data[0],data[1],data[2]));
-
-        } else if (choice.contains("car")) {//Antal gånger varje bil hyrts ut, bils-regNr
-            return ResponseEntity.ok(service.getRented(data[0]));
 
         } else if (choice.contains("rentalperiod")) {//vanligaste hyresperiod (antal dagar)
             return ResponseEntity.ok(service.rentalPeriod());
@@ -152,13 +149,15 @@ public class AdminController {
         } else if (choice.contains("costperorder")) {//genomsnittlig kostnad per hyresorder
             return ResponseEntity.ok(service.costPerOrder());
 
-        } else if (choice.contains("incomecar")) {//Total intäkt per bil, en eller flera bilar?
-            return ResponseEntity.ok(service.incomeOnCar(data[0]));
+        } else*/
+        if (choice.contains("incomecar")) {//Total intäkt per bil och hur många gånger de hyrts ut
+            return ResponseEntity.ok(carService.incomeOnCars());
 
-        } else {
+        } /*else {
             return ResponseEntity.notFound(service.notfound());//Ok att göra?
-        }
+        }*/
+        return ResponseEntity.ok("Mop");
 //egen package med ValueObjects utanför entities, en klass för varje
-    }*/
+    }
 
 }
