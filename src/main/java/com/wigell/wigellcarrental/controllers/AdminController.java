@@ -139,8 +139,12 @@ public class AdminController {
         /*if(choice.contains("incomemonth")){//Total intäkt under en viss tidsperiod, månad och år
             return ResponseEntity.ok(service.getIncomeOnMoth(data[0],data[1]));
 
-        } else if (choice.contains("brand")) {//mest hyrda bilmärke under en viss period, brand, datum1 och 2
-            return ResponseEntity.ok(service.getPopularBrand(data[0],data[1],data[2]));
+        } else */
+        if (choice.contains("brand")) {//mest hyrda bilmärke under en viss period, brand, datum1 och 2
+            return ResponseEntity.ok(orderService.getPopularBrand(data[0],data[1]));
+
+        } /* else if (choice.contains("car")) {//Antal gånger varje bil hyrts ut, bils-regNr
+            return ResponseEntity.ok(service.getRented(data[0]));
 
         } else if (choice.contains("rentalperiod")) {//vanligaste hyresperiod (antal dagar)
             return ResponseEntity.ok(service.rentalPeriod());
