@@ -1,7 +1,7 @@
 package com.wigell.wigellcarrental.services;
 
-import com.wigell.wigellcarrental.entities.Car;
-import com.wigell.wigellcarrental.entities.Order;
+import com.wigell.wigellcarrental.models.entities.Car;
+import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.enums.CarStatus;
 import com.wigell.wigellcarrental.exceptions.ConflictException;
 import com.wigell.wigellcarrental.exceptions.InvalidInputException;
@@ -10,7 +10,7 @@ import com.wigell.wigellcarrental.exceptions.UniqueConflictException;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
-import com.wigell.wigellcarrental.valueobjects.IncomeCar;
+import com.wigell.wigellcarrental.models.valueobjects.IncomeCar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

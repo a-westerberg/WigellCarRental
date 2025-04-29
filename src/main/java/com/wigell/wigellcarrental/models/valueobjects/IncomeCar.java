@@ -1,6 +1,6 @@
-package com.wigell.wigellcarrental.valueobjects;
+package com.wigell.wigellcarrental.models.valueobjects;
 
-import com.wigell.wigellcarrental.entities.Car;
+import com.wigell.wigellcarrental.models.entities.Car;
 
 import java.math.BigDecimal;
 
