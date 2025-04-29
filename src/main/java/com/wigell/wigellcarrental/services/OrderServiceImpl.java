@@ -64,39 +64,24 @@ public class OrderServiceImpl implements OrderService{
         }
 
         Order orderToCancel = optionalOrder.get();
+
         if(!orderToCancel.getCustomer().getPersonalIdentityNumber().equals(principal.getName())){
             return "No order for '" + principal.getName() + "' with id: " + orderId;
         }
 
         LocalDate today = LocalDate.now();
+
         if(orderToCancel.getStartDate().isBefore(today) && orderToCancel.getEndDate().isAfter(today)){
             return "Order has already started and can't then be cancelled";
         } else if (orderToCancel.getEndDate().isBefore(today)) {
             return "Order has already ended";
         }
 
-        BigDecimal cancellationFee = MicroMethods.calculateCancellationFee(orderToCancel);
+        BigDecimal cancellationFee = calculateCancellationFee(orderToCancel);
         orderToCancel.setTotalPrice(cancellationFee);
         orderToCancel.setIsActive(false);
 
-        for(Order carOrder : orderToCancel.getCar().getOrders()){
-            if(carOrder.getId().equals(orderToCancel.getId())){
-                carOrder.setTotalPrice(cancellationFee);
-                carOrder.setIsActive(false);
-                break;
-            }
-        }
-        for(Order customerOrder : orderToCancel.getCustomer().getOrder()){
-            if(customerOrder.getId().equals(orderToCancel.getId())){
-                customerOrder.setTotalPrice(cancellationFee);
-                customerOrder.setIsActive(false);
-                break;
-            }
-        }
-
         orderRepository.save(orderToCancel);
-        carRepository.save(orderToCancel.getCar());
-        customerRepository.save(orderToCancel.getCustomer());
 
         USER_ANALYZER_LOGGER.info("User '{}' cancelled order with ID '{}'. Cancellation fee: {}", principal.getName(), orderId, cancellationFee);
         return "Order with id '" + orderId + "' is cancelled";
@@ -106,21 +91,11 @@ public class OrderServiceImpl implements OrderService{
     @Override
     public String removeOrdersBeforeDate(LocalDate date, Principal principal) {
         List<Order>orders = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(date);
+
         if(orders.isEmpty()){
             return "Found no inactive orders before '"+date+"'";
         }
-        for (Order order : orders) {
-            if(order.getCar() != null){
-                order.getCar().getOrders().remove(order);
-                carRepository.save(order.getCar());
-            }
-            if(order.getCustomer() != null){
-                order.getCustomer().getOrder().remove(order);
-                customerRepository.save(order.getCustomer());
-            }
 
-            orderRepository.save(order);
-        }
         orderRepository.deleteAll(orders);
         USER_ANALYZER_LOGGER.info("User '{}' removed all orders before '{}'", principal.getName(), date);
         return "All inactive orders before '"+date+"' has been removed";
@@ -148,13 +123,14 @@ public class OrderServiceImpl implements OrderService{
     public String updateOrderStatus(Long orderId, String status, Principal principal) {
         Optional<Order>optionalOrder = orderRepository.findById(orderId);
         if (optionalOrder.isPresent()) {
-            Order orderToUpdate = optionalOrder.get();
-            boolean wasIsActive = orderToUpdate.getIsActive();
-            CarStatus oldCarStatus = orderToUpdate.getCar().getStatus();
 
             if(!status.equals("away") && !status.equals("back") && !status.equals("service")){
                 return "Invalid status, there is 'away', 'back' and 'service'";
             }
+
+            Order orderToUpdate = optionalOrder.get();
+            boolean wasIsActive = orderToUpdate.getIsActive();
+            CarStatus oldCarStatus = orderToUpdate.getCar().getStatus();
 
             switch (status) {
                 case "away" -> {
@@ -204,35 +180,37 @@ public class OrderServiceImpl implements OrderService{
         Optional<Order>optionalOrder = orderRepository.findById(orderId);
         Optional<Car>optionalCar = carRepository.findById(carId);
 
-        if(optionalOrder.isPresent() ){
-            if(optionalCar.isPresent()) {
-                if (optionalCar.get().getStatus().equals(CarStatus.AVAILABLE)) {
-                    Order orderToUpdate = optionalOrder.get();
-                    Car carToUpdate = optionalCar.get();
-
-                    Car oldCar = orderToUpdate.getCar();
-
-                    orderToUpdate.setCar(carToUpdate);
-                    orderRepository.save(orderToUpdate);
-                    carRepository.save(carToUpdate);
-                    USER_ANALYZER_LOGGER.info("User '{}' updated order with ID '{}' " +
-                                    "\n\tCar ID: {} -> {}" +
-                                    "\n\tCar, registration number: {} -> {}",
-                            principal.getName(),
-                            orderId,
-                            oldCar.getId(),
-                            carToUpdate.getId(),
-                            oldCar.getRegistrationNumber(),
-                            carToUpdate.getRegistrationNumber());
-                    return "Updated order '" + orderId + "' to have car " + carToUpdate.getRegistrationNumber();
-                } else {
-                    return "Car with id '" + carId + "' is not available";
-                }
-            }else {
-                throw new ResourceNotFoundException("Car","id",carId);
-            }
+        if(optionalCar.isEmpty()){
+            throw new ResourceNotFoundException("Car","id",carId);
         }
-        throw new ResourceNotFoundException("Order","id",orderId);
+        if (optionalOrder.isEmpty()) {
+            throw new ResourceNotFoundException("Order","id",orderId);
+        }
+        if(!optionalCar.get().getStatus().equals(CarStatus.AVAILABLE)){
+            return "Car with id '" + carId + "' is not available";
+        }
+
+        Order orderToUpdate = optionalOrder.get();
+        Car carToUpdate = optionalCar.get();
+
+        Car oldCar = orderToUpdate.getCar();
+
+        orderToUpdate.setCar(carToUpdate);
+        orderRepository.save(orderToUpdate);
+        carRepository.save(carToUpdate);
+
+        USER_ANALYZER_LOGGER.info("User '{}' updated order with ID '{}' " +
+                        "\n\tCar ID: {} -> {}" +
+                        "\n\tCar, registration number: {} -> {}",
+                principal.getName(),
+                orderId,
+                oldCar.getId(),
+                carToUpdate.getId(),
+                oldCar.getRegistrationNumber(),
+                carToUpdate.getRegistrationNumber());
+
+        return "Updated order '" + orderId + "' to have car " + carToUpdate.getRegistrationNumber();
+
     }
 
     //WIG-85-AA
@@ -301,6 +279,12 @@ public class OrderServiceImpl implements OrderService{
                         .append(entry.getValue())
                         .append('\n'));
         return result.toString();
+    }
+
+    //SA
+    private static BigDecimal calculateCancellationFee(Order orderToCancel){
+        long days = ChronoUnit.DAYS.between(orderToCancel.getStartDate(), orderToCancel.getEndDate());
+        return orderToCancel.getTotalPrice().multiply(BigDecimal.valueOf(0.05).multiply(BigDecimal.valueOf(days)));
     }
 
 

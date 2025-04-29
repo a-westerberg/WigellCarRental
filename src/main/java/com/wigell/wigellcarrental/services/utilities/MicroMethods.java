@@ -35,12 +35,6 @@ public class MicroMethods {
         }
     }
 
-    //SA
-    public static BigDecimal calculateCancellationFee(Order orderToCancel){
-        long days = ChronoUnit.DAYS.between(orderToCancel.getStartDate(), orderToCancel.getEndDate());
-        return orderToCancel.getTotalPrice().multiply(BigDecimal.valueOf(0.05).multiply(BigDecimal.valueOf(days)));
-    }
-
     // WIG-30-SJ
     public static <T> void disconnectKeys (List<T> entities, Consumer<T> disconnectAction, Consumer<T> saveAction) {
         for (T entity : entities) {
