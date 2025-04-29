@@ -159,7 +159,7 @@ public class AdminController {
         } /*else {
             return ResponseEntity.notFound(service.notfound());//Ok att göra?
         }*/
-        return ResponseEntity.ok("Ta bort senare/Choice for "+choice+" not found");
+        return ResponseEntity.badRequest().body("Ta bort senare/Choice for '" + choice + "' not found");
 //egen package med ValueObjects utanför entities, en klass för varje
     }
 
