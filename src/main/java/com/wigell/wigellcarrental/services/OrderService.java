@@ -13,7 +13,7 @@ public interface OrderService {
     String cancelOrder(Long orderId, Principal principal);//SA
 
     String removeOrdersBeforeDate(LocalDate date, Principal principal);
-    Order addOrder(Order order); // WIG-28-SJ
+    Order addOrder(Order order, Principal principal); // WIG-28-SJ
 
     List<Order> getAllOrdersHistory();//SA
 

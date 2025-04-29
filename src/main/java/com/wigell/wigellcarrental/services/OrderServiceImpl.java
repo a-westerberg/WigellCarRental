@@ -128,10 +128,18 @@ public class OrderServiceImpl implements OrderService{
 
     // WIG-28-SJ
     @Override
-    public Order addOrder(Order order) {
+    public Order addOrder(Order order, Principal principal) {
+
+        if (!order.getCustomer().getPersonalIdentityNumber().equals(principal.getName())) {
+            throw new ConflictException("You can't place orders for other customers.");
+        }
+
         validateOrder(order);
         constructOrder(order);
+
+        USER_ANALYZER_LOGGER.info("User '{}' added order with ID '{}'", principal.getName(), order.getId());
         return orderRepository.save(order);
+
     }
 
     //SA
@@ -264,7 +272,7 @@ public class OrderServiceImpl implements OrderService{
     }
 
     // WIG-28-SJ
-    public Order constructOrder(Order order){
+    public Order constructOrder(Order order) {
         Long carId = order.getCar().getId();
         Long customerId = order.getCustomer().getId();
 

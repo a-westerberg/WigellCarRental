@@ -48,8 +48,8 @@ public class CustomerController {
 
     //SA / WIG-28-SJ
     @PostMapping("/addorder")
-    public ResponseEntity<Order> addOrder(@RequestBody Order order){
-        return new ResponseEntity<>(orderService.addOrder(order), HttpStatus.CREATED);
+    public ResponseEntity<Order> addOrder(@RequestBody Order order, Principal principal){
+        return new ResponseEntity<>(orderService.addOrder(order, principal), HttpStatus.CREATED);
     }
 
     //SA
@@ -79,7 +79,7 @@ public class CustomerController {
 
     //SA / WIG-29-SJ
     @PutMapping("/updateinfo")
-    public ResponseEntity<Customer>updateInfo(@RequestBody Customer customer){
-        return ResponseEntity.ok(customerService.updateCustomer(customer));
+    public ResponseEntity<Customer>updateInfo(@RequestBody Customer customer, Principal principal) {
+        return ResponseEntity.ok(customerService.updateCustomer(customer, principal));
     }
 }
