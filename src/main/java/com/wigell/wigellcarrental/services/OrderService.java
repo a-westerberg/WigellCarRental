@@ -1,6 +1,6 @@
 package com.wigell.wigellcarrental.services;
 
-import com.wigell.wigellcarrental.entities.Order;
+import com.wigell.wigellcarrental.models.entities.Order;
 
 import java.security.Principal;
 import java.time.LocalDate;

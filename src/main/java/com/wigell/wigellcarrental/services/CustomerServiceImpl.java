@@ -1,8 +1,9 @@
 package com.wigell.wigellcarrental.services;
 
-import com.wigell.wigellcarrental.entities.Customer;
-import com.wigell.wigellcarrental.entities.Order;
+import com.wigell.wigellcarrental.models.entities.Customer;
+import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.exceptions.ConflictException;
+import com.wigell.wigellcarrental.exceptions.InvalidInputException;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
@@ -124,6 +125,38 @@ public class CustomerServiceImpl implements CustomerService{
         customerRepository.delete(customerToRemove);
 
         return "Customer " + customerToRemove.getPersonalIdentityNumber() + " has been deleted.";
+    }
+
+    // WIG-23-AWS
+    @Override
+    public Customer addCustomer(Customer customer, Principal principal) {
+        validateAddCustomer(customer);
+        checkUniquePersonalIdentityNumber(customer.getPersonalIdentityNumber());
+
+        Customer savedCustomer = customerRepository.save(customer);
+        USER_ANALYZER_LOGGER.info("User '{}' added a new customer with personalIdentityNumber: {}", principal.getName(), savedCustomer.getPersonalIdentityNumber());
+        return savedCustomer;
+    }
+
+    private void validateAddCustomer(Customer customer) {
+        MicroMethods.validateData("Customer", "personalIdentityNumber", customer.getPersonalIdentityNumber());
+        MicroMethods.validateData("Customer", "firstName", customer.getFirstName());
+        MicroMethods.validateData("Customer", "lastName", customer.getLastName());
+        MicroMethods.validateData("Customer", "email", customer.getEmail());
+        MicroMethods.validateData("Customer", "phoneNumber", customer.getPhoneNumber());
+        MicroMethods.validateData("Customer", "address", customer.getAddress());
+
+        if (!customer.getPersonalIdentityNumber().matches("\\d{8}-\\d{4}")){
+            throw new InvalidInputException("Customer", "personalIdentityNumber",customer.getPersonalIdentityNumber());
+        }
+    }
+
+    private void checkUniquePersonalIdentityNumber(String personalIdentityNumber) {
+        MicroMethods.validateUniqueValue(
+                "personalIdentityNumber",
+                personalIdentityNumber,
+                value -> customerRepository.findByPersonalIdentityNumber(value).isPresent()
+        );
     }
 
 }
