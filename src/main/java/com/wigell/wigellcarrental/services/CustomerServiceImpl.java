@@ -123,7 +123,6 @@ public class CustomerServiceImpl implements CustomerService{
 
         customerRepository.delete(customerToRemove);
 
-        USER_ANALYZER_LOGGER.info("User: '{}' - deleted customer '{}'  ", principal.getName(), customerToRemove.getPersonalIdentityNumber());
         return "Customer " + customerToRemove.getPersonalIdentityNumber() + " has been deleted.";
     }
 

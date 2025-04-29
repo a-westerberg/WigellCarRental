@@ -137,7 +137,6 @@ public class OrderServiceImpl implements OrderService{
         validateOrder(order);
         constructOrder(order);
 
-        USER_ANALYZER_LOGGER.info("User '{}' added order with ID '{}'", principal.getName(), order.getId());
         return orderRepository.save(order);
 
     }
