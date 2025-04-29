@@ -7,6 +7,7 @@ import com.wigell.wigellcarrental.services.OrderService;
 import com.wigell.wigellcarrental.services.CarService;
 import com.wigell.wigellcarrental.services.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -46,13 +47,13 @@ public class AdminController {
         return ResponseEntity.ok(customerService.getCustomerById(id));
     }
 
-    /*
-    //SA
+
+    //SA // WIG-23-AWS
     @PostMapping("/addcustomer")//Lägga till ny kund
-    public ResponseEntity<String>addCustomer(@RequestBody Customer customer){
-        return ResponseEntity.created(service.addCustomer(customer));
+    public ResponseEntity<Customer>addCustomer(@RequestBody Customer customer, Principal principal){
+        return new ResponseEntity<>(customerService.addCustomer(customer, principal), HttpStatus.CREATED);
     }
-    */
+
 
 
     //SA / WIG-30-SJ
