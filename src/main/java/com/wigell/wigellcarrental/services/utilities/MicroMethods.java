@@ -1,11 +1,8 @@
 package com.wigell.wigellcarrental.services.utilities;
 
-import com.wigell.wigellcarrental.entities.Order;
 import com.wigell.wigellcarrental.exceptions.InvalidInputException;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 
 import com.wigell.wigellcarrental.exceptions.UniqueConflictException;
 

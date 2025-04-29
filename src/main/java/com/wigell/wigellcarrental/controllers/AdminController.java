@@ -1,14 +1,13 @@
 package com.wigell.wigellcarrental.controllers;
 
-import com.wigell.wigellcarrental.entities.Car;
-import com.wigell.wigellcarrental.entities.Customer;
-import com.wigell.wigellcarrental.entities.Order;
+import com.wigell.wigellcarrental.models.entities.Car;
+import com.wigell.wigellcarrental.models.entities.Customer;
+import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.services.OrderService;
 import com.wigell.wigellcarrental.services.CarService;
 import com.wigell.wigellcarrental.services.CustomerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -135,7 +134,7 @@ public class AdminController {
 
     //SA
     @RequestMapping("/statistics")//String...  En oändlig array utan utsatt antal i, array oavsett om man skickar med en inparametrar
-    public ResponseEntity<String> getStatistics(@RequestParam String choice, @RequestParam String... data){
+    public ResponseEntity<?> getStatistics(@RequestParam String choice, @RequestParam String... data){
         /*if(choice.contains("incomemonth")){//Total intäkt under en viss tidsperiod, månad och år
             return ResponseEntity.ok(service.getIncomeOnMoth(data[0],data[1]));
 
@@ -159,7 +158,7 @@ public class AdminController {
         } /*else {
             return ResponseEntity.notFound(service.notfound());//Ok att göra?
         }*/
-        return ResponseEntity.ok("Ta bort senare/Choice for "+choice+" not found");
+        return ResponseEntity.badRequest().body("Ta bort senare/Choice for '" + choice + "' not found");
 //egen package med ValueObjects utanför entities, en klass för varje
     }
 
