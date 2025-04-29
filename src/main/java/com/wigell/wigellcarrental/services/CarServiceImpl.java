@@ -10,12 +10,14 @@ import com.wigell.wigellcarrental.exceptions.UniqueConflictException;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
+import com.wigell.wigellcarrental.valueobjects.IncomeCar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
 import java.math.BigDecimal;
 import java.time.LocalDate;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -67,22 +69,23 @@ public class CarServiceImpl implements CarService{
 
     //SA
     @Override
-    public String incomeOnCars() {
+    public List<IncomeCar> incomeOnCars() {
         List<Car> cars = carRepository.findAll();
-        StringBuilder output = new StringBuilder();
+        if(cars.isEmpty()) {
+            throw new ResourceNotFoundException("List","cars",0);
+        }
+
+        List<IncomeCar> incomeCars = new ArrayList<>();
+
         for (Car car : cars) {
             BigDecimal totalIncome = BigDecimal.valueOf(0);
             for (Order order : car.getOrders()) {
                 totalIncome = totalIncome.add(order.getTotalPrice());
             }
 
-            output.append("Car ID: ").append(car.getId()).append("\n")
-                    .append("Registration number: ").append(car.getRegistrationNumber()).append("\n")
-                    .append("Rented number: ").append(car.getOrders().size()).append("\n")
-                    .append("Total income: ").append(totalIncome).append("\n")
-                    .append("----------------------------\n");
+            incomeCars.add(new IncomeCar(car,car.getOrders().size(),totalIncome));
         }
-        return output.toString();
+        return incomeCars;
     }
 
     //WIG-20-AA
