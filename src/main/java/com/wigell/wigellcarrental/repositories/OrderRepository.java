@@ -18,6 +18,9 @@ public interface OrderRepository extends JpaRepository<Order, Long> {
 
     List<Order>findAllByEndDateBeforeAndIsActiveFalse(LocalDate beforeThisDate);//SA
 
+    //WIG-22-AA
+    List<Order> findByCustomer_PersonalIdentityNumberAndEndDateBefore(String personalIdentityNumber, LocalDate dateBeforeThisDate);
+
     //WIG-85-AA
     @Query("SELECT o FROM Order o WHERE o.startDate <= :periodEnd AND o.endDate >= :periodStart")
     List<Order> findOverlappingOrders(@Param("periodStart") LocalDate periodEnd, @Param("periodEnd") LocalDate periodStart);

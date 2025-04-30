@@ -45,7 +45,7 @@ public class MicroMethods {
         try {
             return LocalDate.parse(date);
         } catch (Exception e) {
-            throw new InvalidInputException("brand","date", date);
+            throw new InvalidInputException("statistics","data", date);
         }
     }
 

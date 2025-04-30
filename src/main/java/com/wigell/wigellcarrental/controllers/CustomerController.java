@@ -66,13 +66,13 @@ public class CustomerController {
         return ResponseEntity.ok(activeOrders);
     }*/
 
-    /*
-    //SA
+
+    //SA //AA
     @GetMapping("/orders")//Se tidigare bokningar
-    public ResponseEntity<List<Booking>>orders(){
-        return ResponseEntity.ok(service.orders());
+    public ResponseEntity<List<Order>>getOrders(Principal principal){
+        return ResponseEntity.ok(customerService.getOrders(principal));
     }
-    */
+
 
     //SA / WIG-29-SJ
     @PutMapping("/updateinfo")
