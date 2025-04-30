@@ -145,4 +145,55 @@ public class CarServiceImpl implements CarService{
         }
     }
 
+    // WIG-24-AWS
+    @Override
+    public Car updateCar(Car car, Principal principal) {
+        validateUpdateCarInput(car);
+
+        Car existingCar = carRepository.findById(car.getId())
+                .orElseThrow(() -> new ResourceNotFoundException("Car", "id", car.getId()));
+
+        if(!existingCar.getRegistrationNumber().equals(car.getRegistrationNumber())) {
+            checkIfRegistrationNumberIsTakenByAnotherCar(car.getRegistrationNumber(), car.getId());
+        }
+
+        String changes = MicroMethods.logBuilder(existingCar, car, "make", "model", "registrationNumber", "status", "pricePerDay");
+
+        existingCar.setMake(car.getMake());
+        existingCar.setModel(car.getModel());
+        existingCar.setRegistrationNumber(car.getRegistrationNumber());
+        existingCar.setStatus(car.getStatus());
+        existingCar.setPricePerDay(car.getPricePerDay());
+
+        Car updateCar = carRepository.save(existingCar);
+
+        if(changes.isBlank()){
+            USER_ANALYZER_LOGGER.info("User '{}' attempted to update car ID {}, but no changes were made.", principal.getName(), updateCar.getId());
+        } else {
+            USER_ANALYZER_LOGGER.info("User '{}' updated car ID {}: {}",
+                    principal.getName(), updateCar.getId(), changes);
+        }
+
+        return updateCar;
+    }
+    // WIG-24-AWS
+    private void validateUpdateCarInput(Car car){
+        if(car.getId() == null) {
+            throw new InvalidInputException("Car","id", null);
+        }
+
+        MicroMethods.validateData("Car", "make", car.getMake());
+        MicroMethods.validateData("Car", "model", car.getModel());
+        MicroMethods.validateData("Car", "registrationNumber", car.getRegistrationNumber());
+        MicroMethods.validateData("Car", "status", car.getStatus());
+        MicroMethods.validateData("Car", "pricePerDay", car.getPricePerDay());
+    }
+    // WIG-24-AWS
+    private void checkIfRegistrationNumberIsTakenByAnotherCar(String regNumber, Long currentCarId) {
+        Optional<Car> result = carRepository.findByRegistrationNumber(regNumber);
+        if(result.isPresent() && !result.get().getId().equals(currentCarId)) {
+            throw new UniqueConflictException("Registration number",regNumber);
+        }
+    }
+
 }

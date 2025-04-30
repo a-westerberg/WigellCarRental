@@ -2,6 +2,7 @@ package com.wigell.wigellcarrental.services.utilities;
 
 import com.wigell.wigellcarrental.exceptions.InvalidInputException;
 
+import java.lang.reflect.Field;
 import java.time.LocalDate;
 
 import com.wigell.wigellcarrental.exceptions.UniqueConflictException;
@@ -68,6 +69,28 @@ public class MicroMethods {
                         (e1, e2) -> e1,
                         LinkedHashMap::new
                 ));
+    }
+
+    //WIG-24-AWS
+    public static <T> String logBuilder(T oldObject, T newObject, String... fieldsToCompare) {
+        StringBuilder changes = new StringBuilder();
+
+        for(String fieldName : fieldsToCompare) {
+            try{
+                Field field = oldObject.getClass().getDeclaredField(fieldName);
+                field.setAccessible(true);
+
+                Object oldValue = field.get(oldObject);
+                Object newValue = field.get(newObject);
+
+                if(oldValue != null && !oldValue.equals(newValue) || (oldValue == null && newValue != null)) {
+                    changes.append(String.format("%s: '%s' -> '%s'; ", fieldName, oldValue, newValue));
+                }
+            } catch (NoSuchFieldException | IllegalAccessException e){
+                changes.append(String.format("%s: [error reading field]; ", fieldName));
+            }
+        }
+        return changes.toString();
     }
 
 

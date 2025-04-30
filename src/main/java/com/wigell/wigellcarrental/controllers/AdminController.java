@@ -81,13 +81,13 @@ public class AdminController {
     public ResponseEntity<Car>addCar(@RequestBody Car car, Principal principal){
         return ResponseEntity.ok(carService.addCar(car, principal)); //TODO gör om till HTTP-status created!
     }
-    /*
-    //SA
+
+    //SA //AWS
     @PutMapping("/updatecar")//Uppdatera bilinformation
-    public ResponseEntity<Car>updateCar(@RequestBody Car car){
-        return ResponseEntity.ok(service.updateCar(car));
+    public ResponseEntity<Car>updateCar(@RequestBody Car car, Principal principal){
+        return ResponseEntity.ok(carService.updateCar(car, principal));
     }
-    */
+
     //SA //AA
     @DeleteMapping("/removecar/{idOrRegistrationNumber}")//Radera bil
     public ResponseEntity<String>removeCar(@PathVariable String idOrRegistrationNumber, Principal principal){
