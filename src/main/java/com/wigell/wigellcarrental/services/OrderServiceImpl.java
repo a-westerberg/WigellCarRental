@@ -220,10 +220,9 @@ public class OrderServiceImpl implements OrderService{
 
     }
 
-    //WIG-85-AA
+    //WIG-85-AA, WIG-96-AA
     @Override
     public PopularBrandStats getPopularBrand(String startDate, String endDate) {
-        //TODO gör om till att skicka tillbaka lista med ObjectValue
         LocalDate startPeriod = MicroMethods.parseStringToDate(startDate);
         LocalDate endPeriod = MicroMethods.parseStringToDate(endDate);
 
@@ -233,8 +232,9 @@ public class OrderServiceImpl implements OrderService{
         }
 
         Map<String, Long> makeCountMap = countMakes(orders);
+        Map<String,Long> sortedMap = MicroMethods.sortMapByValueThenKey(makeCountMap);
 
-        return new PopularBrandStats(startPeriod, endPeriod, makeCountMap);
+        return new PopularBrandStats(startPeriod, endPeriod, sortedMap);
     }
 
     // WIG-28-SJ
@@ -277,24 +277,10 @@ public class OrderServiceImpl implements OrderService{
                 ));
     }
 
-    //WIG-85-AA
-/*    Ta bort och göra om till ObjectValue
-    private String buildResultStringToMakeStatistics(Map<String, Long> makeCountMap) {
-        StringBuilder result = new StringBuilder();
-        makeCountMap.entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .forEach(entry -> result.append(entry.getKey())
-                        .append(": ")
-                        .append(entry.getValue())
-                        .append('\n'));
-        return result.toString();
-    }*/
-
     //SA
     private static BigDecimal calculateCancellationFee(Order orderToCancel){
         long days = ChronoUnit.DAYS.between(orderToCancel.getStartDate(), orderToCancel.getEndDate());
         return orderToCancel.getTotalPrice().multiply(BigDecimal.valueOf(0.05).multiply(BigDecimal.valueOf(days)));
     }
-
 
 }
