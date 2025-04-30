@@ -6,8 +6,12 @@ import java.time.LocalDate;
 
 import com.wigell.wigellcarrental.exceptions.UniqueConflictException;
 
+import java.util.Comparator;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.function.Consumer;
+import java.util.stream.Collectors;
 
 // WIG-28-SJ
 public class MicroMethods {
@@ -47,6 +51,23 @@ public class MicroMethods {
         } catch (Exception e) {
             throw new InvalidInputException("statistics","data", date);
         }
+    }
+
+    //WIG-96-AA
+    public static Map<String, Long> sortMapByValueThenKey(Map<String, Long> makeCountMap) {
+        // Exempel: Sorterar bilmärken utifrån antal uthyrningar (värden) i fallande ordning.
+        // Om två bilmärken har samma antal uthyrningar, sorteras de alfabetiskt (stigande).
+        // Resultatet samlas i en LinkedHashMap för att bevara den sorterade ordningen i JSON-svaret.
+        return makeCountMap.entrySet().stream()
+                .sorted(Comparator
+                        .comparing(Map.Entry<String,Long> ::getValue, Comparator.reverseOrder())
+                        .thenComparing(Map.Entry::getKey))
+                .collect(Collectors.toMap(
+                        Map.Entry::getKey,
+                        Map.Entry::getValue,
+                        (e1, e2) -> e1,
+                        LinkedHashMap::new
+                ));
     }
 
 

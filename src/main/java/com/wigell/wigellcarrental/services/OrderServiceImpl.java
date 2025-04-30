@@ -6,6 +6,7 @@ import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.enums.CarStatus;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
+import com.wigell.wigellcarrental.models.valueobjects.PopularBrandStats;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
@@ -219,20 +220,21 @@ public class OrderServiceImpl implements OrderService{
 
     }
 
-    //WIG-85-AA
+    //WIG-85-AA, WIG-96-AA
     @Override
-    public String getPopularBrand(String startDate, String endDate) {
+    public PopularBrandStats getPopularBrand(String startDate, String endDate) {
         LocalDate startPeriod = MicroMethods.parseStringToDate(startDate);
         LocalDate endPeriod = MicroMethods.parseStringToDate(endDate);
 
         List<Order> orders = getOrdersBetweenDates(startPeriod, endPeriod);
         if (orders.isEmpty()) {
-            return "No orders found for the selected period.";
+            throw new ResourceNotFoundException("No orders found between " + startDate + " and " + endDate);
         }
 
         Map<String, Long> makeCountMap = countMakes(orders);
+        Map<String,Long> sortedMap = MicroMethods.sortMapByValueThenKey(makeCountMap);
 
-        return buildResultStringToMakeStatistics(makeCountMap);
+        return new PopularBrandStats(startPeriod, endPeriod, sortedMap);
     }
 
     // WIG-28-SJ
@@ -275,23 +277,10 @@ public class OrderServiceImpl implements OrderService{
                 ));
     }
 
-    //WIG-85-AA
-    private String buildResultStringToMakeStatistics(Map<String, Long> makeCountMap) {
-        StringBuilder result = new StringBuilder();
-        makeCountMap.entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .forEach(entry -> result.append(entry.getKey())
-                        .append(": ")
-                        .append(entry.getValue())
-                        .append('\n'));
-        return result.toString();
-    }
-
     //SA
     private static BigDecimal calculateCancellationFee(Order orderToCancel){
         long days = ChronoUnit.DAYS.between(orderToCancel.getStartDate(), orderToCancel.getEndDate());
         return orderToCancel.getTotalPrice().multiply(BigDecimal.valueOf(0.05).multiply(BigDecimal.valueOf(days)));
     }
-
 
 }
