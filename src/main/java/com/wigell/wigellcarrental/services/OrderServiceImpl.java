@@ -214,6 +214,7 @@ public class OrderServiceImpl implements OrderService{
     //WIG-85-AA
     @Override
     public String getPopularBrand(String startDate, String endDate) {
+        //TODO gör om till att skicka tillbaka lista med ObjectValue
         LocalDate startPeriod = MicroMethods.parseStringToDate(startDate);
         LocalDate endPeriod = MicroMethods.parseStringToDate(endDate);
 
