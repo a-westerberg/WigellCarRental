@@ -54,7 +54,17 @@ public class CustomerServiceImpl implements CustomerService{
 
     // WIG-29-SJ
     @Override
-    public Customer updateCustomer(Customer customer) {
+    public Customer updateCustomer(Customer customer, Principal principal) {
+
+        Customer customerToUpdate = customerRepository.findById(customer.getId()).orElseThrow(() ->
+                new ResourceNotFoundException("Customer","id",customer.getId()));
+
+        if (!principal.getName().equals(customerToUpdate.getPersonalIdentityNumber()) && !principal.getName().equals("admin")) {
+            System.out.println(principal.getName());
+            System.out.println(customer.getPersonalIdentityNumber());
+            throw new ConflictException("User not authorized for function.");
+        }
+
         Customer updatedCustomer = validateCustomer(customer);
         return customerRepository.save(updatedCustomer);
     }
@@ -99,7 +109,11 @@ public class CustomerServiceImpl implements CustomerService{
 
     // WIG-30-SJ
     @Override
-    public String removeCustomerById(Long id) {
+    public String removeCustomerById(Long id, Principal principal) {
+        if (!principal.getName().equals("admin")) {
+            throw new ConflictException("User not authorized for function.");
+        }
+
         Customer customerToRemove = customerRepository.findById(id).orElseThrow(
                 ()-> new ResourceNotFoundException("Customer","id",id));
 
@@ -117,30 +131,8 @@ public class CustomerServiceImpl implements CustomerService{
                 order -> orderRepository.save(order)
         );
 
-        /*
-        //V1
-        for (Order orderToEdit : ordersToEdit) {
-            orderToEdit.setCustomer(null);
-            orderRepository.save(orderToEdit);
-        }
-
-
-
-        for (Order orderToEdit : ordersToEdit) {
-            if (orderToEdit.getIsActive() == true) {
-                throw new ConflictException("Customer with active orders can't be deleted!");
-            } else {
-                MicroMethods.disconnectKeys(
-                        ordersToEdit,
-                        order -> order.setCustomer(null),
-                        order -> orderRepository.save(order)
-                );
-            }
-        }
-
-         */
-
         customerRepository.delete(customerToRemove);
+
         return "Customer " + customerToRemove.getPersonalIdentityNumber() + " has been deleted.";
     }
 

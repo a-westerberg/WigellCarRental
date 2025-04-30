@@ -1,5 +1,6 @@
 package com.wigell.wigellcarrental.services;
 
+import com.wigell.wigellcarrental.exceptions.ConflictException;
 import com.wigell.wigellcarrental.models.entities.Car;
 import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.models.entities.Order;
@@ -101,10 +102,17 @@ public class OrderServiceImpl implements OrderService{
 
     // WIG-28-SJ
     @Override
-    public Order addOrder(Order order) {
+    public Order addOrder(Order order, Principal principal) {
+
         validateOrder(order);
         constructOrder(order);
+
+        if (!order.getCustomer().getPersonalIdentityNumber().equals(principal.getName())) {
+            throw new ConflictException("You can't place orders for other customers.");
+        }
+
         return orderRepository.save(order);
+
     }
 
     //SA
@@ -240,7 +248,7 @@ public class OrderServiceImpl implements OrderService{
     }
 
     // WIG-28-SJ
-    public Order constructOrder(Order order){
+    public Order constructOrder(Order order) {
         Long carId = order.getCar().getId();
         Long customerId = order.getCustomer().getId();
 

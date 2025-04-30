@@ -58,8 +58,8 @@ public class AdminController {
 
     //SA / WIG-30-SJ
     @DeleteMapping("/removecustomer/{id}")
-    public ResponseEntity<String>removeCustomer(@PathVariable Long id){
-        return ResponseEntity.ok(customerService.removeCustomerById(id));
+    public ResponseEntity<String>removeCustomer(@PathVariable Long id, Principal principal){
+        return ResponseEntity.ok(customerService.removeCustomerById(id, principal));
     }
 
 
