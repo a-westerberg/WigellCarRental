@@ -21,4 +21,7 @@ public interface CarService {
     Car addCar(Car car, Principal principal);
 
     List<IncomeCar> incomeOnCars();//SA
+
+    //WIG-24-AWS
+    Car updateCar(Car car, Principal principal);
 }
