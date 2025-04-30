@@ -1,19 +1,16 @@
 package com.wigell.wigellcarrental.controllers;
 
-import com.wigell.wigellcarrental.entities.Order;
-import com.wigell.wigellcarrental.entities.Car;
-import com.wigell.wigellcarrental.entities.Customer;
-import com.wigell.wigellcarrental.entities.Order;
+import com.wigell.wigellcarrental.models.entities.Order;
+import com.wigell.wigellcarrental.models.entities.Car;
+import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.services.CarServiceImpl;
 import com.wigell.wigellcarrental.services.CustomerServiceImpl;
-import com.wigell.wigellcarrental.services.OrderService;
 import com.wigell.wigellcarrental.services.OrderServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 /* import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContextHolder; */
-import org.springframework.security.access.prepost.PreAuthorize;
 import org.springframework.web.bind.annotation.*;
 
 
@@ -23,7 +20,6 @@ import java.util.List;
 //SA
 @RestController
 @RequestMapping("/api/v1")
-//@PreAuthorize("hasRole('USER')")
 public class CustomerController {
 
     //AWS / WIG-26-SJ

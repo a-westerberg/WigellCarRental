@@ -1,6 +1,7 @@
 package com.wigell.wigellcarrental.services;
 
-import com.wigell.wigellcarrental.entities.Car;
+import com.wigell.wigellcarrental.models.entities.Car;
+import com.wigell.wigellcarrental.models.valueobjects.IncomeCar;
 
 import java.security.Principal;
 import java.util.List;
@@ -18,4 +19,6 @@ public interface CarService {
 
     //WIG-18-AA
     Car addCar(Car car, Principal principal);
+
+    List<IncomeCar> incomeOnCars();//SA
 }

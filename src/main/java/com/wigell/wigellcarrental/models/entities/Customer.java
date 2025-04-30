@@ -1,4 +1,4 @@
-package com.wigell.wigellcarrental.entities;
+package com.wigell.wigellcarrental.models.entities;
 
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import jakarta.persistence.*;

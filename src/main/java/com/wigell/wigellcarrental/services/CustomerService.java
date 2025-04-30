@@ -1,7 +1,7 @@
 package com.wigell.wigellcarrental.services;
 
-import com.wigell.wigellcarrental.entities.Customer;
-import com.wigell.wigellcarrental.entities.Order;
+import com.wigell.wigellcarrental.models.entities.Customer;
+import com.wigell.wigellcarrental.models.entities.Order;
 
 import java.security.Principal;
 import java.util.List;
@@ -20,4 +20,7 @@ public interface CustomerService {
 
     // WIG-29-SJ
     Customer updateCustomer(Customer customer);
+
+    // WIG-23-AWS
+    Customer addCustomer(Customer customer, Principal principal);
 }
