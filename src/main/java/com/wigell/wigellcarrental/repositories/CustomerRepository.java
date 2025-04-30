@@ -25,5 +25,5 @@ public interface CustomerRepository extends JpaRepository<Customer,Long> {
      */
 
     // WIG-23-AWS
-    Optional<Customer> findByPersonalIdentityNumber(String personalIdentityNumber);
+    //Optional<Customer> findByPersonalIdentityNumber(String personalIdentityNumber);
 }

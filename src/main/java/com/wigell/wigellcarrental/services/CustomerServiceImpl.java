@@ -21,18 +21,13 @@ import java.util.Optional;
 //SA
 @Service
 public class CustomerServiceImpl implements CustomerService{
-
+    //AA
     private final OrderRepository orderRepository;
     //SA
     private CustomerRepository customerRepository;
 
     //WIG-71-AA
     private static final Logger USER_ANALYZER_LOGGER = LogManager.getLogger("userlog");
-
-    //SA
-    private CustomerRepository customerRepository;
-    //AA
-    private final OrderRepository orderRepository;
 
     //SA //AA
     @Autowired
