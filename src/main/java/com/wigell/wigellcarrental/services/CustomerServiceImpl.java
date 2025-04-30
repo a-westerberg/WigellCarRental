@@ -53,9 +53,16 @@ public class CustomerServiceImpl implements CustomerService{
     // WIG-29-SJ
     @Override
     public Customer updateCustomer(Customer customer, Principal principal) {
-        if (principal.getName().equals(customer.getPersonalIdentityNumber())) {
+
+        Customer customerToUpdate = customerRepository.findById(customer.getId()).orElseThrow(() ->
+                new ResourceNotFoundException("Customer","id",customer.getId()));
+
+        if (!principal.getName().equals(customerToUpdate.getPersonalIdentityNumber()) && !principal.getName().equals("admin")) {
+            System.out.println(principal.getName());
+            System.out.println(customer.getPersonalIdentityNumber());
             throw new ConflictException("User not authorized for function.");
         }
+
         Customer updatedCustomer = validateCustomer(customer);
         return customerRepository.save(updatedCustomer);
     }
@@ -101,7 +108,7 @@ public class CustomerServiceImpl implements CustomerService{
     // WIG-30-SJ
     @Override
     public String removeCustomerById(Long id, Principal principal) {
-        if (principal.getName().equals("admin")) {
+        if (!principal.getName().equals("admin")) {
             throw new ConflictException("User not authorized for function.");
         }
 
