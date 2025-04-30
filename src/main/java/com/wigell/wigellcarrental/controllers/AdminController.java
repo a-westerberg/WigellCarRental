@@ -79,7 +79,7 @@ public class AdminController {
     //SA //AA
     @PostMapping("/addcar")//Lägg till bil
     public ResponseEntity<Car>addCar(@RequestBody Car car, Principal principal){
-        return ResponseEntity.ok(carService.addCar(car, principal));
+        return ResponseEntity.ok(carService.addCar(car, principal)); //TODO gör om till HTTP-status created!
     }
     /*
     //SA
