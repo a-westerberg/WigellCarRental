@@ -14,12 +14,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 //SA
 @Service
 public class CustomerServiceImpl implements CustomerService{
-
+    //AA
     private final OrderRepository orderRepository;
     //SA
     private CustomerRepository customerRepository;
@@ -27,7 +29,7 @@ public class CustomerServiceImpl implements CustomerService{
     //WIG-71-AA
     private static final Logger USER_ANALYZER_LOGGER = LogManager.getLogger("userlog");
 
-    //SA
+    //SA //AA
     @Autowired
     public CustomerServiceImpl(CustomerRepository customerRepository, OrderRepository orderRepository) {
         this.customerRepository = customerRepository;
@@ -115,7 +117,7 @@ public class CustomerServiceImpl implements CustomerService{
         Customer customerToRemove = customerRepository.findById(id).orElseThrow(
                 ()-> new ResourceNotFoundException("Customer","id",id));
 
-        List<Order> ordersToEdit = customerToRemove.getOrder();
+        List<Order> ordersToEdit = customerToRemove.getOrders();
         boolean hasActiveOrders = ordersToEdit.stream()
                 .anyMatch(Order::getIsActive);
 
@@ -134,6 +136,16 @@ public class CustomerServiceImpl implements CustomerService{
         return "Customer " + customerToRemove.getPersonalIdentityNumber() + " has been deleted.";
     }
 
+
+    //WIG-22-AA
+    public List<Order> getOrders(Principal principal) {
+        LocalDate today = LocalDate.now();
+        Optional<Customer> customer = customerRepository.findByPersonalIdentityNumber(principal.getName()/*"19751230-9101"*/);
+        if(customer.isPresent()){
+            return orderRepository.findByCustomer_PersonalIdentityNumberAndEndDateBefore(customer.get().getPersonalIdentityNumber(), today);
+        }
+        throw new ResourceNotFoundException("Customer", "user", principal.getName());
+    }
     // WIG-23-AWS
     @Override
     public Customer addCustomer(Customer customer, Principal principal) {
