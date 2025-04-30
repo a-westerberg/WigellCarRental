@@ -60,13 +60,29 @@ public class CustomerServiceImpl implements CustomerService{
                 new ResourceNotFoundException("Customer","id",customer.getId()));
 
         if (!principal.getName().equals(customerToUpdate.getPersonalIdentityNumber()) && !principal.getName().equals("admin")) {
-            System.out.println(principal.getName());
-            System.out.println(customer.getPersonalIdentityNumber());
             throw new ConflictException("User not authorized for function.");
         }
 
         Customer updatedCustomer = validateCustomer(customer);
-        return customerRepository.save(updatedCustomer);
+        customerRepository.save(updatedCustomer);
+
+        USER_ANALYZER_LOGGER.info("User '{}' has updated customer: '{}'. " +
+                        "\nUpdated information: " +
+                        "\nFirst name: '{}' " +
+                        "\nLastname: '{}' " +
+                        "\nE-mail: '{}' " +
+                        "\nPhone Number: '{}' " +
+                        "\nAddress: '{}'",
+                principal.getName(),
+                updatedCustomer.getId(),
+                updatedCustomer.getFirstName(),
+                updatedCustomer.getLastName(),
+                updatedCustomer.getEmail(),
+                updatedCustomer.getPhoneNumber(),
+                updatedCustomer.getAddress()
+        );
+
+        return updatedCustomer;
     }
 
     public Customer validateCustomer(Customer customer) {
@@ -79,6 +95,7 @@ public class CustomerServiceImpl implements CustomerService{
         if (MicroMethods.validateNotNull(customer.getLastName())) {
             existingCustomer.setLastName(customer.getLastName());
         }
+
         /*
         // WIG-29-SJ
         // If values of Email & Phone needs to be unique. If not, remove code later.
@@ -131,9 +148,12 @@ public class CustomerServiceImpl implements CustomerService{
                 order -> orderRepository.save(order)
         );
 
+        String deletedCustomerId = customerToRemove.getPersonalIdentityNumber();
         customerRepository.delete(customerToRemove);
 
-        return "Customer " + customerToRemove.getPersonalIdentityNumber() + " has been deleted.";
+        USER_ANALYZER_LOGGER.info("User: '{}' deleted customer: '{}'", principal.getName(), deletedCustomerId);
+
+        return "Customer " + deletedCustomerId + " has been deleted.";
     }
 
 

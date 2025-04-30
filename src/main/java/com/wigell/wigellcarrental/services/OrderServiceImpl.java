@@ -111,8 +111,18 @@ public class OrderServiceImpl implements OrderService{
             throw new ConflictException("You can't place orders for other customers.");
         }
 
-        return orderRepository.save(order);
-
+        orderRepository.save(order);
+        // WIG-89-SJ
+        USER_ANALYZER_LOGGER.info("User '{}' has placed new order. " +
+                        "\nCar: '{}' " +
+                        "\nStart Date: '{}' " +
+                        "\nEnd Date: '{}' ",
+                principal.getName(),
+                order.getCar().getId(),
+                order.getStartDate(),
+                order.getEndDate()
+        );
+        return order;
     }
 
     //SA
