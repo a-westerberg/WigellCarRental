@@ -6,6 +6,7 @@ import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.enums.CarStatus;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
+import com.wigell.wigellcarrental.models.valueobjects.PopularBrandStats;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
@@ -221,19 +222,19 @@ public class OrderServiceImpl implements OrderService{
 
     //WIG-85-AA
     @Override
-    public String getPopularBrand(String startDate, String endDate) {
+    public PopularBrandStats getPopularBrand(String startDate, String endDate) {
         //TODO gör om till att skicka tillbaka lista med ObjectValue
         LocalDate startPeriod = MicroMethods.parseStringToDate(startDate);
         LocalDate endPeriod = MicroMethods.parseStringToDate(endDate);
 
         List<Order> orders = getOrdersBetweenDates(startPeriod, endPeriod);
         if (orders.isEmpty()) {
-            return "No orders found for the selected period.";
+            throw new ResourceNotFoundException("No orders found between " + startDate + " and " + endDate);
         }
 
         Map<String, Long> makeCountMap = countMakes(orders);
 
-        return buildResultStringToMakeStatistics(makeCountMap);
+        return new PopularBrandStats(startPeriod, endPeriod, makeCountMap);
     }
 
     // WIG-28-SJ
@@ -277,6 +278,7 @@ public class OrderServiceImpl implements OrderService{
     }
 
     //WIG-85-AA
+/*    Ta bort och göra om till ObjectValue
     private String buildResultStringToMakeStatistics(Map<String, Long> makeCountMap) {
         StringBuilder result = new StringBuilder();
         makeCountMap.entrySet().stream()
@@ -286,7 +288,7 @@ public class OrderServiceImpl implements OrderService{
                         .append(entry.getValue())
                         .append('\n'));
         return result.toString();
-    }
+    }*/
 
     //SA
     private static BigDecimal calculateCancellationFee(Order orderToCancel){
