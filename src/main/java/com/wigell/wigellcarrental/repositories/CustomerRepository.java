@@ -13,6 +13,9 @@ public interface CustomerRepository extends JpaRepository<Customer,Long> {
     // WIG-27-SJ
     Customer findById(long id);
 
+    //WIG-22-AA
+    Optional<Customer> findByPersonalIdentityNumber(String personalIdentityNumber);
+
 
     /*
     // WIG-29-SJ
@@ -22,5 +25,5 @@ public interface CustomerRepository extends JpaRepository<Customer,Long> {
      */
 
     // WIG-23-AWS
-    Optional<Customer> findByPersonalIdentityNumber(String personalIdentityNumber);
+    //Optional<Customer> findByPersonalIdentityNumber(String personalIdentityNumber);
 }
