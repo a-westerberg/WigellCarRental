@@ -40,7 +40,7 @@ public class CarServiceImpl implements CarService{
         this.carRepository = carRepository;
         this.orderRepository = orderRepository;
     }
-    // AWS
+    // AWS TODO Exception
     public List<Car> getAvailableCars() {
         return carRepository.findByStatus(CarStatus.AVAILABLE);
     }
@@ -157,7 +157,7 @@ public class CarServiceImpl implements CarService{
             checkIfRegistrationNumberIsTakenByAnotherCar(car.getRegistrationNumber(), car.getId());
         }
 
-        String changes = MicroMethods.logBuilder(existingCar, car, "make", "model", "registrationNumber", "status", "pricePerDay");
+        String changes = MicroMethods.logUpdateBuilder(existingCar, car, "make", "model", "registrationNumber", "status", "pricePerDay");
 
         existingCar.setMake(car.getMake());
         existingCar.setModel(car.getModel());

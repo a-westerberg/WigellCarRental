@@ -72,7 +72,7 @@ public class MicroMethods {
     }
 
     //WIG-24-AWS
-    public static <T> String logBuilder(T oldObject, T newObject, String... fieldsToCompare) {
+    public static <T> String logUpdateBuilder(T oldObject, T newObject, String... fieldsToCompare) {
         StringBuilder changes = new StringBuilder();
 
         for(String fieldName : fieldsToCompare) {
