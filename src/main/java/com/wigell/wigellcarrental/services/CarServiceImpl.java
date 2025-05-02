@@ -123,7 +123,7 @@ public class CarServiceImpl implements CarService{
 
     //WIG-18-AA
     private void validateAddCarInput(Car car, Principal principal) {
-        //TODO Hur gör vi med loggningsförsök i micro-metoderna?
+        //TODO Hur gör vi med loggningsförsök i micro-metoderna? Skicka med principal och för vilken metod vi validerar datan?
         MicroMethods.validateData("Car registration number", "registrationNumber", car.getRegistrationNumber());
         MicroMethods.validateData("Car status", "status", car.getStatus());
         MicroMethods.validateData("Car make", "make", car.getMake());
