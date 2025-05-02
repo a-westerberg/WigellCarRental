@@ -57,13 +57,16 @@ public class CarServiceImpl implements CarService{
             processOrderList(carToDelete.getOrders(), carToDelete.getId());
         }
         carRepository.delete(carToDelete);
+        //TODO lägg in micrometod för att skapa loggningsmeddelandet
         USER_ANALYZER_LOGGER.info("A car with id {} and the registration number {} has been deleted", carToDelete.getId(), carToDelete.getRegistrationNumber());
         return  isInputId(input) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
     }
 
     //WIG-18-AA
     public Car addCar(Car car, Principal principal) {
-        validateAddCarInput(car);
+        validateAddCarInput(car, principal);
+        //TODO lägg in micrometod för att skapa loggningsmeddelandet
+        USER_ANALYZER_LOGGER.info("User: , {} Has added a car", principal.getName());
         return carRepository.save(car);
     }
 
@@ -107,20 +110,22 @@ public class CarServiceImpl implements CarService{
     }
 
     //WIG-18-AA
-    private void validateAddCarInput(Car car) {
+    private void validateAddCarInput(Car car, Principal principal) {
         MicroMethods.validateData("Car registration number", "registrationNumber", car.getRegistrationNumber());
         MicroMethods.validateData("Car status", "status", car.getStatus());
         MicroMethods.validateData("Car make", "make", car.getMake());
         MicroMethods.validateData("Car model", "model", car.getModel());
         MicroMethods.validateData("Price per day", "pricePerDay", car.getPricePerDay());
 
-        checkUniqRegistrationNumber(car.getRegistrationNumber());
+        checkUniqRegistrationNumber(car.getRegistrationNumber(), principal);
     }
 
     //WIG-18-AA
-    private void checkUniqRegistrationNumber(String input) {
+    private void checkUniqRegistrationNumber(String input, Principal principal) {
         Optional<Car> result = carRepository.findByRegistrationNumber(input);
         if (result.isPresent()) {
+            //TODO lägg in micrometod för att skapa loggningsmeddelandet
+            USER_ANALYZER_LOGGER.warn("User: {} tried to add or update a car, but failed due to not uniq registration number", principal );
             throw new UniqueConflictException("Registration number",input);
         }
     }
