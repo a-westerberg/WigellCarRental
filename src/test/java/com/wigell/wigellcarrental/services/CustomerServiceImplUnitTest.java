@@ -46,8 +46,8 @@ class CustomerServiceImplUnitTest {
     //SA
     @Test
     void getCustomerByIdReturnsCustomer() {
-        Optional<Customer> customerOptional = Optional.of(customer);
-        when(mockCustomerRepository.findById(customer.getId())).thenReturn(customerOptional);
+        when(mockCustomerRepository.findById(customer.getId())).thenReturn(Optional.of(customer));
+
         Customer customerFound = customerService.getCustomerById(customer.getId());
 
         assertEquals(customer.getId(), customerFound.getId());
