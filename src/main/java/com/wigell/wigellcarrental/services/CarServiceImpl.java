@@ -52,14 +52,14 @@ public class CarServiceImpl implements CarService{
 
     //WIG-20-AA
     public String deleteCar(String input, Principal principal) {
-        Car carToDelete = findCarToDelete(input);
+        Car carToDelete = findCarToDelete(input, principal);
         if (!carToDelete.getOrders().isEmpty()) {
-            processOrderList(carToDelete.getOrders(), carToDelete.getId());
+            processOrderList(carToDelete.getOrders(), carToDelete.getId(), principal);
         }
         carRepository.delete(carToDelete);
         //TODO lägg in micrometod för att skapa loggningsmeddelandet
         USER_ANALYZER_LOGGER.info("A car with id {} and the registration number {} has been deleted", carToDelete.getId(), carToDelete.getRegistrationNumber());
-        return  isInputId(input) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
+        return  isInputId(input, principal) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
     }
 
     //WIG-18-AA
@@ -92,25 +92,38 @@ public class CarServiceImpl implements CarService{
     }
 
     //WIG-20-AA
-    private boolean isInputId(String input) {
+    private boolean isInputId(String input, Principal principal) {
         if (input == null || input.isEmpty()) {
+            //TODO lägg in micrometod för att skapa loggningsmeddelandet
+            USER_ANALYZER_LOGGER.warn("User: {} tried to delete car, but id/regisration number was null/empty",principal.getName());
             throw new InvalidInputException("Car","Input", input);
         }
         return input.matches("\\d+");
     }
 
     //WIG-20-AA
-    private Car findCarToDelete(String input) {
-        if (isInputId(input)) {
+    private Car findCarToDelete(String input, Principal principal) {
+        if (isInputId(input, principal)) {
             Long id = Long.parseLong(input);
-            return carRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Car", "id", id));
+            return carRepository.findById(id)
+                    .orElseThrow(() -> {
+                        //TODO lägg in micrometod för att skapa loggningsmeddelandet
+                        USER_ANALYZER_LOGGER.warn("User: {} tried to delete car, but car id was not found",principal.getName());
+                        return new ResourceNotFoundException("Car", "id", id);
+                    });
         } else {
-            return carRepository.findByRegistrationNumber(input).orElseThrow(() -> new ResourceNotFoundException("Car", "Registration Number", input));
+            return carRepository.findByRegistrationNumber(input)
+                    .orElseThrow(() -> {
+                        //TODO lägg in micrometod för att skapa loggningsmeddelandet
+                        USER_ANALYZER_LOGGER.warn("User: {} tried to delete car, but registration number was not found",principal.getName());
+                        return new ResourceNotFoundException("Car", "Registration Number", input);
+            });
         }
     }
 
     //WIG-18-AA
     private void validateAddCarInput(Car car, Principal principal) {
+        //TODO Hur gör vi med loggningsförsök i micro-metoderna?
         MicroMethods.validateData("Car registration number", "registrationNumber", car.getRegistrationNumber());
         MicroMethods.validateData("Car status", "status", car.getStatus());
         MicroMethods.validateData("Car make", "make", car.getMake());
@@ -131,7 +144,7 @@ public class CarServiceImpl implements CarService{
     }
 
     //WIG-37-AA
-    private void processOrderList(List<Order> orders, Long id) {
+    private void processOrderList(List<Order> orders, Long id, Principal principal) {
         LocalDate today = LocalDate.now();
         for (Order order : orders) {
             if (order.getEndDate().isBefore(today)) {
@@ -139,12 +152,15 @@ public class CarServiceImpl implements CarService{
                 orderRepository.save(order);
             }
             if (!today.isBefore(order.getStartDate()) && !today.isAfter(order.getEndDate())) {
+                //TODO lägg in micrometod för att skapa loggningsmeddelandet
+                USER_ANALYZER_LOGGER.warn("User: {} tried to delete an order but failed due to an ongoing order", principal.getName());
                 throw new ConflictException("Car cannot be deleted due to ongoing booking.");
             }
             if (order.getStartDate().isAfter(today)) {
+                //TODO uppdatera till datum istället för carStatus - lägg till loggning.
                 Car carToReplaceWith = carRepository.findFirstByStatusAndIdNot(CarStatus.AVAILABLE,id).orElseThrow(() ->new ResourceNotFoundException("Car","Car Status [Available]", "Cannot delete car"));
                 order.setCar(carToReplaceWith);
-                System.out.println(carToReplaceWith.toString());
+                //System.out.println(carToReplaceWith.toString());
                 orderRepository.save(order);
             }
         }
