@@ -137,13 +137,31 @@ public class CarServiceImpl implements CarService{
                 throw new ConflictException("Car cannot be deleted due to ongoing booking.");
             }
             if (order.getStartDate().isAfter(today)) {
-                Car carToReplaceWith = carRepository.findFirstByStatusAndIdNot(CarStatus.AVAILABLE,id).orElseThrow(() ->new ResourceNotFoundException("Car","Car Status [Available]", "Cannot delete car"));
+                //Car carToReplaceWith = carRepository.findFirstByStatusAndIdNot(CarStatus.AVAILABLE,id).orElseThrow(() ->new ResourceNotFoundException("Car","Car Status [Available]", "Cannot delete car"));
+                //TODO om detta fungerar fixa exception med endast message som fungerar här.
+                Car carToReplaceWith = carRepository.findFirstAvailableCarBetween(order.getStartDate(), order.getEndDate(),id).orElseThrow(() ->new ResourceNotFoundException("Car", "", "Cannot delete car"));
                 order.setCar(carToReplaceWith);
                 System.out.println(carToReplaceWith.toString());
                 orderRepository.save(order);
             }
         }
     }
+
+    //WIG-122-AA
+    private boolean isAvailableBetween(Car car, LocalDate from, LocalDate to) {
+        //Metoden kollar om en viss bil är ledig/upptagen ett visst datum, returnerar true om bilen är ledig hela perioden
+        return car.getOrders().stream()
+                .allMatch(o ->
+                        o.getEndDate().isBefore(from) || o.getStartDate().isAfter(to)
+                );
+    }
+
+    //WIG-122-AA
+    private Car findAvailableReplacmentCar(LocalDate from, LocalDate to, Long excludeCarId) {
+        //Lopar igenom alla bilar och använder isAvailibleCar för att hitta en bil som är ledig hela perioden. Excluderar sig själv.
+        return new Car();
+    }
+
 
     // WIG-24-AWS
     @Override
