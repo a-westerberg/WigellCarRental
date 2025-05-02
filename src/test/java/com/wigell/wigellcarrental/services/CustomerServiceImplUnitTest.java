@@ -59,7 +59,7 @@ class CustomerServiceImplUnitTest {
     //SA
     @Test
     void getCustomerByIdThrowsResourceNotFoundExceptionWhenCustomerNotFound() {
-        Long missingId = 12L;
+        Long missingId = 2L;
         when(mockCustomerRepository.findById(missingId)).thenReturn(Optional.empty());
 
         ResourceNotFoundException exception = assertThrows(
