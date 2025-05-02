@@ -105,14 +105,13 @@ public class AdminController {
     public ResponseEntity<List<Order>>getAllOrders(){
         return ResponseEntity.ok(orderService.getAllOrdersHistory());
     }
-    /*
-    //SA
+
+    //SA //AWS
     //TODO: PathVariable. Integer?
-    @DeleteMapping("/removeorder")//Ta bort bokning från systemet
-    public ResponseEntity<String>removeOrder(@PathVariable Integer bookingId){
-        return ResponseEntity.ok(service.removeOrder(bookingId));
+    @DeleteMapping("/removeorder/{orderId}")//Ta bort bokning från systemet
+    public ResponseEntity<String>removeOrder(@PathVariable Long orderId, Principal principal){
+        return ResponseEntity.ok(orderService.removeOrderById(orderId, principal));
     }
-    */
 
     //SA
     //TODO: LocalDate

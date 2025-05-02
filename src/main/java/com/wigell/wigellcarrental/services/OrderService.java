@@ -24,4 +24,7 @@ public interface OrderService {
 
     //WIG-85-AA
     PopularBrandStats getPopularBrand(String startDate, String endDate);
+
+    // WIG-25-AWS
+    String removeOrderById(Long orderId, Principal principal);
 }

@@ -41,7 +41,7 @@ public class OrderServiceImpl implements OrderService{
         this.carRepository = carRepository;
         this.customerRepository = customerRepository;
     }
-    //AWS
+    //AWS TODO Fixa Exceptions
     @Override
     public List<Order> getActiveOrdersForCustomer(String personalIdentityNumber) {
         return orderRepository.findByCustomer_PersonalIdentityNumberAndIsActiveTrue(personalIdentityNumber);
@@ -283,4 +283,19 @@ public class OrderServiceImpl implements OrderService{
         return orderToCancel.getTotalPrice().multiply(BigDecimal.valueOf(0.05).multiply(BigDecimal.valueOf(days)));
     }
 
+
+    //WIG-25-AWS
+    @Override
+    public String removeOrderById(Long orderId, Principal principal) {
+        Order orderToDelete = orderRepository.findById(orderId)
+                .orElseThrow(()->new ResourceNotFoundException("Order", "id", orderId));
+
+        if(orderToDelete.getIsActive()){
+            throw new ConflictException("Can't delete an active order");
+        }
+
+        orderRepository.delete(orderToDelete);
+        USER_ANALYZER_LOGGER.info("User '{}' deleted with ID '{}'. Order wasActive={}", principal.getName(), orderId, orderToDelete.getIsActive());
+        return "Order with ID '"+orderId+"' has been removed.";
+    }
 }
