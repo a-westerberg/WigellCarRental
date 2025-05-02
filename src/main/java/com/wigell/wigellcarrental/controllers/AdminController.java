@@ -151,15 +151,18 @@ public class AdminController {
 
         //WIG-97-SJ
         else if (choice.contains("rentalperiod")) {//vanligaste hyresperiod (antal dagar)
-            return ResponseEntity.ok(orderService.getCommonOrderPeriod);
+            return ResponseEntity.ok(orderService.getAverageRentalPeriod());
 
         }
         //WIG-97-SJ
+        /*
         else if (choice.contains("costperorder")) {//genomsnittlig kostnad per hyresorder
             return ResponseEntity.ok(service.costPerOrder());
 
-        } else
-         if (choice.contains("incomecar")) {//Total intäkt per bil och hur många gånger de hyrts ut
+        }
+         */
+
+        else if (choice.contains("incomecar")) {//Total intäkt per bil och hur många gånger de hyrts ut
             return ResponseEntity.ok(carService.incomeOnCars());
 
         } /*else {

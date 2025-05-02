@@ -8,6 +8,7 @@ import com.wigell.wigellcarrental.enums.CarStatus;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.models.valueobjects.AverageRentalPeriodStats;
 import com.wigell.wigellcarrental.models.valueobjects.PopularBrandStats;
+import com.wigell.wigellcarrental.models.valueobjects.RentalPeriodDetails;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
@@ -245,21 +246,19 @@ public class OrderServiceImpl implements OrderService{
     public AverageRentalPeriodStats getAverageRentalPeriod() {
         List<Order> allOrders = orderRepository.findAll();
 
-        Map<Integer, Long> rentalLengths = allOrders.stream()
-                .map(order -> Period.between(order.getStartDate(), order.getEndDate()).getDays())
-                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+        List<RentalPeriodDetails> rentalDetails = allOrders.stream()
+                .map(order -> {
+                    long days = ChronoUnit.DAYS.between(order.getStartDate(), order.getEndDate());
+                    return new RentalPeriodDetails(order.getId(),order.getStartDate(), order.getEndDate(), days);
+                })
+                .toList();
 
-        Map<String, Long> rentalLengthsAsString = rentalLengths.entrySet().stream()
-                .collect(Collectors.toMap(
-                        e -> String.valueOf(e.getKey()),
-                        Map.Entry::getValue
-                ));
+        double average = rentalDetails.stream()
+                .mapToLong(RentalPeriodDetails::getNumberOfDays)
+                .average()
+                .orElse(0.0);
 
-        Map<String, Long> sorted = MicroMethods.sortMapByValueThenKey(rentalLengthsAsString);
-
-        int mostCommonLength = Integer.parseInt(sorted.entrySet().iterator().next().getKey());
-
-        return new AverageRentalPeriodStats(mostCommonLength);
+        return new AverageRentalPeriodStats(average, rentalDetails);
     }
 
     // WIG-28-SJ
