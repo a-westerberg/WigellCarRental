@@ -40,7 +40,6 @@ class CustomerServiceImplUnitTest {
         customer.setFirstName("John");
         customer.setLastName("Smith");
         customer.setPersonalIdentityNumber("123456-7890");
-
     }
 
     //SA
