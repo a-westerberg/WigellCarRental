@@ -143,17 +143,23 @@ public class AdminController {
         if (choice.contains("brand")) {//mest hyrda bilmärke under en viss period, brand, datum1 och 2
             return ResponseEntity.ok(orderService.getPopularBrand(data[0],data[1]));
 
-        } /* else if (choice.contains("car")) {//Antal gånger varje bil hyrts ut, bils-regNr
-            return ResponseEntity.ok(service.getRented(data[0]));
+        }
+        /*
+        else if (choice.contains("car")) {//Antal gånger varje bil hyrts ut, bils-regNr
+            return ResponseEntity.ok(service.getRented(data[0])); }
+        */
 
-        } else if (choice.contains("rentalperiod")) {//vanligaste hyresperiod (antal dagar)
-            return ResponseEntity.ok(service.rentalPeriod());
+        //WIG-97-SJ
+        else if (choice.contains("rentalperiod")) {//vanligaste hyresperiod (antal dagar)
+            return ResponseEntity.ok(orderService.getCommonOrderPeriod);
 
-        } else if (choice.contains("costperorder")) {//genomsnittlig kostnad per hyresorder
+        }
+        //WIG-97-SJ
+        else if (choice.contains("costperorder")) {//genomsnittlig kostnad per hyresorder
             return ResponseEntity.ok(service.costPerOrder());
 
-        } else*/
-        if (choice.contains("incomecar")) {//Total intäkt per bil och hur många gånger de hyrts ut
+        } else
+         if (choice.contains("incomecar")) {//Total intäkt per bil och hur många gånger de hyrts ut
             return ResponseEntity.ok(carService.incomeOnCars());
 
         } /*else {

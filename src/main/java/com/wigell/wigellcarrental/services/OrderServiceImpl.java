@@ -6,6 +6,7 @@ import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.enums.CarStatus;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
+import com.wigell.wigellcarrental.models.valueobjects.AverageRentalPeriodStats;
 import com.wigell.wigellcarrental.models.valueobjects.PopularBrandStats;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
@@ -19,8 +20,10 @@ import org.springframework.stereotype.Service;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 //SA
@@ -235,6 +238,28 @@ public class OrderServiceImpl implements OrderService{
         Map<String,Long> sortedMap = MicroMethods.sortMapByValueThenKey(makeCountMap);
 
         return new PopularBrandStats(startPeriod, endPeriod, sortedMap);
+    }
+
+    // WIG-97-SJ
+    @Override
+    public AverageRentalPeriodStats getAverageRentalPeriod() {
+        List<Order> allOrders = orderRepository.findAll();
+
+        Map<Integer, Long> rentalLengths = allOrders.stream()
+                .map(order -> Period.between(order.getStartDate(), order.getEndDate()).getDays())
+                .collect(Collectors.groupingBy(Function.identity(), Collectors.counting()));
+
+        Map<String, Long> rentalLengthsAsString = rentalLengths.entrySet().stream()
+                .collect(Collectors.toMap(
+                        e -> String.valueOf(e.getKey()),
+                        Map.Entry::getValue
+                ));
+
+        Map<String, Long> sorted = MicroMethods.sortMapByValueThenKey(rentalLengthsAsString);
+
+        int mostCommonLength = Integer.parseInt(sorted.entrySet().iterator().next().getKey());
+
+        return new AverageRentalPeriodStats(mostCommonLength);
     }
 
     // WIG-28-SJ
