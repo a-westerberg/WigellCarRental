@@ -2,6 +2,7 @@ package com.wigell.wigellcarrental.services;
 
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.models.entities.Customer;
+import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
 import jakarta.transaction.Transactional;
@@ -10,6 +11,9 @@ import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
+
+import java.util.ArrayList;
+import java.util.List;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -41,27 +45,30 @@ class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest 
     void setUp() {
         customerService = new CustomerServiceImpl(customerRepository, orderRepository);
 
-        customerInDB = new Customer();
-        customerInDB.setFirstName("John");
-        customerInDB.setLastName("Smith");
-        customerInDB.setEmail("john.smith@gmail.com");
-        customerInDB.setPhoneNumber("1234567890");
-        customerInDB.setAddress("123 Main Street");
-        customerInDB.setPersonalIdentityNumber("123456-7890");
+        List<Order> customerInDBOrders = new ArrayList<>();
+        customerInDB = new Customer(1L,
+                "123456-7890",
+                "John",
+                "Smith",
+                "john.smith@gmail.com",
+                "0987654321",
+                "1 Road",
+                customerInDBOrders);
+
         customerRepository.save(customerInDB);
     }
 
     //SA
     @Test
     void getCustomerByIdShouldReturnCustomer() {
-        Customer customer = customerService.getCustomerById(customerInDB.getId());
+        Customer FoundCustomer = customerService.getCustomerById(customerInDB.getId());
 
-        assertEquals(customer.getFirstName(), customerInDB.getFirstName());
-        assertEquals(customer.getLastName(), customerInDB.getLastName());
-        assertEquals(customer.getEmail(), customerInDB.getEmail());
-        assertEquals(customer.getPhoneNumber(), customerInDB.getPhoneNumber());
-        assertEquals(customer.getAddress(), customerInDB.getAddress());
-        assertEquals(customer.getPersonalIdentityNumber(), customerInDB.getPersonalIdentityNumber());
+        assertEquals(FoundCustomer.getFirstName(), customerInDB.getFirstName());
+        assertEquals(FoundCustomer.getLastName(), customerInDB.getLastName());
+        assertEquals(FoundCustomer.getEmail(), customerInDB.getEmail());
+        assertEquals(FoundCustomer.getPhoneNumber(), customerInDB.getPhoneNumber());
+        assertEquals(FoundCustomer.getAddress(), customerInDB.getAddress());
+        assertEquals(FoundCustomer.getPersonalIdentityNumber(), customerInDB.getPersonalIdentityNumber());
     }
 
     //SA

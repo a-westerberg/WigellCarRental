@@ -3,6 +3,7 @@ package com.wigell.wigellcarrental.services;
 import com.wigell.wigellcarrental.exceptions.ConflictException;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.models.entities.Customer;
+import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -41,14 +44,15 @@ class CustomerServiceImplUnitTest {
     void setUp() {
         customerService = new CustomerServiceImpl(mockCustomerRepository, mockOrderRepository);
 
-        customerInDB = new Customer();
-        customerInDB.setId(1L);
-        customerInDB.setFirstName("John");
-        customerInDB.setLastName("Smith");
-        customerInDB.setEmail("john.smith@gmail.com");
-        customerInDB.setPhoneNumber("0987654321");
-        customerInDB.setAddress("1 Road");
-        customerInDB.setPersonalIdentityNumber("123456-7890");
+        List<Order>customerInDBOrders = new ArrayList<>();
+        customerInDB = new Customer(1L,
+                "123456-7890",
+                "John",
+                "Smith",
+                "john.smith@gmail.com",
+                "0987654321",
+                "1 Road",
+                customerInDBOrders);
     }
 
     //SA
@@ -221,13 +225,18 @@ class CustomerServiceImplUnitTest {
     //SA
     @Test
     void updateCustomerInAllFieldsShouldBeUpdated() {
-        Customer customerFromRequest = new Customer();
-        customerFromRequest.setId(1L);
-        customerFromRequest.setFirstName("Kalle");
-        customerFromRequest.setLastName("Anka");
-        customerFromRequest.setAddress("123 Street");
-        customerFromRequest.setPhoneNumber("3941");
-        customerFromRequest.setEmail("kalle.andka@gmail.com");
+        List<Order>customerFromRequestOrders = new ArrayList<>();
+        Customer customerFromRequest = new Customer(
+                1L,
+                "123456-7890",
+                "Kalle",
+                "Anka",
+                "kalle.andka@gmail.com",
+                "3941",
+                "123 Street",
+                customerFromRequestOrders
+        );
+
         Principal principal = () -> "123456-7890";
         when(mockCustomerRepository.findById(customerInDB.getId())).thenReturn(Optional.of(customerInDB));
         when(mockCustomerRepository.save(any(Customer.class))).thenAnswer(i -> i.getArguments()[0]);
