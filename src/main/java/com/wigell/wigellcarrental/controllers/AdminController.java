@@ -155,7 +155,7 @@ public class AdminController {
         }
         //WIG-97-SJ
         else if (choice.contains("costperorder")) {//genomsnittlig kostnad per hyresorder
-            return ResponseEntity.ok(service.costPerOrder());
+            return ResponseEntity.ok(orderService.costPerOrder());
 
         }
 

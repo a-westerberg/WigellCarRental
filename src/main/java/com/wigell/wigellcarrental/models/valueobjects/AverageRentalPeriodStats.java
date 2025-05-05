@@ -23,6 +23,14 @@ public class AverageRentalPeriodStats {
     public List<RentalPeriodDetails> getRentalDetails() {return rentalDetails;}
     public void setRentalDetails(List<RentalPeriodDetails> rentalDetails) {this.rentalDetails = rentalDetails;}
 
+    @Override
+    public String toString() {
+        return "AverageRentalPeriodStats{" +
+                "AverageRentalPeriodInDays=" + AverageRentalPeriodInDays +
+                ", rentalDetails=" + rentalDetails +
+                '}';
+    }
+
     /*
     @Override
     public String toString() {

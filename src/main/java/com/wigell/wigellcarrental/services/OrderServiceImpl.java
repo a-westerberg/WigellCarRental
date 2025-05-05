@@ -6,9 +6,7 @@ import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.enums.CarStatus;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
-import com.wigell.wigellcarrental.models.valueobjects.AverageRentalPeriodStats;
-import com.wigell.wigellcarrental.models.valueobjects.PopularBrandStats;
-import com.wigell.wigellcarrental.models.valueobjects.RentalPeriodDetails;
+import com.wigell.wigellcarrental.models.valueobjects.*;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
@@ -20,6 +18,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.Principal;
 import java.time.LocalDate;
 import java.time.Period;
@@ -286,6 +285,30 @@ public class OrderServiceImpl implements OrderService{
                 .orElse(0.0);
 
         return new AverageRentalPeriodStats(average, rentalDetails);
+    }
+
+    // WIG-97-SJ
+    @Override
+    public AverageOrderCostStats costPerOrder() {
+        List<Order> allOrders = orderRepository.findAll();
+
+        List<OrderCostDetails> orderDetails = allOrders.stream()
+                .map(order -> new OrderCostDetails(
+                        order.getId(),
+                        order.getCar().getId(),
+                        order.getTotalPrice()
+                ))
+                .toList();
+
+        BigDecimal total = orderDetails.stream()
+                .map(OrderCostDetails::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal average = orderDetails.isEmpty()
+                ? BigDecimal.ZERO
+                : total.divide(BigDecimal.valueOf(orderDetails.size()), 2, RoundingMode.HALF_UP);
+
+        return new AverageOrderCostStats(average, orderDetails);
     }
 
     // WIG-28-SJ
