@@ -10,6 +10,7 @@ import com.wigell.wigellcarrental.models.valueobjects.PopularBrandStats;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
+import com.wigell.wigellcarrental.services.utilities.LogMethods;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -313,15 +314,32 @@ public class OrderServiceImpl implements OrderService{
     //WIG-25-AWS
     @Override
     public String removeOrderById(Long orderId, Principal principal) {
-        Order orderToDelete = orderRepository.findById(orderId)
-                .orElseThrow(()->new ResourceNotFoundException("Order", "id", orderId));
+        try{
+            Order orderToDelete = orderRepository.findById(orderId)
+                    .orElseThrow(()->new ResourceNotFoundException("Order", "id", orderId));
 
-        if(orderToDelete.getIsActive()){
-            throw new ConflictException("Can't delete an active order");
+            if(orderToDelete.getIsActive()){
+                throw new ConflictException("Can't delete an active order");
+            }
+
+            orderRepository.delete(orderToDelete);
+
+            USER_ANALYZER_LOGGER.info("User '{}' deleted order: {}'",
+                    principal.getName(),
+                    LogMethods.logBuilder(orderToDelete, "id", "startDate", "endDate", "isActive")
+            );
+
+            return "Order with ID '"+orderId+"' has been removed.";
+        } catch (Exception e) {
+            Order placeHolder = new Order();
+            placeHolder.setId(orderId);
+
+            USER_ANALYZER_LOGGER.warn("User '{}' failed to remove order: {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(placeHolder, e, "id")
+            );
+            throw e;
         }
-
-        orderRepository.delete(orderToDelete);
-        USER_ANALYZER_LOGGER.info("User '{}' deleted with ID '{}'. Order wasActive={}", principal.getName(), orderId, orderToDelete.getIsActive());
-        return "Order with ID '"+orderId+"' has been removed.";
     }
+
 }
