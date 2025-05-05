@@ -41,9 +41,14 @@ public class CarServiceImpl implements CarService{
         this.carRepository = carRepository;
         this.orderRepository = orderRepository;
     }
-    // AWS TODO Exception
+    // WIG-119-AWS
     public List<Car> getAvailableCars() {
-        return carRepository.findByStatus(CarStatus.AVAILABLE);
+        List<Car> availableCars = carRepository.findByStatus(CarStatus.AVAILABLE);
+
+        if(availableCars.isEmpty()) {
+            throw new ResourceNotFoundException("List","cars with status", CarStatus.AVAILABLE);
+        }
+        return availableCars;
     }
 
     //WIG-17-AA
