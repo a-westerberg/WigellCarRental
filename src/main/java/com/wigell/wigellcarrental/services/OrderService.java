@@ -1,6 +1,9 @@
 package com.wigell.wigellcarrental.services;
 
 import com.wigell.wigellcarrental.models.entities.Order;
+import com.wigell.wigellcarrental.models.valueobjects.AverageOrderCostStats;
+import com.wigell.wigellcarrental.models.valueobjects.AverageRentalPeriodStats;
+import com.wigell.wigellcarrental.models.valueobjects.PopularBrandStats;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -22,5 +25,12 @@ public interface OrderService {
     String updateOrderCar(Long orderId, Long carId, Principal principal);//SA
 
     //WIG-85-AA
-    String getPopularBrand(String startDate, String endDate);
+    PopularBrandStats getPopularBrand(String startDate, String endDate);
+
+    // WIG-97-SJ
+    AverageRentalPeriodStats getAverageRentalPeriod();
+    AverageOrderCostStats costPerOrder();
+
+    // WIG-25-AWS
+    String removeOrderById(Long orderId, Principal principal);
 }

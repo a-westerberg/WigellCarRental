@@ -6,9 +6,11 @@ import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.enums.CarStatus;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
+import com.wigell.wigellcarrental.models.valueobjects.*;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
+import com.wigell.wigellcarrental.services.utilities.LogMethods;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -16,10 +18,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 //SA
@@ -40,7 +45,7 @@ public class OrderServiceImpl implements OrderService{
         this.carRepository = carRepository;
         this.customerRepository = customerRepository;
     }
-    //AWS
+    //AWS TODO Fixa Exceptions
     @Override
     public List<Order> getActiveOrdersForCustomer(String personalIdentityNumber) {
         return orderRepository.findByCustomer_PersonalIdentityNumberAndIsActiveTrue(personalIdentityNumber);
@@ -59,20 +64,37 @@ public class OrderServiceImpl implements OrderService{
     public String cancelOrder(Long orderId, Principal principal) {
         Optional<Order> optionalOrder = orderRepository.findById(orderId);
         if(optionalOrder.isEmpty()){
+            USER_ANALYZER_LOGGER.warn("User {} tried to cancel an order which does not exist. " +
+                    "\n\tID: {}",
+                    principal.getName(), orderId);
             throw new ResourceNotFoundException("Order","id",orderId);
         }
 
         Order orderToCancel = optionalOrder.get();
 
         if(!orderToCancel.getCustomer().getPersonalIdentityNumber().equals(principal.getName())){
+            USER_ANALYZER_LOGGER.warn("User {} tried to cancel an order they don't own. " +
+                    "\n\tID: {}",
+                    principal.getName(), orderId);
             return "No order for '" + principal.getName() + "' with id: " + orderId;
         }
 
         LocalDate today = LocalDate.now();
 
         if(orderToCancel.getStartDate().isBefore(today) && orderToCancel.getEndDate().isAfter(today)){
+            USER_ANALYZER_LOGGER.warn("User {} tried to cancel and order that has already started. " +
+                    "\n\tID: {}" +
+                    "\n\tStart date: {}" +
+                    "\n\tEnd date: {}" +
+                    "\n\tToday: {}",
+                    principal.getName(), orderId, orderToCancel.getStartDate(), orderToCancel.getEndDate(),today);
             return "Order has already started and can't then be cancelled";
         } else if (orderToCancel.getEndDate().isBefore(today)) {
+            USER_ANALYZER_LOGGER.warn("User {} tried to cancel an order that has already happened." +
+                    "\n\tID: {}" +
+                    "\n\tEnd date: {}" +
+                    "\n\tToday: {}",
+                    principal.getName(), orderId, orderToCancel.getEndDate(),today);
             return "Order has already ended";
         }
 
@@ -92,6 +114,8 @@ public class OrderServiceImpl implements OrderService{
         List<Order>orders = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(date);
 
         if(orders.isEmpty()){
+            USER_ANALYZER_LOGGER.warn("User {} tried to remove inactive orders before date, but no inactive order where found before: {}",
+                    principal.getName(),date);
             return "Found no inactive orders before '"+date+"'";
         }
 
@@ -141,6 +165,7 @@ public class OrderServiceImpl implements OrderService{
         if (optionalOrder.isPresent()) {
 
             if(!status.equals("away") && !status.equals("back") && !status.equals("service")){
+                USER_ANALYZER_LOGGER.warn("User {} tried to update order '{}' but gave invalid status: {}", principal.getName(), orderId, status);
                 return "Invalid status, there is 'away', 'back' and 'service'";
             }
 
@@ -188,6 +213,9 @@ public class OrderServiceImpl implements OrderService{
                     "\nCar registration: " +orderToUpdate.getCar().getRegistrationNumber()+
                     "\nCar status: "+orderToUpdate.getCar().getStatus().toString();
         }
+        USER_ANALYZER_LOGGER.warn("User {} tried to update an order which does not exist." +
+                "\n\tID: {}",
+                principal.getName(), orderId);
         throw new ResourceNotFoundException("Order","id",orderId);
     }
 
@@ -197,12 +225,15 @@ public class OrderServiceImpl implements OrderService{
         Optional<Car>optionalCar = carRepository.findById(carId);
 
         if(optionalCar.isEmpty()){
+            USER_ANALYZER_LOGGER.warn("User {} tried to update the car on an order but car with ID '{}' does not exist.", principal.getName(), carId);
             throw new ResourceNotFoundException("Car","id",carId);
         }
         if (optionalOrder.isEmpty()) {
+            USER_ANALYZER_LOGGER.warn("User {} tried to update the car on an order but order with ID '{}' does not exist.", principal.getName(), orderId);
             throw new ResourceNotFoundException("Order","id",orderId);
         }
         if(!optionalCar.get().getStatus().equals(CarStatus.AVAILABLE)){
+            USER_ANALYZER_LOGGER.warn("User {} tried to update the car on an order with order '{}' with car '{}', but car the status isn't available, it's: {}.", principal.getName(), orderId, carId,optionalCar.get().getStatus());
             return "Car with id '" + carId + "' is not available";
         }
 
@@ -229,20 +260,65 @@ public class OrderServiceImpl implements OrderService{
 
     }
 
-    //WIG-85-AA
+    //WIG-85-AA, WIG-96-AA
     @Override
-    public String getPopularBrand(String startDate, String endDate) {
+    public PopularBrandStats getPopularBrand(String startDate, String endDate) {
         LocalDate startPeriod = MicroMethods.parseStringToDate(startDate);
         LocalDate endPeriod = MicroMethods.parseStringToDate(endDate);
 
         List<Order> orders = getOrdersBetweenDates(startPeriod, endPeriod);
         if (orders.isEmpty()) {
-            return "No orders found for the selected period.";
+            throw new ResourceNotFoundException("No orders found between " + startDate + " and " + endDate);
         }
 
         Map<String, Long> makeCountMap = countMakes(orders);
+        Map<String,Long> sortedMap = MicroMethods.sortMapByValueThenKey(makeCountMap);
 
-        return buildResultStringToMakeStatistics(makeCountMap);
+        return new PopularBrandStats(startPeriod, endPeriod, sortedMap);
+    }
+
+    // WIG-97-SJ
+    @Override
+    public AverageRentalPeriodStats getAverageRentalPeriod() {
+        List<Order> allOrders = orderRepository.findAll();
+
+        List<RentalPeriodDetails> rentalDetails = allOrders.stream()
+                .map(order -> {
+                    long days = ChronoUnit.DAYS.between(order.getStartDate(), order.getEndDate());
+                    return new RentalPeriodDetails(order.getId(),order.getStartDate(), order.getEndDate(), days);
+                })
+                .toList();
+
+        double average = rentalDetails.stream()
+                .mapToLong(RentalPeriodDetails::getNumberOfDays)
+                .average()
+                .orElse(0.0);
+
+        return new AverageRentalPeriodStats(average, rentalDetails);
+    }
+
+    // WIG-97-SJ
+    @Override
+    public AverageOrderCostStats costPerOrder() {
+        List<Order> allOrders = orderRepository.findAll();
+
+        List<OrderCostDetails> orderDetails = allOrders.stream()
+                .map(order -> new OrderCostDetails(
+                        order.getId(),
+                        order.getCar().getId(),
+                        order.getTotalPrice()
+                ))
+                .toList();
+
+        BigDecimal total = orderDetails.stream()
+                .map(OrderCostDetails::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal average = orderDetails.isEmpty()
+                ? BigDecimal.ZERO
+                : total.divide(BigDecimal.valueOf(orderDetails.size()), 2, RoundingMode.HALF_UP);
+
+        return new AverageOrderCostStats(average, orderDetails);
     }
 
     // WIG-28-SJ
@@ -285,23 +361,42 @@ public class OrderServiceImpl implements OrderService{
                 ));
     }
 
-    //WIG-85-AA
-    private String buildResultStringToMakeStatistics(Map<String, Long> makeCountMap) {
-        StringBuilder result = new StringBuilder();
-        makeCountMap.entrySet().stream()
-                .sorted(Map.Entry.<String, Long>comparingByValue().reversed())
-                .forEach(entry -> result.append(entry.getKey())
-                        .append(": ")
-                        .append(entry.getValue())
-                        .append('\n'));
-        return result.toString();
-    }
-
     //SA
     private static BigDecimal calculateCancellationFee(Order orderToCancel){
         long days = ChronoUnit.DAYS.between(orderToCancel.getStartDate(), orderToCancel.getEndDate());
         return orderToCancel.getTotalPrice().multiply(BigDecimal.valueOf(0.05).multiply(BigDecimal.valueOf(days)));
     }
 
+
+    //WIG-25-AWS
+    @Override
+    public String removeOrderById(Long orderId, Principal principal) {
+        try{
+            Order orderToDelete = orderRepository.findById(orderId)
+                    .orElseThrow(()->new ResourceNotFoundException("Order", "id", orderId));
+
+            if(orderToDelete.getIsActive()){
+                throw new ConflictException("Can't delete an active order");
+            }
+
+            orderRepository.delete(orderToDelete);
+
+            USER_ANALYZER_LOGGER.info("User '{}' deleted order: {}'",
+                    principal.getName(),
+                    LogMethods.logBuilder(orderToDelete, "id", "startDate", "endDate", "isActive")
+            );
+
+            return "Order with ID '"+orderId+"' has been removed.";
+        } catch (Exception e) {
+            Order placeHolder = new Order();
+            placeHolder.setId(orderId);
+
+            USER_ANALYZER_LOGGER.warn("User '{}' failed to remove order: {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(placeHolder, e, "id")
+            );
+            throw e;
+        }
+    }
 
 }

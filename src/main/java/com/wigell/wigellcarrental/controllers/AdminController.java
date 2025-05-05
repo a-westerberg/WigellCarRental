@@ -79,15 +79,15 @@ public class AdminController {
     //SA //AA
     @PostMapping("/addcar")//Lägg till bil
     public ResponseEntity<Car>addCar(@RequestBody Car car, Principal principal){
-        return ResponseEntity.ok(carService.addCar(car, principal));
+        return ResponseEntity.ok(carService.addCar(car, principal)); //TODO gör om till HTTP-status created!
     }
-    /*
-    //SA
+
+    //SA //AWS
     @PutMapping("/updatecar")//Uppdatera bilinformation
-    public ResponseEntity<Car>updateCar(@RequestBody Car car){
-        return ResponseEntity.ok(service.updateCar(car));
+    public ResponseEntity<Car>updateCar(@RequestBody Car car, Principal principal){
+        return ResponseEntity.ok(carService.updateCar(car, principal));
     }
-    */
+
     //SA //AA
     @DeleteMapping("/removecar/{idOrRegistrationNumber}")//Radera bil
     public ResponseEntity<String>removeCar(@PathVariable String idOrRegistrationNumber, Principal principal){
@@ -105,14 +105,13 @@ public class AdminController {
     public ResponseEntity<List<Order>>getAllOrders(){
         return ResponseEntity.ok(orderService.getAllOrdersHistory());
     }
-    /*
-    //SA
+
+    //SA //AWS
     //TODO: PathVariable. Integer?
-    @DeleteMapping("/removeorder")//Ta bort bokning från systemet
-    public ResponseEntity<String>removeOrder(@PathVariable Integer bookingId){
-        return ResponseEntity.ok(service.removeOrder(bookingId));
+    @DeleteMapping("/removeorder/{orderId}")//Ta bort bokning från systemet
+    public ResponseEntity<String>removeOrder(@PathVariable Long orderId, Principal principal){
+        return ResponseEntity.ok(orderService.removeOrderById(orderId, principal));
     }
-    */
 
     //SA
     //TODO: LocalDate
@@ -143,17 +142,25 @@ public class AdminController {
         if (choice.contains("brand")) {//mest hyrda bilmärke under en viss period, brand, datum1 och 2
             return ResponseEntity.ok(orderService.getPopularBrand(data[0],data[1]));
 
-        } /* else if (choice.contains("car")) {//Antal gånger varje bil hyrts ut, bils-regNr
-            return ResponseEntity.ok(service.getRented(data[0]));
+        }
+        /*
+        else if (choice.contains("car")) {//Antal gånger varje bil hyrts ut, bils-regNr
+            return ResponseEntity.ok(service.getRented(data[0])); }
+        */
 
-        } else if (choice.contains("rentalperiod")) {//vanligaste hyresperiod (antal dagar)
-            return ResponseEntity.ok(service.rentalPeriod());
+        //WIG-97-SJ
+        else if (choice.contains("rentalperiod")) {//vanligaste hyresperiod (antal dagar)
+            return ResponseEntity.ok(orderService.getAverageRentalPeriod());
 
-        } else if (choice.contains("costperorder")) {//genomsnittlig kostnad per hyresorder
-            return ResponseEntity.ok(service.costPerOrder());
+        }
+        //WIG-97-SJ
+        else if (choice.contains("costperorder")) {//genomsnittlig kostnad per hyresorder
+            return ResponseEntity.ok(orderService.costPerOrder());
 
-        } else*/
-        if (choice.contains("incomecar")) {//Total intäkt per bil och hur många gånger de hyrts ut
+        }
+
+
+        else if (choice.contains("incomecar")) {//Total intäkt per bil och hur många gånger de hyrts ut
             return ResponseEntity.ok(carService.incomeOnCars());
 
         } /*else {

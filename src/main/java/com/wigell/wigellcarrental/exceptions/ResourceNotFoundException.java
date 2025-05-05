@@ -18,6 +18,14 @@ public class ResourceNotFoundException extends RuntimeException {
         this.fieldValue = fieldValue;
     }
 
+    //WIG-96-AA
+    public ResourceNotFoundException(String message) {
+        super(message);
+        this.resource = null;
+        this.field = null;
+        this.fieldValue = null;
+    }
+
     public String getResource() {return resource;}
     public String getField() {return field;}
     public Object getFieldValue() {return fieldValue;}
