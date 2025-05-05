@@ -147,22 +147,27 @@ public class CarServiceImpl implements CarService{
     //WIG-37-AA
     private void processOrderList(List<Order> orders, Long id, Principal principal) {
         LocalDate today = LocalDate.now();
-        for (Order order : orders) {
-            if (order.getEndDate().isBefore(today)) {
-                order.setCar(null);
-                orderRepository.save(order);
+        try {
+            for (Order order : orders) {
+                if (order.getEndDate().isBefore(today)) {
+                    order.setCar(null);
+                    orderRepository.save(order);
+                }
+                if (!today.isBefore(order.getStartDate()) && !today.isAfter(order.getEndDate())) {
+                    throw new ConflictException("Car cannot be deleted due to ongoing booking.");
+                }
+                if (order.getStartDate().isAfter(today)) {
+                    Car carToReplaceWith = carRepository.findFirstAvailableCarBetween(order.getStartDate(), order.getEndDate(), id).orElseThrow(() -> new ResourceNotFoundException("No replacement car available for the specified dates of upcoming order. Car cannot be deleted."));
+                    order.setCar(carToReplaceWith);
+                    //System.out.println(carToReplaceWith.toString());
+                    orderRepository.save(order);
+                }
             }
-            if (!today.isBefore(order.getStartDate()) && !today.isAfter(order.getEndDate())) {
-                //TODO lägg in micrometod för att skapa loggningsmeddelandet
-                USER_ANALYZER_LOGGER.warn("User: {} tried to delete an order but failed due to an ongoing order", principal.getName());
-                throw new ConflictException("Car cannot be deleted due to ongoing booking.");
-            }
-            if (order.getStartDate().isAfter(today)) {
-                Car carToReplaceWith = carRepository.findFirstAvailableCarBetween(order.getStartDate(), order.getEndDate(),id).orElseThrow(() ->new ResourceNotFoundException("No replacement car available for the specified dates of upcoming order. Car cannot be deleted."));
-                order.setCar(carToReplaceWith);
-                //System.out.println(carToReplaceWith.toString());
-                orderRepository.save(order);
-            }
+        } catch (Exception e) {
+            Car placeHolder = new Car();
+            placeHolder.setId(id);
+            USER_ANALYZER_LOGGER.warn("User: {} failed to update car: {} ", principal.getName(), LogMethods.logExceptionBuilder(placeHolder,e,"id"));
+            throw e;
         }
     }
 
