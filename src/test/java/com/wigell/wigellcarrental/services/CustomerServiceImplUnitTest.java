@@ -104,14 +104,16 @@ class CustomerServiceImplUnitTest {
     void updateCustomerThrowsResourceNotFoundExceptionWhenCustomerNotFound() {
         //Given
         Long missingId = 2L;
-        customer.setId(missingId);
+        Customer missingCustomer = new Customer();
+        missingCustomer.setId(missingId);
+        missingCustomer.setPersonalIdentityNumber("123456-7890");
         Principal principal = () -> "123456-7890";
         when(mockCustomerRepository.findById(missingId)).thenReturn(Optional.empty());
 
         //When & Then
         ResourceNotFoundException exception = assertThrows(
                 ResourceNotFoundException.class,
-                ()-> customerService.updateCustomer(customer, principal)
+                ()-> customerService.updateCustomer(missingCustomer, principal)
         );
 
         //Then
@@ -134,7 +136,7 @@ class CustomerServiceImplUnitTest {
         assertEquals(exception.getMessage(), "User not authorized for function.");
     }
 
-    //TODO: check with Simon on validateCustomer
+    //TODO: Checka loggning? Problem då set nog ändrar själv utan updates kontroller
     //SA
     @Test
     void updateCustomerShouldNotOverwriteFieldsWithNullOrEmpty(){
