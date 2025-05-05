@@ -138,7 +138,7 @@ public class CarServiceImpl implements CarService{
                 throw new ConflictException("Car cannot be deleted due to ongoing booking.");
             }
             if (order.getStartDate().isAfter(today)) {
-                Car carToReplaceWith = carRepository.findFirstByStatusAndIdNot(CarStatus.AVAILABLE,id).orElseThrow(() ->new ResourceNotFoundException("Car","Car Status [Available]", "Cannot delete car"));
+                Car carToReplaceWith = carRepository.findFirstAvailableCarBetween(order.getStartDate(), order.getEndDate(),id).orElseThrow(() ->new ResourceNotFoundException("No replacement car available for the specified dates of upcoming order. Car cannot be deleted."));
                 order.setCar(carToReplaceWith);
                 System.out.println(carToReplaceWith.toString());
                 orderRepository.save(order);
