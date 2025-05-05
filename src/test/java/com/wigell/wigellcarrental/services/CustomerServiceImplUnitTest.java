@@ -107,6 +107,29 @@ class CustomerServiceImplUnitTest {
         assertThat(updatedCustomer.getFirstName()).isEqualTo("John");
     }
 
+    //SA //Kanske ta bort senare om principal admin tas bort
+    @Test
+    void updateCustomerShouldReturnUpdatedCustomerWithPrincipalAdmin() {
+        //Given
+        Customer customerFromRequest = new Customer();
+        customerFromRequest.setId(1L);
+        customerFromRequest.setAddress("123 Street");
+
+        Principal principal = () -> "admin";
+
+        when(mockCustomerRepository.findById(customerInDB.getId())).thenReturn(Optional.of(customerInDB));
+        when(mockCustomerRepository.save(any(Customer.class))).thenAnswer(i -> i.getArguments()[0]);
+
+
+        //When
+        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, principal);
+
+        //Then
+        verify(mockCustomerRepository).save(any(Customer.class));
+        assertThat(updatedCustomer.getAddress()).isEqualTo("123 Street");
+        assertThat(updatedCustomer.getFirstName()).isEqualTo("John");
+    }
+
     //SA
     @Test
     void updateCustomerThrowsResourceNotFoundExceptionWhenCustomerNotFound() {
