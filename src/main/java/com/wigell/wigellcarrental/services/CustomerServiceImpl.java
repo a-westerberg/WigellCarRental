@@ -56,39 +56,57 @@ public class CustomerServiceImpl implements CustomerService{
     // WIG-29-SJ
     @Override
     public Customer updateCustomer(Customer customer, Principal principal) {
+        Customer customerToUpdate = null;
 
-        Customer customerToUpdate = customerRepository.findById(customer.getId()).orElseThrow(() ->
-                new ResourceNotFoundException("Customer","id",customer.getId()));
+        try {
+            customerToUpdate = customerRepository.findById(customer.getId()).orElseThrow(() ->
+                    new ResourceNotFoundException("Customer","id",customer.getId()));
 
-        if (!principal.getName().equals(customerToUpdate.getPersonalIdentityNumber()) && !principal.getName().equals("admin")) {
-            throw new ConflictException("User not authorized for function.");
+            if (!principal.getName().equals(customerToUpdate.getPersonalIdentityNumber()) && !principal.getName().equals("admin")) {
+                throw new ConflictException("User not authorized for function.");
+            }
+
+            Customer oldCustomer = cloneCustomer(customerToUpdate);
+
+            Customer updatedCustomer = validateCustomer(customer);
+            customerRepository.save(updatedCustomer);
+
+            //WIG-90-SJ
+            System.out.println(customerToUpdate.toString());
+            System.out.println(updatedCustomer.toString());
+            USER_ANALYZER_LOGGER.info("User '{}' has updated customer:{}" +
+                            "\nUpdated fields: {}",
+                    principal.getName(),
+                    updatedCustomer.getId(),
+                    LogMethods.logUpdateBuilder(oldCustomer, updatedCustomer,
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "phoneNumber",
+                            "address")
+            );
+
+            return updatedCustomer;
+
+        } catch (Exception e) {
+            USER_ANALYZER_LOGGER.warn("User '{}' failed to update customer: {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(customer, e,
+                            "id",
+                            "personalIdentityNumber",
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "phoneNumber",
+                            "address")
+            );
+            throw e;
         }
-
-        Customer updatedCustomer = validateCustomer(customer);
-        customerRepository.save(updatedCustomer);
-
-        USER_ANALYZER_LOGGER.info("User '{}' has updated customer: '{}'. " +
-                        "\nUpdated information: " +
-                        "\nFirst name: '{}' " +
-                        "\nLastname: '{}' " +
-                        "\nE-mail: '{}' " +
-                        "\nPhone Number: '{}' " +
-                        "\nAddress: '{}'",
-                principal.getName(),
-                updatedCustomer.getId(),
-                updatedCustomer.getFirstName(),
-                updatedCustomer.getLastName(),
-                updatedCustomer.getEmail(),
-                updatedCustomer.getPhoneNumber(),
-                updatedCustomer.getAddress()
-        );
-
-        return updatedCustomer;
     }
 
     public Customer validateCustomer(Customer customer) {
-        Customer existingCustomer = customerRepository.findById(customer.getId()).orElseThrow(()->
-                new ResourceNotFoundException("Customer","id",customer.getId()));
+
+        Customer existingCustomer = customerRepository.getCustomersById(customer.getId());
 
         if (MicroMethods.validateNotNull(customer.getFirstName())) {
             existingCustomer.setFirstName(customer.getFirstName());
@@ -96,21 +114,6 @@ public class CustomerServiceImpl implements CustomerService{
         if (MicroMethods.validateNotNull(customer.getLastName())) {
             existingCustomer.setLastName(customer.getLastName());
         }
-
-        /*
-        // WIG-29-SJ
-        // If values of Email & Phone needs to be unique. If not, remove code later.
-        if (MicroMethods.validateNotNull(customer.getEmail())) {
-            MicroMethods.validateUniqueValue("email", customer.getEmail(), customerRepository::existsByEmail);
-            existingCustomer.setEmail(customer.getEmail());
-        }
-
-        if (MicroMethods.validateNotNull(customer.getPhoneNumber())) {
-            MicroMethods.validateUniqueValue("phoneNumber", customer.getPhoneNumber(), customerRepository::existsByPhoneNumber);
-            existingCustomer.setPhoneNumber(customer.getPhoneNumber());
-        }
-        */
-
         if (MicroMethods.validateNotNull(customer.getEmail())) {
             existingCustomer.setEmail(customer.getEmail());
         }
@@ -124,37 +127,74 @@ public class CustomerServiceImpl implements CustomerService{
         return existingCustomer;
     }
 
+    //WIG-90-SJ
+    private Customer cloneCustomer(Customer original) {
+        Customer copy = new Customer();
+        copy.setId(original.getId());
+        copy.setPersonalIdentityNumber(original.getPersonalIdentityNumber());
+        copy.setFirstName(original.getFirstName());
+        copy.setLastName(original.getLastName());
+        copy.setEmail(original.getEmail());
+        copy.setPhoneNumber(original.getPhoneNumber());
+        copy.setAddress(original.getAddress());
+        return copy;
+    }
+
 
     // WIG-30-SJ
     @Override
     public String removeCustomerById(Long id, Principal principal) {
-        if (!principal.getName().equals("admin")) {
-            throw new ConflictException("User not authorized for function.");
+        Customer customerToRemove = null;
+
+        try {
+            customerToRemove = customerRepository.findById(id).orElseThrow(
+                    ()-> new ResourceNotFoundException("Customer","id",id));
+
+            List<Order> ordersToEdit = customerToRemove.getOrders();
+            boolean hasActiveOrders = ordersToEdit.stream()
+                    .anyMatch(Order::getIsActive);
+            if (hasActiveOrders) {
+                throw new ConflictException("Customer with active orders can't be deleted!");
+            }
+
+            MicroMethods.disconnectKeys(
+                    ordersToEdit,
+                    order -> order.setCustomer(null),
+                    order -> orderRepository.save(order)
+            );
+
+            String deletedCustomerId = customerToRemove.getPersonalIdentityNumber();
+            customerRepository.delete(customerToRemove);
+
+            // WIG-91-SJ
+            USER_ANALYZER_LOGGER.info("User '{}' has deleted customer:{}",
+                    principal.getName(),
+                    LogMethods.logBuilder(customerToRemove,
+                            "id",
+                            "personalIdentityNumber",
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "phoneNumber",
+                            "address")
+            );
+
+            return "Customer " + deletedCustomerId + " has been deleted.";
+
         }
-
-        Customer customerToRemove = customerRepository.findById(id).orElseThrow(
-                ()-> new ResourceNotFoundException("Customer","id",id));
-
-        List<Order> ordersToEdit = customerToRemove.getOrders();
-        boolean hasActiveOrders = ordersToEdit.stream()
-                .anyMatch(Order::getIsActive);
-
-        if (hasActiveOrders) {
-            throw new ConflictException("Customer with active orders can't be deleted!");
+        catch (Exception e) {
+            USER_ANALYZER_LOGGER.warn("User '{}' failed to delete customer:{}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(customerToRemove, e,
+                            "personalIdentityNumber",
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "phoneNumber",
+                            "address")
+            );
+            throw e;
         }
-
-        MicroMethods.disconnectKeys(
-                ordersToEdit,
-                order -> order.setCustomer(null),
-                order -> orderRepository.save(order)
-        );
-
-        String deletedCustomerId = customerToRemove.getPersonalIdentityNumber();
-        customerRepository.delete(customerToRemove);
-
-        USER_ANALYZER_LOGGER.info("User: '{}' deleted customer: '{}'", principal.getName(), deletedCustomerId);
-
-        return "Customer " + deletedCustomerId + " has been deleted.";
     }
 
 

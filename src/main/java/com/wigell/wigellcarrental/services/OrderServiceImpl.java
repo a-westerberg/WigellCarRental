@@ -128,25 +128,42 @@ public class OrderServiceImpl implements OrderService{
     @Override
     public Order addOrder(Order order, Principal principal) {
 
-        validateOrder(order);
-        constructOrder(order);
+        try {
+            validateOrder(order);
+            constructOrder(order);
 
-        if (!order.getCustomer().getPersonalIdentityNumber().equals(principal.getName())) {
-            throw new ConflictException("You can't place orders for other customers.");
+            if (!order.getCustomer().getPersonalIdentityNumber().equals(principal.getName())) {
+                throw new ConflictException("You can't place orders for other customers.");
+            }
+
+            orderRepository.save(order);
+            // WIG-89-SJ
+            USER_ANALYZER_LOGGER.info("User '{}' has placed new order:{}",
+                    principal.getName(),
+                    LogMethods.logBuilder(order,
+                            "id",
+                            "bookedAt",
+                            "startDate",
+                            "endDate",
+                            "isActive",
+                            "totalPrice")
+            );
+
+            return order;
+
+        } catch (Exception e) {
+            USER_ANALYZER_LOGGER.warn("User '{}' failed to place order: {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(order, e,
+                            "id",
+                            "bookedAt",
+                            "startDate",
+                            "endDate",
+                            "isActive",
+                            "totalPrice")
+            );
+            throw e;
         }
-
-        orderRepository.save(order);
-        // WIG-89-SJ
-        USER_ANALYZER_LOGGER.info("User '{}' has placed new order. " +
-                        "\nCar: '{}' " +
-                        "\nStart Date: '{}' " +
-                        "\nEnd Date: '{}' ",
-                principal.getName(),
-                order.getCar().getId(),
-                order.getStartDate(),
-                order.getEndDate()
-        );
-        return order;
     }
 
     //SA
