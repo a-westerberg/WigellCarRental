@@ -10,6 +10,7 @@ import com.wigell.wigellcarrental.models.valueobjects.PopularBrandStats;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
+import com.wigell.wigellcarrental.services.utilities.LogMethods;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -60,20 +61,37 @@ public class OrderServiceImpl implements OrderService{
     public String cancelOrder(Long orderId, Principal principal) {
         Optional<Order> optionalOrder = orderRepository.findById(orderId);
         if(optionalOrder.isEmpty()){
+            USER_ANALYZER_LOGGER.warn("User {} tried to cancel an order which does not exist. " +
+                    "\n\tID: {}",
+                    principal.getName(), orderId);
             throw new ResourceNotFoundException("Order","id",orderId);
         }
 
         Order orderToCancel = optionalOrder.get();
 
         if(!orderToCancel.getCustomer().getPersonalIdentityNumber().equals(principal.getName())){
+            USER_ANALYZER_LOGGER.warn("User {} tried to cancel an order they don't own. " +
+                    "\n\tID: {}",
+                    principal.getName(), orderId);
             return "No order for '" + principal.getName() + "' with id: " + orderId;
         }
 
         LocalDate today = LocalDate.now();
 
         if(orderToCancel.getStartDate().isBefore(today) && orderToCancel.getEndDate().isAfter(today)){
+            USER_ANALYZER_LOGGER.warn("User {} tried to cancel and order that has already started. " +
+                    "\n\tID: {}" +
+                    "\n\tStart date: {}" +
+                    "\n\tEnd date: {}" +
+                    "\n\tToday: {}",
+                    principal.getName(), orderId, orderToCancel.getStartDate(), orderToCancel.getEndDate(),today);
             return "Order has already started and can't then be cancelled";
         } else if (orderToCancel.getEndDate().isBefore(today)) {
+            USER_ANALYZER_LOGGER.warn("User {} tried to cancel an order that has already happened." +
+                    "\n\tID: {}" +
+                    "\n\tEnd date: {}" +
+                    "\n\tToday: {}",
+                    principal.getName(), orderId, orderToCancel.getEndDate(),today);
             return "Order has already ended";
         }
 
@@ -93,6 +111,8 @@ public class OrderServiceImpl implements OrderService{
         List<Order>orders = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(date);
 
         if(orders.isEmpty()){
+            USER_ANALYZER_LOGGER.warn("User {} tried to remove inactive orders before date, but no inactive order where found before: {}",
+                    principal.getName(),date);
             return "Found no inactive orders before '"+date+"'";
         }
 
@@ -132,6 +152,7 @@ public class OrderServiceImpl implements OrderService{
         if (optionalOrder.isPresent()) {
 
             if(!status.equals("away") && !status.equals("back") && !status.equals("service")){
+                USER_ANALYZER_LOGGER.warn("User {} tried to update order '{}' but gave invalid status: {}", principal.getName(), orderId, status);
                 return "Invalid status, there is 'away', 'back' and 'service'";
             }
 
@@ -179,6 +200,9 @@ public class OrderServiceImpl implements OrderService{
                     "\nCar registration: " +orderToUpdate.getCar().getRegistrationNumber()+
                     "\nCar status: "+orderToUpdate.getCar().getStatus().toString();
         }
+        USER_ANALYZER_LOGGER.warn("User {} tried to update an order which does not exist." +
+                "\n\tID: {}",
+                principal.getName(), orderId);
         throw new ResourceNotFoundException("Order","id",orderId);
     }
 
@@ -188,12 +212,15 @@ public class OrderServiceImpl implements OrderService{
         Optional<Car>optionalCar = carRepository.findById(carId);
 
         if(optionalCar.isEmpty()){
+            USER_ANALYZER_LOGGER.warn("User {} tried to update the car on an order but car with ID '{}' does not exist.", principal.getName(), carId);
             throw new ResourceNotFoundException("Car","id",carId);
         }
         if (optionalOrder.isEmpty()) {
+            USER_ANALYZER_LOGGER.warn("User {} tried to update the car on an order but order with ID '{}' does not exist.", principal.getName(), orderId);
             throw new ResourceNotFoundException("Order","id",orderId);
         }
         if(!optionalCar.get().getStatus().equals(CarStatus.AVAILABLE)){
+            USER_ANALYZER_LOGGER.warn("User {} tried to update the car on an order with order '{}' with car '{}', but car the status isn't available, it's: {}.", principal.getName(), orderId, carId,optionalCar.get().getStatus());
             return "Car with id '" + carId + "' is not available";
         }
 
@@ -287,15 +314,32 @@ public class OrderServiceImpl implements OrderService{
     //WIG-25-AWS
     @Override
     public String removeOrderById(Long orderId, Principal principal) {
-        Order orderToDelete = orderRepository.findById(orderId)
-                .orElseThrow(()->new ResourceNotFoundException("Order", "id", orderId));
+        try{
+            Order orderToDelete = orderRepository.findById(orderId)
+                    .orElseThrow(()->new ResourceNotFoundException("Order", "id", orderId));
 
-        if(orderToDelete.getIsActive()){
-            throw new ConflictException("Can't delete an active order");
+            if(orderToDelete.getIsActive()){
+                throw new ConflictException("Can't delete an active order");
+            }
+
+            orderRepository.delete(orderToDelete);
+
+            USER_ANALYZER_LOGGER.info("User '{}' deleted order: {}'",
+                    principal.getName(),
+                    LogMethods.logBuilder(orderToDelete, "id", "startDate", "endDate", "isActive")
+            );
+
+            return "Order with ID '"+orderId+"' has been removed.";
+        } catch (Exception e) {
+            Order placeHolder = new Order();
+            placeHolder.setId(orderId);
+
+            USER_ANALYZER_LOGGER.warn("User '{}' failed to remove order: {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(placeHolder, e, "id")
+            );
+            throw e;
         }
-
-        orderRepository.delete(orderToDelete);
-        USER_ANALYZER_LOGGER.info("User '{}' deleted with ID '{}'. Order wasActive={}", principal.getName(), orderId, orderToDelete.getIsActive());
-        return "Order with ID '"+orderId+"' has been removed.";
     }
+
 }
