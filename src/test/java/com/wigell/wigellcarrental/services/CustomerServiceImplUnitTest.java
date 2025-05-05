@@ -18,8 +18,7 @@ import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
@@ -38,13 +37,14 @@ class CustomerServiceImplUnitTest {
 
     private Customer customerInDB;
     private final Long MISSING_CUSTOMER_ID = 0L;
+    private final Principal PRINCIPAL = () -> "123456-7890";
 
     //SA
     @BeforeEach
     void setUp() {
         customerService = new CustomerServiceImpl(mockCustomerRepository, mockOrderRepository);
 
-        List<Order>customerInDBOrders = new ArrayList<>();
+        List<Order> customerInDBOrders = new ArrayList<>();
         customerInDB = new Customer(1L,
                 "123456-7890",
                 "John",
@@ -81,7 +81,7 @@ class CustomerServiceImplUnitTest {
         //When & Then
         ResourceNotFoundException exception = assertThrows(
                 ResourceNotFoundException.class,
-                ()-> customerService.getCustomerById(MISSING_CUSTOMER_ID));
+                () -> customerService.getCustomerById(MISSING_CUSTOMER_ID));
 
         //Then
         assertEquals(exception.getMessage(), "Customer not found with id: 0");
@@ -90,33 +90,41 @@ class CustomerServiceImplUnitTest {
 
     //SA
     @Test
-    void updateCustomerShouldReturnUpdatedCustomer() {
-        //Given
-        Customer customerFromRequest = new Customer();
-        customerFromRequest.setId(1L);
-        customerFromRequest.setAddress("123 Street");
-
-        Principal principal = () -> "123456-7890";
+    void updateCustomerOnAllFieldsAndCorrectPrincipalShouldReturnUpdatedCustomer() {
+        List<Order>customerFromRequestOrders = new ArrayList<>();
+        Customer customerFromRequest = new Customer(
+                customerInDB.getId(),
+                "123456-7890",
+                "Kalle",
+                "Anka",
+                "kalle.andka@gmail.com",
+                "3941",
+                "123 Street",
+                customerFromRequestOrders
+        );
 
         when(mockCustomerRepository.findById(customerInDB.getId())).thenReturn(Optional.of(customerInDB));
         when(mockCustomerRepository.save(any(Customer.class))).thenAnswer(i -> i.getArguments()[0]);
 
+        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, PRINCIPAL);
 
-        //When
-        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, principal);
+        verify(mockCustomerRepository).save(customerInDB);
+        assertEquals(updatedCustomer.getId(), customerInDB.getId());
+        assertEquals("Kalle", updatedCustomer.getFirstName());
+        assertEquals("Anka", updatedCustomer.getLastName());
+        assertEquals("123 Street", updatedCustomer.getAddress());
+        assertEquals("3941", updatedCustomer.getPhoneNumber());
+        assertEquals("kalle.andka@gmail.com", updatedCustomer.getEmail());
 
-        //Then
-        verify(mockCustomerRepository).save(any(Customer.class));
-        assertThat(updatedCustomer.getAddress()).isEqualTo("123 Street");
-        assertThat(updatedCustomer.getFirstName()).isEqualTo("John");
     }
+
+
 
     //SA //Kanske ta bort senare om principal admin tas bort
     @Test
-    void updateCustomerShouldReturnUpdatedCustomerWithPrincipalAdmin() {
+    void updateCustomerShouldReturnUpdatedCustomerIfPrincipalIsAdmin() {
         //Given
-        Customer customerFromRequest = new Customer();
-        customerFromRequest.setId(1L);
+        Customer customerFromRequest = new Customer(customerInDB.getId());
         customerFromRequest.setAddress("123 Street");
 
         Principal principal = () -> "admin";
@@ -138,17 +146,15 @@ class CustomerServiceImplUnitTest {
     @Test
     void updateCustomerThrowsResourceNotFoundExceptionWhenCustomerNotFound() {
         //Given
-        Customer missingCustomer = new Customer();
-        missingCustomer.setId(MISSING_CUSTOMER_ID);
+        Customer missingCustomer = new Customer(MISSING_CUSTOMER_ID);
         missingCustomer.setPersonalIdentityNumber("123456-7890");
-        Principal principal = () -> "123456-7890";
 
         when(mockCustomerRepository.findById(MISSING_CUSTOMER_ID)).thenReturn(Optional.empty());
 
         //When & Then
         ResourceNotFoundException exception = assertThrows(
                 ResourceNotFoundException.class,
-                ()-> customerService.updateCustomer(missingCustomer, principal)
+                () -> customerService.updateCustomer(missingCustomer, PRINCIPAL)
         );
 
         //Then
@@ -160,12 +166,12 @@ class CustomerServiceImplUnitTest {
     void updateCustomerShouldThrowConflictExceptionWhenPrincipalIsNotEqualToCustomerPersonalIdentityNumber() {
         //Given
         when(mockCustomerRepository.findById(customerInDB.getId())).thenReturn(Optional.of(customerInDB));
-        Principal principal = () -> "098765-4321";
+        Principal wrongPrincipal = () -> "098765-4321";
 
         //When & Then
         ConflictException exception = assertThrows(
                 ConflictException.class,
-                () -> customerService.updateCustomer(customerInDB, principal)
+                () -> customerService.updateCustomer(customerInDB, wrongPrincipal)
         );
 
         assertEquals(exception.getMessage(), "User not authorized for function.");
@@ -173,83 +179,33 @@ class CustomerServiceImplUnitTest {
 
     //SA
     @Test
-    void updateCustomerShouldNotOverwriteFieldsWithNullOrEmpty(){
+    void updateCustomerShouldNotOverwriteFieldsWithNullOrEmptyOrPersonalIdentityNumber() {
         //Given
-        Customer customerFromRequest = new Customer();
-        customerFromRequest.setId(1L);
+        Customer customerFromRequest = new Customer(customerInDB.getId());
         customerFromRequest.setFirstName("");
         customerFromRequest.setAddress(null);
+        customerFromRequest.setPersonalIdentityNumber("6778");
         customerFromRequest.setPhoneNumber("3941");
 
-        Principal principal = () -> "123456-7890";
 
         when(mockCustomerRepository.findById(customerInDB.getId())).thenReturn(Optional.of(customerInDB));
         when(mockCustomerRepository.save(any(Customer.class))).thenAnswer(i -> i.getArguments()[0]);
 
         //When
-        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, principal);
+        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, PRINCIPAL);
 
         //Then
         verify(mockCustomerRepository).save(customerInDB);
         assertEquals(updatedCustomer.getId(), customerInDB.getId());
-        assertEquals("John", updatedCustomer.getFirstName());
-        assertEquals("1 Road", updatedCustomer.getAddress());
-        assertEquals("3941", updatedCustomer.getPhoneNumber());
-    }
+        assertEquals(updatedCustomer.getPersonalIdentityNumber(), customerInDB.getPersonalIdentityNumber());
+        assertEquals( updatedCustomer.getFirstName(),customerInDB.getFirstName());
+        assertEquals(updatedCustomer.getAddress(),customerInDB.getAddress());
+        assertEquals( updatedCustomer.getPhoneNumber(),customerFromRequest.getPhoneNumber());
 
-    //SA
-    @Test
-    void updateCustomerShouldNotUpdatePersonalIdentityNumber(){
-        Customer customerFromRequest = new Customer();
-        customerFromRequest.setId(1L);
-        customerFromRequest.setPersonalIdentityNumber("6778");
-        customerFromRequest.setAddress("123 Street");
+        assertNotEquals(updatedCustomer.getPersonalIdentityNumber(), customerFromRequest.getPersonalIdentityNumber());
+        assertNotEquals(updatedCustomer.getFirstName(), customerFromRequest.getFirstName());
+        assertNotEquals(updatedCustomer.getAddress(), customerFromRequest.getAddress());
 
-        Principal principal = () -> "123456-7890";
-
-        when(mockCustomerRepository.findById(customerInDB.getId())).thenReturn(Optional.of(customerInDB));
-        when(mockCustomerRepository.save(any(Customer.class))).thenAnswer(i -> i.getArguments()[0]);
-
-        //When
-        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, principal);
-
-        //Then
-        verify(mockCustomerRepository).save(customerInDB);
-        assertEquals(updatedCustomer.getId(), customerInDB.getId());
-        assertEquals("John", updatedCustomer.getFirstName());
-        assertEquals("123 Street", updatedCustomer.getAddress());
-        assertEquals("123456-7890", updatedCustomer.getPersonalIdentityNumber());
-        assertThat(updatedCustomer.getPersonalIdentityNumber()).isNotEqualTo("6778");
-    }
-
-    //SA
-    @Test
-    void updateCustomerInAllFieldsShouldBeUpdated() {
-        List<Order>customerFromRequestOrders = new ArrayList<>();
-        Customer customerFromRequest = new Customer(
-                1L,
-                "123456-7890",
-                "Kalle",
-                "Anka",
-                "kalle.andka@gmail.com",
-                "3941",
-                "123 Street",
-                customerFromRequestOrders
-        );
-
-        Principal principal = () -> "123456-7890";
-        when(mockCustomerRepository.findById(customerInDB.getId())).thenReturn(Optional.of(customerInDB));
-        when(mockCustomerRepository.save(any(Customer.class))).thenAnswer(i -> i.getArguments()[0]);
-
-        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, principal);
-
-        verify(mockCustomerRepository).save(customerInDB);
-        assertEquals(updatedCustomer.getId(), customerInDB.getId());
-        assertEquals("Kalle", updatedCustomer.getFirstName());
-        assertEquals("Anka", updatedCustomer.getLastName());
-        assertEquals("123 Street", updatedCustomer.getAddress());
-        assertEquals("3941", updatedCustomer.getPhoneNumber());
-        assertEquals("kalle.andka@gmail.com", updatedCustomer.getEmail());
 
     }
 }
