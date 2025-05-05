@@ -43,6 +43,21 @@ public class Order {
 
     }
 
+    public Order(Long id) {
+        this.id = id;
+    }
+
+    public Order(Long id, LocalDate bookedAt, LocalDate startDate, LocalDate endDate, Car car, Customer customer, BigDecimal totalPrice, Boolean isActive) {
+        this.id = id;
+        this.bookedAt = bookedAt;
+        this.startDate = startDate;
+        this.endDate = endDate;
+        this.car = car;
+        this.customer = customer;
+        this.totalPrice = totalPrice;
+        this.isActive = isActive;
+    }
+
     public Long getId() {
         return id;
     }
