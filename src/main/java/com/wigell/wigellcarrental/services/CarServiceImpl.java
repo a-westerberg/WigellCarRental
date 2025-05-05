@@ -104,21 +104,25 @@ public class CarServiceImpl implements CarService{
 
     //WIG-20-AA
     private Car findCarToDelete(String input, Principal principal) {
-        if (isInputId(input, principal)) {
-            Long id = Long.parseLong(input);
-            return carRepository.findById(id)
-                    .orElseThrow(() -> {
-                        //TODO lägg in micrometod för att skapa loggningsmeddelandet
-                        USER_ANALYZER_LOGGER.warn("User: {} tried to delete car, but car id was not found",principal.getName());
-                        return new ResourceNotFoundException("Car", "id", id);
-                    });
-        } else {
-            return carRepository.findByRegistrationNumber(input)
-                    .orElseThrow(() -> {
-                        //TODO lägg in micrometod för att skapa loggningsmeddelandet
-                        USER_ANALYZER_LOGGER.warn("User: {} tried to delete car, but registration number was not found",principal.getName());
-                        return new ResourceNotFoundException("Car", "Registration Number", input);
-            });
+        try {
+            if (isInputId(input, principal)) {
+                Long id = Long.parseLong(input);
+                return carRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Car", "id", id));
+            } else {
+                return carRepository.findByRegistrationNumber(input).orElseThrow(() -> new ResourceNotFoundException("Car", "Registration Number", input));
+            }
+        } catch (Exception e) {
+            Car placeHolder = new Car();
+            String inputType;
+            if (isInputId(input, principal)) {
+                placeHolder.setId(Long.parseLong(input));
+                inputType = "id";
+            } else {
+                placeHolder.setRegistrationNumber(input);
+                inputType = "registrationNumber";
+            }
+            USER_ANALYZER_LOGGER.warn("User: {} failed to delete car: {}", principal.getName(), LogMethods.logExceptionBuilder(placeHolder, e, inputType));
+            throw e;
         }
     }
 
@@ -134,7 +138,7 @@ public class CarServiceImpl implements CarService{
         checkUniqRegistrationNumber(car.getRegistrationNumber(), principal, id);
     }
 
-    //WIG-18-AA
+    //WIG-18-AA //WIG-83-AA
     private void checkUniqRegistrationNumber(String input, Principal principal, Long id) {
         try {
             Optional<Car> result = carRepository.findByRegistrationNumber(input);
@@ -150,7 +154,7 @@ public class CarServiceImpl implements CarService{
         }
     }
 
-    //WIG-37-AA
+    //WIG-37-AA //WIG-83-AA
     private void processOrderList(List<Order> orders, Long id, Principal principal) {
         LocalDate today = LocalDate.now();
         try {
