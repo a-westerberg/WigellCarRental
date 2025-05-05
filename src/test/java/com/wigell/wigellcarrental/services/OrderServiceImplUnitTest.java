@@ -161,6 +161,14 @@ class OrderServiceImplUnitTest {
     //AA
     @Test
     void cancelOrderShouldReturnMessageIfOrderAlreadyEnded(){
+        when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
+
+        testOrder.setStartDate(LocalDate.now().minusDays(10));
+        testOrder.setEndDate(LocalDate.now().minusDays(8));
+
+        String returnMessage = orderService.cancelOrder(testOrder.getId(), testPrincipal);
+
+        assertEquals("Order has already ended", returnMessage);
 
     }
 
