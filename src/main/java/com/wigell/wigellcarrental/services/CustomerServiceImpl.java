@@ -7,6 +7,7 @@ import com.wigell.wigellcarrental.exceptions.InvalidInputException;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
+import com.wigell.wigellcarrental.services.utilities.LogMethods;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
@@ -149,12 +150,31 @@ public class CustomerServiceImpl implements CustomerService{
     // WIG-23-AWS
     @Override
     public Customer addCustomer(Customer customer, Principal principal) {
-        validateAddCustomer(customer);
-        checkUniquePersonalIdentityNumber(customer.getPersonalIdentityNumber());
+        try{
+            validateAddCustomer(customer);
+            checkUniquePersonalIdentityNumber(customer.getPersonalIdentityNumber());
 
-        Customer savedCustomer = customerRepository.save(customer);
-        USER_ANALYZER_LOGGER.info("User '{}' added a new customer with personalIdentityNumber: {}", principal.getName(), savedCustomer.getPersonalIdentityNumber());
-        return savedCustomer;
+            Customer savedCustomer = customerRepository.save(customer);
+
+            USER_ANALYZER_LOGGER.info("User '{}' added a new customer:{}",
+                    principal.getName(),
+                    LogMethods.logBuilder(savedCustomer,
+                            "id",
+                            "personalIdentityNumber",
+                            "firstName",
+                            "lastName",
+                            "email",
+                            "phoneNumber",
+                            "address")
+            );
+            return savedCustomer;
+        } catch (Exception e) {
+            USER_ANALYZER_LOGGER.warn("User '{}' failed to add customer: {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(customer, e, "personalIdentityNumber", "firstName", "lastName", "email", "phoneNumber", "address")
+            );
+            throw e;
+        }
     }
 
     private void validateAddCustomer(Customer customer) {
