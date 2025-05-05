@@ -58,20 +58,42 @@ public class CarServiceImpl implements CarService{
 
     //WIG-20-AA //WIG-83-AA
     public String deleteCar(String input, Principal principal) {
-        Car carToDelete = findCarToDelete(input, principal);
-        if (!carToDelete.getOrders().isEmpty()) {
-            processOrderList(carToDelete.getOrders(), carToDelete.getId(), principal);
+        try {
+            Car carToDelete = findCarToDelete(input);
+            if (!carToDelete.getOrders().isEmpty()) {
+                processOrderList(carToDelete.getOrders(), carToDelete.getId());
+            }
+            carRepository.delete(carToDelete);
+            USER_ANALYZER_LOGGER.info("User: {} has deleted a car. {}", principal.getName(), LogMethods.logBuilder(carToDelete, "id", "registrationNumber"));
+            return isInputId(input) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
+        } catch (Exception e) {
+            Car placeHolder = new Car();
+
+            if (isInputId(input)) {
+                placeHolder.setId(Long.parseLong(input));
+            } else {
+                placeHolder.setRegistrationNumber(input);
+            }
+            USER_ANALYZER_LOGGER.warn("User: {} failed to delete car. {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(placeHolder,e,"id", "registrationNumber"));
+            throw e;
         }
-        carRepository.delete(carToDelete);
-        USER_ANALYZER_LOGGER.info("User: {} has deleted a car: {}", principal.getName(), LogMethods.logBuilder(carToDelete, "id", "registrationNumber"));
-        return  isInputId(input, principal) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
     }
 
     //WIG-18-AA //WIG-83-AA
     public Car addCar(Car car, Principal principal) {
-        validateAddCarInput(car, principal);
-        USER_ANALYZER_LOGGER.info("User: {} has added a car: {}", principal.getName(), LogMethods.logBuilder(car, "make", "model", "registrationNumber", "status", "pricePerDay") );
-        return carRepository.save(car);
+        try {
+            validateAddCarInput(car);
+            USER_ANALYZER_LOGGER.info("User: {} has added a car: {}", principal.getName(), LogMethods.logBuilder(car, "make", "model", "registrationNumber", "status", "pricePerDay"));
+            return carRepository.save(car);
+        } catch (Exception e) {
+            USER_ANALYZER_LOGGER.warn("User: {} failed to add car: {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(car, e, "make", "model", "registrationNumber", "status", "pricePerDay")
+        );
+            throw e;
+        }
     }
 
     //SA
@@ -95,74 +117,46 @@ public class CarServiceImpl implements CarService{
         return incomeCars;
     }
 
-    //WIG-20-AA //WIG-83-AA
-    private boolean isInputId(String input, Principal principal) {
-        try {
+    //WIG-20-AA
+    private boolean isInputId(String input) {
             if (input == null || input.isBlank()) {
                 throw new InvalidInputException("Car", "Input", input);
             }
             return input.matches("\\d+");
-        } catch (Exception e) {
-            logCarDeleteFail(principal,null,new Car(),e);
-            throw e;
-        }
     }
 
     //WIG-20-AA
-    private Car findCarToDelete(String input, Principal principal) {
-        try {
-            if (isInputId(input, principal)) {
+    private Car findCarToDelete(String input) {
+            if (isInputId(input)) {
                 Long id = Long.parseLong(input);
                 return carRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Car", "id", id));
             } else {
                 return carRepository.findByRegistrationNumber(input).orElseThrow(() -> new ResourceNotFoundException("Car", "Registration Number", input));
             }
-        } catch (Exception e) {
-            Car placeHolder = new Car();
-            String inputType;
-            if (isInputId(input, principal)) {
-                placeHolder.setId(Long.parseLong(input));
-                inputType = "id";
-            } else {
-                placeHolder.setRegistrationNumber(input);
-                inputType = "registrationNumber";
-            }
-            logCarDeleteFail(principal, inputType, placeHolder, e);
-            throw e;
-        }
     }
 
     //WIG-18-AA
-    private void validateAddCarInput(Car car, Principal principal) {
-        //TODO Hur gör vi med loggningsförsök i micro-metoderna? Skicka med principal och för vilken metod vi validerar datan?
+    private void validateAddCarInput(Car car) {
         MicroMethods.validateData("Car registration number", "registrationNumber", car.getRegistrationNumber());
         MicroMethods.validateData("Car status", "status", car.getStatus());
         MicroMethods.validateData("Car make", "make", car.getMake());
         MicroMethods.validateData("Car model", "model", car.getModel());
         MicroMethods.validateData("Price per day", "pricePerDay", car.getPricePerDay());
 
-        checkUniqRegistrationNumber(car.getRegistrationNumber(), principal);
+        checkUniqRegistrationNumber(car.getRegistrationNumber());
     }
 
-    //WIG-18-AA //WIG-83-AA
-    private void checkUniqRegistrationNumber(String input, Principal principal) {
-        try {
+    //WIG-18-AA
+    private void checkUniqRegistrationNumber(String input) {
             Optional<Car> result = carRepository.findByRegistrationNumber(input);
             if (result.isPresent()) {
                 throw new UniqueConflictException("Registration number", input);
             }
-        } catch (Exception e) {
-            Car placeHolder = new Car();
-            placeHolder.setRegistrationNumber(input);
-            USER_ANALYZER_LOGGER.warn("User: {} failed to add car: {} ", principal.getName(), LogMethods.logExceptionBuilder(placeHolder,e, "registrationNumber"));
-            throw e;
-        }
     }
 
-    //WIG-37-AA //WIG-83-AA
-    private void processOrderList(List<Order> orders, Long id, Principal principal) {
+    //WIG-37-AA
+    private void processOrderList(List<Order> orders, Long id) {
         LocalDate today = LocalDate.now();
-        try {
             for (Order order : orders) {
                 if (order.getEndDate().isBefore(today)) {
                     order.setCar(null);
@@ -177,12 +171,6 @@ public class CarServiceImpl implements CarService{
                     orderRepository.save(order);
                 }
             }
-        } catch (Exception e) {
-            Car placeHolder = new Car();
-            placeHolder.setId(id);
-            logCarDeleteFail(principal, "id",placeHolder, e);
-            throw e;
-        }
     }
 
     // WIG-24-AWS
@@ -245,13 +233,4 @@ public class CarServiceImpl implements CarService{
             throw new UniqueConflictException("Registration number",regNumber);
         }
     }
-
-    //WIG-83-AA
-    private void logCarDeleteFail(Principal principal, String field, Car car, Exception e) {
-        String logMessage = (field != null)
-                ? LogMethods.logExceptionBuilder(car, e, field)
-                : LogMethods.logExceptionBuilder(car, e);
-        USER_ANALYZER_LOGGER.warn("User: {} failed to delete car: {}", principal.getName(), logMessage);
-    }
-
 }
