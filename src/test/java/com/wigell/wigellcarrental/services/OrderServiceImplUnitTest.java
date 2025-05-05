@@ -147,6 +147,14 @@ class OrderServiceImplUnitTest {
     //AA
     @Test
     void cancelOrderShouldReturnMessageIfOrderAlreadyStarted(){
+        when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
+
+        testOrder.setStartDate(LocalDate.now().minusDays(1));
+        testOrder.setEndDate(LocalDate.now().plusDays(1));
+
+        String returnMessage = orderService.cancelOrder(testOrder.getId(), testPrincipal);
+
+        assertEquals("Order has already started and can't then be cancelled", returnMessage);
 
     }
 
@@ -155,8 +163,6 @@ class OrderServiceImplUnitTest {
     void cancelOrderShouldReturnMessageIfOrderAlreadyEnded(){
 
     }
-
-    //Egna tester för loggningen??
 
 
 }
