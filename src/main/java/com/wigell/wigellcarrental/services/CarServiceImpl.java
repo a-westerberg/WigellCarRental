@@ -56,7 +56,7 @@ public class CarServiceImpl implements CarService{
         return carRepository.findAll();
     }
 
-    //WIG-20-AA
+    //WIG-20-AA //WIG-83-AA
     public String deleteCar(String input, Principal principal) {
         Car carToDelete = findCarToDelete(input, principal);
         if (!carToDelete.getOrders().isEmpty()) {
