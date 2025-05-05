@@ -9,8 +9,6 @@ import com.wigell.wigellcarrental.services.OrderServiceImpl;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-/* import org.springframework.security.core.Authentication;
-import org.springframework.security.core.context.SecurityContextHolder; */
 import org.springframework.web.bind.annotation.*;
 
 
@@ -56,15 +54,13 @@ public class CustomerController {
     }
 
 
-    //SA //AWS TODO Denna funkar inte försen vi har fixat security så kommer ligga utkommenderad. Även utkommenderat i import som behövs
-    /** @GetMapping("/activeorders")//Se aktiva bokningar
-    public ResponseEntity<List<Order>> getActiveOrders() {
-        Authentication auth = SecurityContextHolder.getContext().getAuthentication();
-        String personalIdentityNumber = auth.getName();
-
+    //SA //AWS
+    @GetMapping("/activeorders")//Se aktiva bokningar
+    public ResponseEntity<List<Order>> getActiveOrders(Principal principal) {
+        String personalIdentityNumber = principal.getName();
         List<Order> activeOrders = orderService.getActiveOrdersForCustomer(personalIdentityNumber);
         return ResponseEntity.ok(activeOrders);
-    }*/
+    }
 
 
     //SA //AA

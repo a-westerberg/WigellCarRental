@@ -28,4 +28,7 @@ public interface OrderService {
 
     // WIG-97-SJ
     AverageRentalPeriodStats getAverageRentalPeriod();
+
+    // WIG-25-AWS
+    String removeOrderById(Long orderId, Principal principal);
 }
