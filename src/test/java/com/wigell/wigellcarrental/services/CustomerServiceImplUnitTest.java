@@ -3,6 +3,7 @@ package com.wigell.wigellcarrental.services;
 import com.wigell.wigellcarrental.exceptions.ConflictException;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.models.entities.Customer;
+import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -12,6 +13,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.Principal;
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
@@ -34,20 +37,22 @@ class CustomerServiceImplUnitTest {
     private OrderRepository mockOrderRepository;
 
     private Customer customerInDB;
+    private final Long MISSING_CUSTOMER_ID = 0L;
 
     //SA
     @BeforeEach
     void setUp() {
         customerService = new CustomerServiceImpl(mockCustomerRepository, mockOrderRepository);
 
-        customerInDB = new Customer();
-        customerInDB.setId(1L);
-        customerInDB.setFirstName("John");
-        customerInDB.setLastName("Smith");
-        customerInDB.setEmail("john.smith@gmail.com");
-        customerInDB.setPhoneNumber("0987654321");
-        customerInDB.setAddress("1 Road");
-        customerInDB.setPersonalIdentityNumber("123456-7890");
+        List<Order>customerInDBOrders = new ArrayList<>();
+        customerInDB = new Customer(1L,
+                "123456-7890",
+                "John",
+                "Smith",
+                "john.smith@gmail.com",
+                "0987654321",
+                "1 Road",
+                customerInDBOrders);
     }
 
     //SA
@@ -71,16 +76,15 @@ class CustomerServiceImplUnitTest {
     @Test
     void getCustomerByIdThrowsResourceNotFoundExceptionWhenCustomerNotFound() {
         //Given
-        Long missingId = 2L;
-        when(mockCustomerRepository.findById(missingId)).thenReturn(Optional.empty());
+        when(mockCustomerRepository.findById(MISSING_CUSTOMER_ID)).thenReturn(Optional.empty());
 
         //When & Then
         ResourceNotFoundException exception = assertThrows(
                 ResourceNotFoundException.class,
-                ()-> customerService.getCustomerById(missingId));
+                ()-> customerService.getCustomerById(MISSING_CUSTOMER_ID));
 
         //Then
-        assertEquals(exception.getMessage(), "Customer not found with id: "+missingId);
+        assertEquals(exception.getMessage(), "Customer not found with id: 0");
 
     }
 
@@ -134,13 +138,12 @@ class CustomerServiceImplUnitTest {
     @Test
     void updateCustomerThrowsResourceNotFoundExceptionWhenCustomerNotFound() {
         //Given
-        Long missingId = 2L;
         Customer missingCustomer = new Customer();
-        missingCustomer.setId(missingId);
+        missingCustomer.setId(MISSING_CUSTOMER_ID);
         missingCustomer.setPersonalIdentityNumber("123456-7890");
         Principal principal = () -> "123456-7890";
 
-        when(mockCustomerRepository.findById(missingId)).thenReturn(Optional.empty());
+        when(mockCustomerRepository.findById(MISSING_CUSTOMER_ID)).thenReturn(Optional.empty());
 
         //When & Then
         ResourceNotFoundException exception = assertThrows(
@@ -149,7 +152,7 @@ class CustomerServiceImplUnitTest {
         );
 
         //Then
-        assertEquals(exception.getMessage(), "Customer not found with id: "+missingId);
+        assertEquals(exception.getMessage(), "Customer not found with id: 0");
     }
 
     //SA
@@ -217,5 +220,36 @@ class CustomerServiceImplUnitTest {
         assertEquals("123 Street", updatedCustomer.getAddress());
         assertEquals("123456-7890", updatedCustomer.getPersonalIdentityNumber());
         assertThat(updatedCustomer.getPersonalIdentityNumber()).isNotEqualTo("6778");
+    }
+
+    //SA
+    @Test
+    void updateCustomerInAllFieldsShouldBeUpdated() {
+        List<Order>customerFromRequestOrders = new ArrayList<>();
+        Customer customerFromRequest = new Customer(
+                1L,
+                "123456-7890",
+                "Kalle",
+                "Anka",
+                "kalle.andka@gmail.com",
+                "3941",
+                "123 Street",
+                customerFromRequestOrders
+        );
+
+        Principal principal = () -> "123456-7890";
+        when(mockCustomerRepository.findById(customerInDB.getId())).thenReturn(Optional.of(customerInDB));
+        when(mockCustomerRepository.save(any(Customer.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, principal);
+
+        verify(mockCustomerRepository).save(customerInDB);
+        assertEquals(updatedCustomer.getId(), customerInDB.getId());
+        assertEquals("Kalle", updatedCustomer.getFirstName());
+        assertEquals("Anka", updatedCustomer.getLastName());
+        assertEquals("123 Street", updatedCustomer.getAddress());
+        assertEquals("3941", updatedCustomer.getPhoneNumber());
+        assertEquals("kalle.andka@gmail.com", updatedCustomer.getEmail());
+
     }
 }
