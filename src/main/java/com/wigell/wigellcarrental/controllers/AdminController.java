@@ -155,12 +155,11 @@ public class AdminController {
 
         }
         //WIG-97-SJ
-        /*
         else if (choice.contains("costperorder")) {//genomsnittlig kostnad per hyresorder
             return ResponseEntity.ok(service.costPerOrder());
 
         }
-         */
+
 
         else if (choice.contains("incomecar")) {//Total intäkt per bil och hur många gånger de hyrts ut
             return ResponseEntity.ok(carService.incomeOnCars());
