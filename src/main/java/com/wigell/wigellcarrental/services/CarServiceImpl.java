@@ -94,12 +94,18 @@ public class CarServiceImpl implements CarService{
 
     //WIG-20-AA
     private boolean isInputId(String input, Principal principal) {
-        if (input == null || input.isEmpty()) {
-            //TODO lägg in micrometod för att skapa loggningsmeddelandet
-            USER_ANALYZER_LOGGER.warn("User: {} tried to delete car, but id/regisration number was null/empty",principal.getName());
-            throw new InvalidInputException("Car","Input", input);
+        try {
+            if (input == null || input.isEmpty()) {
+                //TODO lägg in micrometod för att skapa loggningsmeddelandet
+                USER_ANALYZER_LOGGER.warn("User: {} tried to delete car, but id/regisration number was null/empty", principal.getName());
+                throw new InvalidInputException("Car", "Input", input);
+            }
+            return input.matches("\\d+");
+        } catch (Exception e) {
+
+
+            throw e;
         }
-        return input.matches("\\d+");
     }
 
     //WIG-20-AA
@@ -121,7 +127,7 @@ public class CarServiceImpl implements CarService{
                 placeHolder.setRegistrationNumber(input);
                 inputType = "registrationNumber";
             }
-            USER_ANALYZER_LOGGER.warn("User: {} failed to delete car: {}", principal.getName(), LogMethods.logExceptionBuilder(placeHolder, e, inputType));
+            logCarDeleteFail(principal, inputType, placeHolder, e);
             throw e;
         }
     }
@@ -175,7 +181,7 @@ public class CarServiceImpl implements CarService{
         } catch (Exception e) {
             Car placeHolder = new Car();
             placeHolder.setId(id);
-            USER_ANALYZER_LOGGER.warn("User: {} failed to delete car: {} ", principal.getName(), LogMethods.logExceptionBuilder(placeHolder,e,"id"));
+            logCarDeleteFail(principal, "id",placeHolder, e);
             throw e;
         }
     }
@@ -239,6 +245,11 @@ public class CarServiceImpl implements CarService{
         if(result.isPresent() && !result.get().getId().equals(currentCarId)) {
             throw new UniqueConflictException("Registration number",regNumber);
         }
+    }
+
+    //WIG-83-AA
+    private void logCarDeleteFail(Principal principal, String field, Car car, Exception e) {
+        USER_ANALYZER_LOGGER.warn("User: {} failed to delete car: {}", principal.getName(), LogMethods.logExceptionBuilder(car, e, field));
     }
 
 }
