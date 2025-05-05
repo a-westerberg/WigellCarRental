@@ -1,6 +1,7 @@
 package com.wigell.wigellcarrental.services;
 
 import com.wigell.wigellcarrental.exceptions.ConflictException;
+import com.wigell.wigellcarrental.exceptions.InvalidInputException;
 import com.wigell.wigellcarrental.models.entities.Car;
 import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.models.entities.Order;
@@ -45,10 +46,15 @@ public class OrderServiceImpl implements OrderService{
         this.carRepository = carRepository;
         this.customerRepository = customerRepository;
     }
-    //AWS TODO Fixa Exceptions
+    //WIG-120-AWS
     @Override
     public List<Order> getActiveOrdersForCustomer(String personalIdentityNumber) {
-        return orderRepository.findByCustomer_PersonalIdentityNumberAndIsActiveTrue(personalIdentityNumber);
+        List<Order> orders = orderRepository.findByCustomer_PersonalIdentityNumberAndIsActiveTrue(personalIdentityNumber);
+
+        if(orders.isEmpty()){
+            throw new ResourceNotFoundException("List","active orders for customer", personalIdentityNumber);
+        }
+        return orders;
     }
 
     //SA
@@ -128,15 +134,42 @@ public class OrderServiceImpl implements OrderService{
     @Override
     public Order addOrder(Order order, Principal principal) {
 
-        validateOrder(order);
-        constructOrder(order);
+        try {
+            validateOrder(order);
+            constructOrder(order);
 
-        if (!order.getCustomer().getPersonalIdentityNumber().equals(principal.getName())) {
-            throw new ConflictException("You can't place orders for other customers.");
+            if (!order.getCustomer().getPersonalIdentityNumber().equals(principal.getName())) {
+                throw new ConflictException("You can't place orders for other customers.");
+            }
+
+            orderRepository.save(order);
+            // WIG-89-SJ
+            USER_ANALYZER_LOGGER.info("User '{}' has placed new order:{}",
+                    principal.getName(),
+                    LogMethods.logBuilder(order,
+                            "id",
+                            "bookedAt",
+                            "startDate",
+                            "endDate",
+                            "isActive",
+                            "totalPrice")
+            );
+
+            return order;
+
+        } catch (Exception e) {
+            USER_ANALYZER_LOGGER.warn("User '{}' failed to place order: {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(order, e,
+                            "id",
+                            "bookedAt",
+                            "startDate",
+                            "endDate",
+                            "isActive",
+                            "totalPrice")
+            );
+            throw e;
         }
-
-        return orderRepository.save(order);
-
     }
 
     //SA
