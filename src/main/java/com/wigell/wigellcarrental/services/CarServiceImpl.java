@@ -95,15 +95,12 @@ public class CarServiceImpl implements CarService{
     //WIG-20-AA
     private boolean isInputId(String input, Principal principal) {
         try {
-            if (input == null || input.isEmpty()) {
-                //TODO lägg in micrometod för att skapa loggningsmeddelandet
-                USER_ANALYZER_LOGGER.warn("User: {} tried to delete car, but id/regisration number was null/empty", principal.getName());
+            if (input == null || input.isBlank()) {
                 throw new InvalidInputException("Car", "Input", input);
             }
             return input.matches("\\d+");
         } catch (Exception e) {
-
-
+            logCarDeleteFail(principal,null,new Car(),e);
             throw e;
         }
     }
@@ -249,7 +246,10 @@ public class CarServiceImpl implements CarService{
 
     //WIG-83-AA
     private void logCarDeleteFail(Principal principal, String field, Car car, Exception e) {
-        USER_ANALYZER_LOGGER.warn("User: {} failed to delete car: {}", principal.getName(), LogMethods.logExceptionBuilder(car, e, field));
+        String logMessage = (field != null)
+                ? LogMethods.logExceptionBuilder(car, e, field)
+                : LogMethods.logExceptionBuilder(car, e);
+        USER_ANALYZER_LOGGER.warn("User: {} failed to delete car: {}", principal.getName(), logMessage);
     }
 
 }
