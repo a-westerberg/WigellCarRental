@@ -145,7 +145,6 @@ class CustomerServiceImplUnitTest {
         assertEquals(exception.getMessage(), "User not authorized for function.");
     }
 
-    //TODO: Checka loggning?
     //SA
     @Test
     void updateCustomerShouldNotOverwriteFieldsWithNullOrEmpty(){
@@ -161,7 +160,6 @@ class CustomerServiceImplUnitTest {
         when(mockCustomerRepository.findById(customerInDB.getId())).thenReturn(Optional.of(customerInDB));
         when(mockCustomerRepository.save(any(Customer.class))).thenAnswer(i -> i.getArguments()[0]);
 
-
         //When
         Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, principal);
 
@@ -171,5 +169,30 @@ class CustomerServiceImplUnitTest {
         assertEquals("John", updatedCustomer.getFirstName());
         assertEquals("1 Road", updatedCustomer.getAddress());
         assertEquals("3941", updatedCustomer.getPhoneNumber());
+    }
+
+    //SA
+    @Test
+    void updateCustomerShouldNotUpdatePersonalIdentityNumber(){
+        Customer customerFromRequest = new Customer();
+        customerFromRequest.setId(1L);
+        customerFromRequest.setPersonalIdentityNumber("6778");
+        customerFromRequest.setAddress("123 Street");
+
+        Principal principal = () -> "123456-7890";
+
+        when(mockCustomerRepository.findById(customerInDB.getId())).thenReturn(Optional.of(customerInDB));
+        when(mockCustomerRepository.save(any(Customer.class))).thenAnswer(i -> i.getArguments()[0]);
+
+        //When
+        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, principal);
+
+        //Then
+        verify(mockCustomerRepository).save(customerInDB);
+        assertEquals(updatedCustomer.getId(), customerInDB.getId());
+        assertEquals("John", updatedCustomer.getFirstName());
+        assertEquals("123 Street", updatedCustomer.getAddress());
+        assertEquals("123456-7890", updatedCustomer.getPersonalIdentityNumber());
+        assertThat(updatedCustomer.getPersonalIdentityNumber()).isNotEqualTo("6778");
     }
 }
