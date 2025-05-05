@@ -1,6 +1,7 @@
 package com.wigell.wigellcarrental.services;
 
 import com.wigell.wigellcarrental.exceptions.ConflictException;
+import com.wigell.wigellcarrental.exceptions.InvalidInputException;
 import com.wigell.wigellcarrental.models.entities.Car;
 import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.models.entities.Order;
@@ -42,10 +43,15 @@ public class OrderServiceImpl implements OrderService{
         this.carRepository = carRepository;
         this.customerRepository = customerRepository;
     }
-    //AWS TODO Fixa Exceptions
+    //WIG-120-AWS
     @Override
     public List<Order> getActiveOrdersForCustomer(String personalIdentityNumber) {
-        return orderRepository.findByCustomer_PersonalIdentityNumberAndIsActiveTrue(personalIdentityNumber);
+        List<Order> orders = orderRepository.findByCustomer_PersonalIdentityNumberAndIsActiveTrue(personalIdentityNumber);
+
+        if(orders.isEmpty()){
+            throw new ResourceNotFoundException("List","active orders for customer", personalIdentityNumber);
+        }
+        return orders;
     }
 
     //SA
