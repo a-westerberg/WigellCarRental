@@ -9,6 +9,7 @@ import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.exceptions.UniqueConflictException;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
+import com.wigell.wigellcarrental.services.utilities.LogMethods;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
 import com.wigell.wigellcarrental.models.valueobjects.IncomeCar;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -166,34 +167,44 @@ public class CarServiceImpl implements CarService{
     // WIG-24-AWS
     @Override
     public Car updateCar(Car car, Principal principal) {
-        validateUpdateCarInput(car);
+        try{
 
-        Car existingCar = carRepository.findById(car.getId())
-                .orElseThrow(() -> new ResourceNotFoundException("Car", "id", car.getId()));
+            validateUpdateCarInput(car);
 
-        if(!existingCar.getRegistrationNumber().equals(car.getRegistrationNumber())) {
-            checkIfRegistrationNumberIsTakenByAnotherCar(car.getRegistrationNumber(), car.getId());
+            Car existingCar = carRepository.findById(car.getId())
+                    .orElseThrow(() -> new ResourceNotFoundException("Car", "id", car.getId()));
+
+            if(!existingCar.getRegistrationNumber().equals(car.getRegistrationNumber())) {
+                checkIfRegistrationNumberIsTakenByAnotherCar(car.getRegistrationNumber(), car.getId());
+            }
+
+            String changes = LogMethods.logUpdateBuilder(existingCar, car, "make", "model", "registrationNumber", "status", "pricePerDay");
+
+            existingCar.setMake(car.getMake());
+            existingCar.setModel(car.getModel());
+            existingCar.setRegistrationNumber(car.getRegistrationNumber());
+            existingCar.setStatus(car.getStatus());
+            existingCar.setPricePerDay(car.getPricePerDay());
+
+            Car updateCar = carRepository.save(existingCar);
+
+            if(changes.isBlank()){
+                USER_ANALYZER_LOGGER.info("User '{}' attempted to update car ID {}, but no changes were made.", principal.getName(), updateCar.getId());
+            } else {
+                USER_ANALYZER_LOGGER.info("User '{}' updated car ID {}: {}",
+                        principal.getName(), updateCar.getId(), changes);
+            }
+
+            return updateCar;
+        } catch (Exception e) {
+            USER_ANALYZER_LOGGER.warn("User '{}' failed to update car: {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(car, e, "id", "make", "model", "registrationNumber", "status", "pricePerDay")
+            );
+            throw e;
         }
-
-        String changes = MicroMethods.logUpdateBuilder(existingCar, car, "make", "model", "registrationNumber", "status", "pricePerDay");
-
-        existingCar.setMake(car.getMake());
-        existingCar.setModel(car.getModel());
-        existingCar.setRegistrationNumber(car.getRegistrationNumber());
-        existingCar.setStatus(car.getStatus());
-        existingCar.setPricePerDay(car.getPricePerDay());
-
-        Car updateCar = carRepository.save(existingCar);
-
-        if(changes.isBlank()){
-            USER_ANALYZER_LOGGER.info("User '{}' attempted to update car ID {}, but no changes were made.", principal.getName(), updateCar.getId());
-        } else {
-            USER_ANALYZER_LOGGER.info("User '{}' updated car ID {}: {}",
-                    principal.getName(), updateCar.getId(), changes);
-        }
-
-        return updateCar;
     }
+
     // WIG-24-AWS
     private void validateUpdateCarInput(Car car){
         if(car.getId() == null) {
