@@ -7,7 +7,7 @@ import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.enums.CarStatus;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
-import com.wigell.wigellcarrental.models.valueobjects.PopularBrandStats;
+import com.wigell.wigellcarrental.models.valueobjects.*;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
@@ -19,10 +19,13 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.Period;
 import java.time.temporal.ChronoUnit;
 import java.util.*;
+import java.util.function.Function;
 import java.util.stream.Collectors;
 
 //SA
@@ -131,15 +134,42 @@ public class OrderServiceImpl implements OrderService{
     @Override
     public Order addOrder(Order order, Principal principal) {
 
-        validateOrder(order);
-        constructOrder(order);
+        try {
+            validateOrder(order);
+            constructOrder(order);
 
-        if (!order.getCustomer().getPersonalIdentityNumber().equals(principal.getName())) {
-            throw new ConflictException("You can't place orders for other customers.");
+            if (!order.getCustomer().getPersonalIdentityNumber().equals(principal.getName())) {
+                throw new ConflictException("You can't place orders for other customers.");
+            }
+
+            orderRepository.save(order);
+            // WIG-89-SJ
+            USER_ANALYZER_LOGGER.info("User '{}' has placed new order:{}",
+                    principal.getName(),
+                    LogMethods.logBuilder(order,
+                            "id",
+                            "bookedAt",
+                            "startDate",
+                            "endDate",
+                            "isActive",
+                            "totalPrice")
+            );
+
+            return order;
+
+        } catch (Exception e) {
+            USER_ANALYZER_LOGGER.warn("User '{}' failed to place order: {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(order, e,
+                            "id",
+                            "bookedAt",
+                            "startDate",
+                            "endDate",
+                            "isActive",
+                            "totalPrice")
+            );
+            throw e;
         }
-
-        return orderRepository.save(order);
-
     }
 
     //SA
@@ -268,6 +298,50 @@ public class OrderServiceImpl implements OrderService{
         Map<String,Long> sortedMap = MicroMethods.sortMapByValueThenKey(makeCountMap);
 
         return new PopularBrandStats(startPeriod, endPeriod, sortedMap);
+    }
+
+    // WIG-97-SJ
+    @Override
+    public AverageRentalPeriodStats getAverageRentalPeriod() {
+        List<Order> allOrders = orderRepository.findAll();
+
+        List<RentalPeriodDetails> rentalDetails = allOrders.stream()
+                .map(order -> {
+                    long days = ChronoUnit.DAYS.between(order.getStartDate(), order.getEndDate());
+                    return new RentalPeriodDetails(order.getId(),order.getStartDate(), order.getEndDate(), days);
+                })
+                .toList();
+
+        double average = rentalDetails.stream()
+                .mapToLong(RentalPeriodDetails::getNumberOfDays)
+                .average()
+                .orElse(0.0);
+
+        return new AverageRentalPeriodStats(average, rentalDetails);
+    }
+
+    // WIG-97-SJ
+    @Override
+    public AverageOrderCostStats costPerOrder() {
+        List<Order> allOrders = orderRepository.findAll();
+
+        List<OrderCostDetails> orderDetails = allOrders.stream()
+                .map(order -> new OrderCostDetails(
+                        order.getId(),
+                        order.getCar().getId(),
+                        order.getTotalPrice()
+                ))
+                .toList();
+
+        BigDecimal total = orderDetails.stream()
+                .map(OrderCostDetails::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        BigDecimal average = orderDetails.isEmpty()
+                ? BigDecimal.ZERO
+                : total.divide(BigDecimal.valueOf(orderDetails.size()), 2, RoundingMode.HALF_UP);
+
+        return new AverageOrderCostStats(average, orderDetails);
     }
 
     // WIG-28-SJ
