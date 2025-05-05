@@ -36,6 +36,21 @@ public class Customer {
     @OneToMany(mappedBy = "customer")
     private List<Order> orders;
 
+    public Customer(Long id) {
+        this.id = id;
+    }
+
+    public Customer(Long id, String personalIdentityNumber, String firstName, String lastName, String email, String phoneNumber, String address, List<Order> orders) {
+        this.id = id;
+        this.personalIdentityNumber = personalIdentityNumber;
+        this.firstName = firstName;
+        this.lastName = lastName;
+        this.email = email;
+        this.phoneNumber = phoneNumber;
+        this.address = address;
+        this.orders = orders;
+    }
+
     public Customer() {
         orders = new ArrayList<Order>();
     }
