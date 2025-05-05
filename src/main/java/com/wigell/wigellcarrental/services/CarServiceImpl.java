@@ -58,16 +58,14 @@ public class CarServiceImpl implements CarService{
             processOrderList(carToDelete.getOrders(), carToDelete.getId(), principal);
         }
         carRepository.delete(carToDelete);
-        //TODO lägg in micrometod för att skapa loggningsmeddelandet
-        USER_ANALYZER_LOGGER.info("A car with id {} and the registration number {} has been deleted", carToDelete.getId(), carToDelete.getRegistrationNumber());
+        USER_ANALYZER_LOGGER.info("User: {} has deleted a car: {}", principal.getName(), LogMethods.logBuilder(carToDelete, "id", "registrationNumber"));
         return  isInputId(input, principal) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
     }
 
-    //WIG-18-AA
+    //WIG-18-AA //WIG-83-AA
     public Car addCar(Car car, Principal principal) {
-        validateAddCarInput(car, principal,car.getId());
-        //TODO lägg in micrometod för att skapa loggningsmeddelandet
-        USER_ANALYZER_LOGGER.info("User: , {} Has added a car", principal.getName());
+        validateAddCarInput(car, principal);
+        USER_ANALYZER_LOGGER.info("User: {} has added a car: {}", principal.getName(), LogMethods.logBuilder(car, "make", "model", "registrationNumber", "status", "pricePerDay") );
         return carRepository.save(car);
     }
 
@@ -92,7 +90,7 @@ public class CarServiceImpl implements CarService{
         return incomeCars;
     }
 
-    //WIG-20-AA
+    //WIG-20-AA //WIG-83-AA
     private boolean isInputId(String input, Principal principal) {
         try {
             if (input == null || input.isBlank()) {
@@ -130,7 +128,7 @@ public class CarServiceImpl implements CarService{
     }
 
     //WIG-18-AA
-    private void validateAddCarInput(Car car, Principal principal, Long id) {
+    private void validateAddCarInput(Car car, Principal principal) {
         //TODO Hur gör vi med loggningsförsök i micro-metoderna? Skicka med principal och för vilken metod vi validerar datan?
         MicroMethods.validateData("Car registration number", "registrationNumber", car.getRegistrationNumber());
         MicroMethods.validateData("Car status", "status", car.getStatus());
@@ -138,11 +136,11 @@ public class CarServiceImpl implements CarService{
         MicroMethods.validateData("Car model", "model", car.getModel());
         MicroMethods.validateData("Price per day", "pricePerDay", car.getPricePerDay());
 
-        checkUniqRegistrationNumber(car.getRegistrationNumber(), principal, id);
+        checkUniqRegistrationNumber(car.getRegistrationNumber(), principal);
     }
 
     //WIG-18-AA //WIG-83-AA
-    private void checkUniqRegistrationNumber(String input, Principal principal, Long id) {
+    private void checkUniqRegistrationNumber(String input, Principal principal) {
         try {
             Optional<Car> result = carRepository.findByRegistrationNumber(input);
             if (result.isPresent()) {
@@ -151,8 +149,7 @@ public class CarServiceImpl implements CarService{
         } catch (Exception e) {
             Car placeHolder = new Car();
             placeHolder.setRegistrationNumber(input);
-            placeHolder.setId(id);
-            USER_ANALYZER_LOGGER.warn("User: {} failed to add car: {} ", principal.getName(), LogMethods.logExceptionBuilder(placeHolder,e,"id", "registrationNumber"));
+            USER_ANALYZER_LOGGER.warn("User: {} failed to add car: {} ", principal.getName(), LogMethods.logExceptionBuilder(placeHolder,e, "registrationNumber"));
             throw e;
         }
     }
