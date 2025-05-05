@@ -65,7 +65,7 @@ public class CarServiceImpl implements CarService{
 
     //WIG-18-AA
     public Car addCar(Car car, Principal principal) {
-        validateAddCarInput(car, principal);
+        validateAddCarInput(car, principal,car.getId());
         //TODO lägg in micrometod för att skapa loggningsmeddelandet
         USER_ANALYZER_LOGGER.info("User: , {} Has added a car", principal.getName());
         return carRepository.save(car);
@@ -123,7 +123,7 @@ public class CarServiceImpl implements CarService{
     }
 
     //WIG-18-AA
-    private void validateAddCarInput(Car car, Principal principal) {
+    private void validateAddCarInput(Car car, Principal principal, Long id) {
         //TODO Hur gör vi med loggningsförsök i micro-metoderna? Skicka med principal och för vilken metod vi validerar datan?
         MicroMethods.validateData("Car registration number", "registrationNumber", car.getRegistrationNumber());
         MicroMethods.validateData("Car status", "status", car.getStatus());
@@ -131,16 +131,22 @@ public class CarServiceImpl implements CarService{
         MicroMethods.validateData("Car model", "model", car.getModel());
         MicroMethods.validateData("Price per day", "pricePerDay", car.getPricePerDay());
 
-        checkUniqRegistrationNumber(car.getRegistrationNumber(), principal);
+        checkUniqRegistrationNumber(car.getRegistrationNumber(), principal, id);
     }
 
     //WIG-18-AA
-    private void checkUniqRegistrationNumber(String input, Principal principal) {
-        Optional<Car> result = carRepository.findByRegistrationNumber(input);
-        if (result.isPresent()) {
-            //TODO lägg in micrometod för att skapa loggningsmeddelandet
-            USER_ANALYZER_LOGGER.warn("User: {} tried to add or update a car, but failed due to not uniq registration number", principal );
-            throw new UniqueConflictException("Registration number",input);
+    private void checkUniqRegistrationNumber(String input, Principal principal, Long id) {
+        try {
+            Optional<Car> result = carRepository.findByRegistrationNumber(input);
+            if (result.isPresent()) {
+                throw new UniqueConflictException("Registration number", input);
+            }
+        } catch (Exception e) {
+            Car placeHolder = new Car();
+            placeHolder.setRegistrationNumber(input);
+            placeHolder.setId(id);
+            USER_ANALYZER_LOGGER.warn("User: {} failed to add car: {} ", principal.getName(), LogMethods.logExceptionBuilder(placeHolder,e,"id", "registrationNumber"));
+            throw e;
         }
     }
 
@@ -159,14 +165,13 @@ public class CarServiceImpl implements CarService{
                 if (order.getStartDate().isAfter(today)) {
                     Car carToReplaceWith = carRepository.findFirstAvailableCarBetween(order.getStartDate(), order.getEndDate(), id).orElseThrow(() -> new ResourceNotFoundException("No replacement car available for the specified dates of upcoming order. Car cannot be deleted."));
                     order.setCar(carToReplaceWith);
-                    //System.out.println(carToReplaceWith.toString());
                     orderRepository.save(order);
                 }
             }
         } catch (Exception e) {
             Car placeHolder = new Car();
             placeHolder.setId(id);
-            USER_ANALYZER_LOGGER.warn("User: {} failed to update car: {} ", principal.getName(), LogMethods.logExceptionBuilder(placeHolder,e,"id"));
+            USER_ANALYZER_LOGGER.warn("User: {} failed to delete car: {} ", principal.getName(), LogMethods.logExceptionBuilder(placeHolder,e,"id"));
             throw e;
         }
     }
