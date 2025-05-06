@@ -12,7 +12,12 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.Rollback;
+import static org.assertj.core.api.Assertions.assertThat;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+
 
 import java.math.BigDecimal;
 import java.security.Principal;
@@ -51,7 +56,7 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
 
         testCar = carRepository.save(new Car(null, "Volvo", "V90","ABC789", CarStatus.AVAILABLE, BigDecimal.valueOf(1000), List.of()));
         testCustomer = customerRepository.save(new Customer(null, "19890101-1234", "Anna", "Andersson", "anna@test.se", "070-1234567", "Solrosvägen 1, 90347 Umeå", List.of()));
-        testOrder = orderRepository.save(new Order(null, LocalDate.of(2025,1,1),LocalDate.now(),LocalDate.now().plusDays(5), testCar, testCustomer, BigDecimal.valueOf(5000),true));
+        testOrder = orderRepository.save(new Order(null, LocalDate.of(2025,1,1),LocalDate.now().plusDays(1),LocalDate.now().plusDays(6), testCar, testCustomer, BigDecimal.valueOf(5000),true));
 
         testPrincipal = () -> testCustomer.getPersonalIdentityNumber();
     }
@@ -59,7 +64,19 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
 
     @Test
     void cancelOrderShouldReturnResponseEntityOkAndString() {
+        ResponseEntity<String> response = customerController.cancelOrder(testOrder.getId(),testPrincipal);
 
+        long orderDaysLong = 5L;
+
+        BigDecimal expectedFee = testOrder.getTotalPrice()
+                .multiply(BigDecimal.valueOf(0.05))
+                .multiply(BigDecimal.valueOf(orderDaysLong));
+
+        String expectedResponseString = "Order with id " + testOrder.getId() + " is cancelled, cancellation fee becomes: " + expectedFee;
+
+        assertEquals(expectedResponseString, response.getBody());
+        assertThat(response.getStatusCode().isSameCodeAs(HttpStatus.OK)).isTrue();
+        assertThat(testOrder.getIsActive()).isFalse();
     }
 
     @Test
