@@ -68,7 +68,7 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
 
 
     @Test
-    void cancelOrderShouldReturnResponseEntityOkAndString() {
+    void cancelOrderShouldReturnResponseEntityOkWithStringAndSetOrderToCancelledAndInactive() {
         BigDecimal originalPrice = testOrder.getTotalPrice();
         ResponseEntity<String> response = customerController.cancelOrder(testOrder.getId(),testPrincipal);
 
@@ -86,6 +86,7 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
         assertEquals(expectedResponseString, response.getBody());
         assertThat(response.getStatusCode().isSameCodeAs(HttpStatus.OK)).isTrue();
         assertThat(canceledOrder.getIsActive()).isFalse();
+        assertThat(canceledOrder.getIsCancelled()).isTrue();
     }
 
     @Test
