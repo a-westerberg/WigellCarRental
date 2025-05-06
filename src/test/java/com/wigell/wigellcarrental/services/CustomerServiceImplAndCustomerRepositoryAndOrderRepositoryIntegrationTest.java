@@ -20,7 +20,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.when;
+
 
 //SA
 @SpringBootTest
@@ -29,8 +29,10 @@ import static org.mockito.Mockito.when;
 class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest {
 
     private CustomerService customerService;
-    private CustomerRepository customerRepository;
-    private OrderRepository orderRepository;
+    //AA added final
+    private final CustomerRepository customerRepository;
+    //AA added final
+    private final OrderRepository orderRepository;
 
     private Customer customerInDB;
     private final Long MISSING_CUSTOMER_ID = 0L;
