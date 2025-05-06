@@ -1,5 +1,6 @@
 package com.wigell.wigellcarrental.services;
 
+import com.wigell.wigellcarrental.exceptions.ConflictException;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.models.entities.Order;
@@ -12,12 +13,14 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.Rollback;
 
+import java.security.Principal;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.*;
+
 
 //SA
 @SpringBootTest
@@ -26,11 +29,14 @@ import static org.junit.jupiter.api.Assertions.assertThrows;
 class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest {
 
     private CustomerService customerService;
-    private CustomerRepository customerRepository;
-    private OrderRepository orderRepository;
+    //AA added final
+    private final CustomerRepository customerRepository;
+    //AA added final
+    private final OrderRepository orderRepository;
 
     private Customer customerInDB;
     private final Long MISSING_CUSTOMER_ID = 0L;
+    private final Principal PRINCIPAL = ()-> "123456-7890";
 
     //SA
     @Autowired
@@ -61,14 +67,14 @@ class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest 
     //SA
     @Test
     void getCustomerByIdShouldReturnCustomer() {
-        Customer FoundCustomer = customerService.getCustomerById(customerInDB.getId());
+        Customer foundCustomer = customerService.getCustomerById(customerInDB.getId());
 
-        assertEquals(FoundCustomer.getFirstName(), customerInDB.getFirstName());
-        assertEquals(FoundCustomer.getLastName(), customerInDB.getLastName());
-        assertEquals(FoundCustomer.getEmail(), customerInDB.getEmail());
-        assertEquals(FoundCustomer.getPhoneNumber(), customerInDB.getPhoneNumber());
-        assertEquals(FoundCustomer.getAddress(), customerInDB.getAddress());
-        assertEquals(FoundCustomer.getPersonalIdentityNumber(), customerInDB.getPersonalIdentityNumber());
+        assertEquals(foundCustomer.getFirstName(), customerInDB.getFirstName());
+        assertEquals(foundCustomer.getLastName(), customerInDB.getLastName());
+        assertEquals(foundCustomer.getEmail(), customerInDB.getEmail());
+        assertEquals(foundCustomer.getPhoneNumber(), customerInDB.getPhoneNumber());
+        assertEquals(foundCustomer.getAddress(), customerInDB.getAddress());
+        assertEquals(foundCustomer.getPersonalIdentityNumber(), customerInDB.getPersonalIdentityNumber());
     }
 
     //SA
@@ -79,6 +85,115 @@ class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest 
                 ()-> customerService.getCustomerById(MISSING_CUSTOMER_ID));
 
         assertThat(exception.getMessage()).isEqualTo("Customer not found with id: 0");
+    }
+
+    //updateCustomer
+
+    //SA
+    @Test
+    void updateCustomerShouldReturnUpdatedCustomer() {
+        List<Order>customerFromRequestOrders = new ArrayList<>();
+        Customer customerFromRequest = new Customer(
+                customerInDB.getId(),
+                "123456-7890",
+                "Kalle",
+                "Anka",
+                "kalle.anka@gmail.com",
+                "9876-1234",
+                "12 Street",
+                customerFromRequestOrders);
+
+        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, PRINCIPAL);
+
+        assertEquals(updatedCustomer.getFirstName(), customerFromRequest.getFirstName());
+        assertEquals(updatedCustomer.getLastName(), customerFromRequest.getLastName());
+        assertEquals(updatedCustomer.getEmail(), customerFromRequest.getEmail());
+        assertEquals(updatedCustomer.getPhoneNumber(), customerFromRequest.getPhoneNumber());
+        assertEquals(updatedCustomer.getAddress(), customerFromRequest.getAddress());
+        assertEquals(updatedCustomer.getPersonalIdentityNumber(), customerFromRequest.getPersonalIdentityNumber());
+
+        Optional<Customer>inDBCustomer = customerRepository.findById(updatedCustomer.getId());
+        inDBCustomer.ifPresent(customer -> assertEquals(updatedCustomer.getFirstName(), customer.getFirstName()));
+
+    }
+
+    //SA
+    @Test
+    void updateCustomerShouldThrowResourceNotFoundExceptionWhenCustomerNotFound() {
+        Customer customerFromRequest = new Customer(MISSING_CUSTOMER_ID);
+        ResourceNotFoundException exception = assertThrows(
+                ResourceNotFoundException.class,
+                ()-> customerService.updateCustomer(customerFromRequest, PRINCIPAL)
+        );
+        assertThat(exception.getMessage()).isEqualTo("Customer not found with id: 0");
+    }
+
+    //SA
+    @Test
+    void updateCustomerShouldThrowConflictExceptionWhenUserIsNotAuthorized() {
+        Principal unAuthorizedPrincipal = ()-> "09876-4321";
+        ConflictException exception = assertThrows(
+                ConflictException.class,
+                ()-> customerService.updateCustomer(customerInDB, unAuthorizedPrincipal)
+        );
+        assertThat(exception.getMessage()).isEqualTo("User not authorized for function.");
+    }
+
+    //SA
+    @Test
+    void updateCustomerShouldNotUpdateNullOrIsEmptyValuesOrPersonalIdentityNumber() {
+        Customer customerFromRequest = new Customer(customerInDB.getId());
+        customerFromRequest.setFirstName("John");
+        customerFromRequest.setLastName("");
+        customerFromRequest.setAddress(null);
+        customerFromRequest.setEmail("john.erikson@gmail.com");
+        customerFromRequest.setPersonalIdentityNumber("0976");
+
+        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, PRINCIPAL);
+
+        assertEquals(updatedCustomer.getFirstName(), customerFromRequest.getFirstName());
+        assertEquals(updatedCustomer.getLastName(), customerInDB.getLastName());
+        assertEquals(updatedCustomer.getAddress(), customerInDB.getAddress());
+        assertEquals(updatedCustomer.getEmail(), customerFromRequest.getEmail());
+        assertEquals(updatedCustomer.getPersonalIdentityNumber(), customerInDB.getPersonalIdentityNumber());
+
+        assertNotEquals(updatedCustomer.getEmail(),customerInDB.getEmail());
+
+    }
+
+    //SA
+    @Test
+    void updateCustomerShouldReturnCustomerIfPrincipalIsAdmin(){
+        Customer customerFromRequest = new Customer(customerInDB.getId());
+        customerFromRequest.setFirstName("Anna");
+
+        Principal principalAdmin = ()-> "admin";
+
+        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, principalAdmin);
+
+        assertDoesNotThrow(() -> customerService.updateCustomer(customerFromRequest, principalAdmin));
+        assertEquals(updatedCustomer.getFirstName(), customerFromRequest.getFirstName());
+
+    }
+
+    //AA
+    @Test
+    void getAllCustomerShouldReturnListOfAllCustomers() {
+        List<Customer> customersInDB = customerService.getAllCustomers();
+        List<Customer> expectedCustomersInDB = List.of(customerInDB);
+
+        assertEquals(customersInDB, expectedCustomersInDB);
+    }
+
+    //AA
+    @Test
+    void getAllCustomersShouldThrowResourceNotFoundExceptionWhenListOfCustomersIsEmpty() {
+        customerRepository.deleteAll();
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class, () -> customerService.getAllCustomers());
+        String expectedMessage = "List not found with customers: 0";
+
+        assertEquals(expectedMessage, e.getMessage());
     }
 
 }
