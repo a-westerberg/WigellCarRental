@@ -102,7 +102,13 @@ class OrderServiceImplUnitTest {
 
         String returnMessage = orderService.cancelOrder(1L, testPrincipal);
 
-        assertEquals("Order with id '1' is cancelled", returnMessage);
+        long orderDaysLong = 5L;
+        BigDecimal originalPrice = testOrder.getTotalPrice();
+        BigDecimal fee = originalPrice
+                .multiply(BigDecimal.valueOf(0.05))
+                .multiply(BigDecimal.valueOf(orderDaysLong));
+
+        assertEquals("Order with id '1' is cancelled, cancellation fee becomes: " + fee, returnMessage);
     }
 
     //AA
