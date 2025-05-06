@@ -1,6 +1,7 @@
 package com.wigell.wigellcarrental.controllers;
 
 import com.wigell.wigellcarrental.enums.CarStatus;
+import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.models.entities.Car;
 import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.models.entities.Order;
@@ -17,6 +18,8 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.test.annotation.Rollback;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.springframework.data.util.Predicates.isTrue;
 
 
 import java.math.BigDecimal;
@@ -86,7 +89,9 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
 
     @Test
     void cancelOrderShouldReturnResponseStatusNotFoundIfOrderDoesNotExist() {
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class, () -> customerController.cancelOrder(-1L,testPrincipal));
 
+        //TODO assertEquals(HttpStatus.NOT_FOUND, e.getStatus());
     }
 
     @Test
