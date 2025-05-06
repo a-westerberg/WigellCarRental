@@ -521,4 +521,32 @@ public class OrderServiceImpl implements OrderService{
         }
     }
 
+    private Map<String, Object> mapOfLogging(Map<String, Object> map) {
+
+
+        /*}catch (Exception e){
+            if(exceptionReason.equals("order not found")){
+                USER_ANALYZER_LOGGER.warn("User '{}' failed to update car on order: {}",
+                        principal.getName(),
+                        LogMethods.logExceptionBuilder(Map.of("id",orderId),e));
+                throw e;
+            } else if (exceptionReason.equals("car not found")) {
+                USER_ANALYZER_LOGGER.warn("User '{}' failed to update car on order: {}",
+                        principal.getName(),
+                        LogMethods.logExceptionBuilder(Map.of("id",carId),e));
+                throw e;
+            }else {
+                Car car = optionalCar.get();
+                USER_ANALYZER_LOGGER.warn("User '{}' failed to update car on order: {}",
+                        principal.getName(),
+                        LogMethods.logExceptionBuilder(Map.of(
+                                "car id",carId,
+                                "status",car.getStatus()),
+                                e));
+                throw e;
+            }
+
+         */
+    }
+
 }
