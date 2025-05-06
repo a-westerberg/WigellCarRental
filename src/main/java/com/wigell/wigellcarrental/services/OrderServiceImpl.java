@@ -87,12 +87,16 @@ public class OrderServiceImpl implements OrderService{
             if (orderToCancel.getStartDate().isBefore(today) && orderToCancel.getEndDate().isAfter(today)) {
                 conflictExceptionReason = "invalid date";
                 throw new ConflictException("Order has already started and can't then be cancelled");
+
             } else if (orderToCancel.getEndDate().isBefore(today)) {
                 conflictExceptionReason = "invalid date";
                 throw new ConflictException("Order has already ended");
             }
 
-            Order oldOrder = orderToCancel;
+            Map<String, Object> oldValues = Map.of(
+                    "totalPrice",orderToCancel.getTotalPrice(),
+                    "isActive",orderToCancel.getIsActive()
+            );
 
             BigDecimal cancellationFee = calculateCancellationFee(orderToCancel);
             orderToCancel.setTotalPrice(cancellationFee);
@@ -100,10 +104,19 @@ public class OrderServiceImpl implements OrderService{
 
             orderRepository.save(orderToCancel);
 
-            //TODO: make this work
+            Map<String, Object> newValues = Map.of(
+                    "totalPrice",orderToCancel.getTotalPrice(),
+                    "isActive",orderToCancel.getIsActive()
+            );
+
+            String change = LogMethods.logUpdateBuilder(
+                    oldValues,newValues
+            );
+
             USER_ANALYZER_LOGGER.info("User '{}' cancelled order: {}",
                     principal.getName(),
-                    LogMethods.logUpdateBuilder(oldOrder,orderToCancel,"totalPrice","isActive"));
+                    change);
+
             return "Order with id '" + orderId + "' is cancelled, cancellation fee becomes: "+cancellationFee;
 
         }catch (ResourceNotFoundException resourceNotFoundException){
@@ -142,17 +155,15 @@ public class OrderServiceImpl implements OrderService{
     public String removeOrdersBeforeDate(LocalDate date, Principal principal) {
         try {
             List<Order> orders = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(date);
-
             if (orders.isEmpty()) {
                 throw new ResourceNotFoundException("Found no inactive orders before '" + date + "'");
             }
-
             orderRepository.deleteAll(orders);
-
 
             USER_ANALYZER_LOGGER.info("User '{}' removed all order before: {}",
                     principal.getName(),
                     LogMethods.logBuilder(Map.of("date",date)));
+
             return "All inactive orders before '" + date + "' has been removed";
         }catch (Exception e){
             USER_ANALYZER_LOGGER.warn("User '{}' failed to remove inactive orders before '{}'",
@@ -226,8 +237,12 @@ public class OrderServiceImpl implements OrderService{
                     throw new ResourceNotFoundException("Invalid status '"+status+"'. There is 'away', 'back' and 'service'");
                 }
 
-                Order oldOrder = optionalOrder.get();
                 Order orderToUpdate = optionalOrder.get();
+
+                Map<String, Object> oldValues = Map.of(
+                        "isActive",orderToUpdate.getIsActive(),
+                        "status",orderToUpdate.getCar().getStatus()
+                );
 
                 switch (status) {
                     case "away" -> {
@@ -252,29 +267,18 @@ public class OrderServiceImpl implements OrderService{
                     }
                 }
 
-                Map<String, Object> oldValues = Map.of(
-                        "isActive",oldOrder.getIsActive()
-                );
                 Map<String, Object> newValues = Map.of(
-                        "isActive",orderToUpdate.getIsActive()
+                        "isActive",orderToUpdate.getIsActive(),
+                        "status",orderToUpdate.getCar().getStatus()
                 );
+
                 String change = LogMethods.logUpdateBuilder(
                         oldValues,newValues
                 );
+
                 USER_ANALYZER_LOGGER.info("User '{}' updated order status: {}",
                         principal.getName(),
                         change);
-                /*USER_ANALYZER_LOGGER.info("User '{}' has updated order with ID '{}'" +
-                                "\n\tOrder status: {} -> {}" +
-                                "\n\tRegistation: {}" +
-                                "\n\tCar status: {} -> {}",
-                        principal.getName(),
-                        orderId,
-                        wasIsActive,
-                        orderToUpdate.getIsActive().toString(),
-                        orderToUpdate.getCar().getRegistrationNumber(),
-                        oldCarStatus.toString(),
-                        orderToUpdate.getCar().getStatus().toString());*/
 
                 return "Order with id '" + orderId + "' has been updated" +
                         "\nOrder status: " + orderToUpdate.getIsActive().toString() +
@@ -327,32 +331,28 @@ public class OrderServiceImpl implements OrderService{
             Order orderToUpdate = optionalOrder.get();
             Car carToUpdate = optionalCar.get();
 
-            Order oldOrder = optionalOrder.get();
-            Car oldCar = orderToUpdate.getCar();
+            Map<String, Object> oldValues = Map.of(
+                    "car id",orderToUpdate.getCar().getId(),
+                    "registrationNumber",orderToUpdate.getCar().getRegistrationNumber()
+            );
 
             orderToUpdate.setCar(carToUpdate);
             orderRepository.save(orderToUpdate);
             carRepository.save(carToUpdate);
 
-            //TODO: fixa med ny loggning
-            /*USER_ANALYZER_LOGGER.info("User '{}' updated order with ID '{}' " +
-                            "\n\tCar ID: {} -> {}" +
-                            "\n\tCar, registration number: {} -> {}",
-                    principal.getName(),
-                    orderId,
-                    oldCar.getId(),
-                    carToUpdate.getId(),
-                    oldCar.getRegistrationNumber(),
-                    carToUpdate.getRegistrationNumber());*/
+            Order updatedOrder = orderRepository.findById(orderId).get();
+            Map<String, Object> newValues = Map.of(
+                    "car id",orderToUpdate.getCar().getId(),
+                    "registrationNumber",updatedOrder.getCar().getRegistrationNumber()
+            );
 
-            //TODO: får inte fram car id bytet
+            String change = LogMethods.logUpdateBuilder(
+                    oldValues,newValues
+            );
+
             USER_ANALYZER_LOGGER.info("User '{}' updated car on order: {}",
                     principal.getName(),
-                    LogMethods.logUpdateBuilder(
-                            oldOrder.getCar(),
-                            orderToUpdate.getCar(),
-                            "id"
-                    ));
+                    change);
 
             return "Updated order '" + orderId + "' to have car " + carToUpdate.getRegistrationNumber();
 
