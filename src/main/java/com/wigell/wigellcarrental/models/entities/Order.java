@@ -39,6 +39,9 @@ public class Order {
     @Column(name = "active", nullable = false)
     private Boolean isActive;
 
+    @Column(name = "cancelled",nullable = false)
+    private Boolean isCancelled;
+
     public Order() {
 
     }
@@ -47,7 +50,7 @@ public class Order {
         this.id = id;
     }
 
-    public Order(Long id, LocalDate bookedAt, LocalDate startDate, LocalDate endDate, Car car, Customer customer, BigDecimal totalPrice, Boolean isActive) {
+    public Order(Long id, LocalDate bookedAt, LocalDate startDate, LocalDate endDate, Car car, Customer customer, BigDecimal totalPrice, Boolean isActive, Boolean isCancelled) {
         this.id = id;
         this.bookedAt = bookedAt;
         this.startDate = startDate;
@@ -56,6 +59,7 @@ public class Order {
         this.customer = customer;
         this.totalPrice = totalPrice;
         this.isActive = isActive;
+        this.isCancelled = isCancelled;
     }
 
     public Long getId() {
@@ -122,6 +126,14 @@ public class Order {
         isActive = active;
     }
 
+    public Boolean getIsCancelled() {
+        return isCancelled;
+    }
+
+    public void setIsCancelled(Boolean cancelled) {
+        isCancelled = cancelled;
+    }
+
     @Override
     public String toString() {
         return "Order{" +
@@ -133,6 +145,7 @@ public class Order {
                 ", customer=" + (customer != null ? customer.getId() : null) +
                 ", totalPrice=" + totalPrice +
                 ", isActive=" + isActive +
+                ", isCancelled=" + isCancelled +
                 '}';
     }
 }

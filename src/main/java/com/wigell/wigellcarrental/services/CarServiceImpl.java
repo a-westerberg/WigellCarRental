@@ -111,11 +111,17 @@ public class CarServiceImpl implements CarService{
 
         for (Car car : cars) {
             BigDecimal totalIncome = BigDecimal.valueOf(0);
+            int rentedTimes = 0;
             for (Order order : car.getOrders()) {
-                totalIncome = totalIncome.add(order.getTotalPrice());
+                if(order.getStartDate().isBefore(LocalDate.now())){
+                    totalIncome = totalIncome.add(order.getTotalPrice());
+                    if(!order.getIsCancelled()) {
+                        rentedTimes++;
+                    }
+                }
             }
 
-            incomeCars.add(new IncomeCar(car,car.getOrders().size(),totalIncome));
+            incomeCars.add(new IncomeCar(car,rentedTimes,totalIncome));
         }
         return incomeCars;
     }
