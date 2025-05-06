@@ -58,6 +58,28 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
 
 
     @Test
-    void cancelOrder() {
+    void cancelOrderShouldReturnResponseEntityOkAndString() {
+
     }
+
+    @Test
+    void cancelOrderShouldReturnResponseStatusNotFoundIfOrderDoesNotExist() {
+
+    }
+
+    @Test
+    void cancelOrderShouldReturnResponseStatusConflictIfOrderBelongsToAnotherCustomer() {
+
+    }
+
+    @Test
+    void cancelOrderShouldReturnResponseStatusConflictIfOrderAlreadyStarted(){
+
+    }
+
+    @Test
+    void cancelOrderShouldReturnResponseStatusConflictIfOrderAlreadyEnded(){
+
+    }
+
 }
