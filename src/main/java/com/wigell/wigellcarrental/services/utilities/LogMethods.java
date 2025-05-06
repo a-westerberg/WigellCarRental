@@ -1,13 +1,14 @@
 package com.wigell.wigellcarrental.services.utilities;
 
 import java.lang.reflect.Field;
+import java.util.Map;
 
 //WIG-68-AWS, Log output design av SA
 public class LogMethods {
 
     //WIG-24-AWS
     public static <T> String logUpdateBuilder(T oldObject, T newObject, String... fieldsToCompare) {
-        StringBuilder changes = new StringBuilder();
+        StringBuilder log = new StringBuilder();
 
         for(String fieldName : fieldsToCompare) {
             try{
@@ -18,13 +19,28 @@ public class LogMethods {
                 Object newValue = field.get(newObject);
 
                 if(oldValue != null && !oldValue.equals(newValue) || (oldValue == null && newValue != null)) {
-                    changes.append(String.format("\n\t%s: '%s' -> '%s'; ", fieldName, oldValue, newValue));
+                    log.append(String.format("\n\t%s: '%s' -> '%s'; ", fieldName, oldValue, newValue));
                 }
             } catch (NoSuchFieldException | IllegalAccessException e){
-                changes.append(String.format("\n\t%s: [error reading field]; ", fieldName));
+                log.append(String.format("\n\t%s: [error reading field]; ", fieldName));
             }
         }
-        return changes.toString();
+        return log.toString();
+    }
+
+    //WIG-68-AWS-Part2
+    public static String logUpdateBuilder(Map<String, Object> oldValues, Map<String, Object> newValues) {
+        StringBuilder log = new StringBuilder();
+
+        for(String key : oldValues.keySet()) {
+            Object newValue = newValues.get(key);
+            Object oldValue = oldValues.get(key);
+
+            if(oldValue != null && !oldValue.equals(newValue) || (oldValue == null && newValue != null)) {
+                log.append(String.format("\n\t%s: '%s' -> '%s'; ", key, oldValue, newValue));
+            }
+        }
+        return log.toString();
     }
 
     //WIG-68-AWS
@@ -40,6 +56,16 @@ public class LogMethods {
             } catch (NoSuchFieldException | IllegalAccessException e){
                 log.append(String.format("\n\t%s: [error reading field]; ", fieldName));
             }
+        }
+        return log.toString();
+    }
+
+    //WIG-68-AWS-Part2
+    public static String logBuilder(Map<String, Object> fields){
+        StringBuilder log = new StringBuilder();
+
+        for(Map.Entry<String, Object> entry : fields.entrySet()) {
+            log.append(String.format("\n\t%s: '%s'", entry.getKey(), entry.getValue()));
         }
         return log.toString();
     }
@@ -62,6 +88,20 @@ public class LogMethods {
                 log.append(String.format("\n\t%s: [error reading field] ;", fieldName));
             }
         }
+        return log.toString();
+    }
+
+    //WIG-68-AWS-Part2
+    public static String logExceptionBuilder(Map<String, Object> attemptedValues, Exception exception){
+        StringBuilder log = new StringBuilder();
+
+        log.append("\nException: ").append(exception.getClass().getSimpleName());
+        log.append(" - ").append(exception.getMessage());
+        log.append("\nAttempted values:");
+
+        attemptedValues.forEach((key, value) ->
+                log.append(String.format("\n\t%s: '%s'", key, value))
+        );
         return log.toString();
     }
 }

@@ -56,21 +56,44 @@ public class CarServiceImpl implements CarService{
         return carRepository.findAll();
     }
 
-    //WIG-20-AA
+    //WIG-20-AA //WIG-83-AA
     public String deleteCar(String input, Principal principal) {
-        Car carToDelete = findCarToDelete(input);
-        if (!carToDelete.getOrders().isEmpty()) {
-            processOrderList(carToDelete.getOrders(), carToDelete.getId());
+        try {
+            Car carToDelete = findCarToDelete(input);
+            if (!carToDelete.getOrders().isEmpty()) {
+                processOrderList(carToDelete.getOrders(), carToDelete.getId());
+            }
+            carRepository.delete(carToDelete);
+            USER_ANALYZER_LOGGER.info("User: {} has deleted a car. {}", principal.getName(), LogMethods.logBuilder(carToDelete, "id", "registrationNumber"));
+            return isInputId(input) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
+        } catch (Exception e) {
+            Car placeHolder = new Car();
+
+            if (isInputId(input)) {
+                placeHolder.setId(Long.parseLong(input));
+            } else {
+                placeHolder.setRegistrationNumber(input);
+            }
+            USER_ANALYZER_LOGGER.warn("User: {} failed to delete car. {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(placeHolder,e,"id", "registrationNumber"));
+            throw e;
         }
-        carRepository.delete(carToDelete);
-        USER_ANALYZER_LOGGER.info("A car with id {} and the registration number {} has been deleted", carToDelete.getId(), carToDelete.getRegistrationNumber());
-        return  isInputId(input) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
     }
 
-    //WIG-18-AA
+    //WIG-18-AA //WIG-83-AA
     public Car addCar(Car car, Principal principal) {
-        validateAddCarInput(car);
-        return carRepository.save(car);
+        try {
+            validateAddCarInput(car);
+            USER_ANALYZER_LOGGER.info("User: {} has added a car: {}", principal.getName(), LogMethods.logBuilder(car, "make", "model", "registrationNumber", "status", "pricePerDay"));
+            return carRepository.save(car);
+        } catch (Exception e) {
+            USER_ANALYZER_LOGGER.warn("User: {} failed to add car: {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(car, e, "make", "model", "registrationNumber", "status", "pricePerDay")
+        );
+            throw e;
+        }
     }
 
     //SA
@@ -96,20 +119,20 @@ public class CarServiceImpl implements CarService{
 
     //WIG-20-AA
     private boolean isInputId(String input) {
-        if (input == null || input.isEmpty()) {
-            throw new InvalidInputException("Car","Input", input);
-        }
-        return input.matches("\\d+");
+            if (input == null || input.isBlank()) {
+                throw new InvalidInputException("Car", "Input", input);
+            }
+            return input.matches("\\d+");
     }
 
     //WIG-20-AA
     private Car findCarToDelete(String input) {
-        if (isInputId(input)) {
-            Long id = Long.parseLong(input);
-            return carRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Car", "id", id));
-        } else {
-            return carRepository.findByRegistrationNumber(input).orElseThrow(() -> new ResourceNotFoundException("Car", "Registration Number", input));
-        }
+            if (isInputId(input)) {
+                Long id = Long.parseLong(input);
+                return carRepository.findById(id).orElseThrow(() -> new ResourceNotFoundException("Car", "id", id));
+            } else {
+                return carRepository.findByRegistrationNumber(input).orElseThrow(() -> new ResourceNotFoundException("Car", "Registration Number", input));
+            }
     }
 
     //WIG-18-AA
@@ -125,30 +148,29 @@ public class CarServiceImpl implements CarService{
 
     //WIG-18-AA
     private void checkUniqRegistrationNumber(String input) {
-        Optional<Car> result = carRepository.findByRegistrationNumber(input);
-        if (result.isPresent()) {
-            throw new UniqueConflictException("Registration number",input);
-        }
+            Optional<Car> result = carRepository.findByRegistrationNumber(input);
+            if (result.isPresent()) {
+                throw new UniqueConflictException("Registration number", input);
+            }
     }
 
     //WIG-37-AA
     private void processOrderList(List<Order> orders, Long id) {
         LocalDate today = LocalDate.now();
-        for (Order order : orders) {
-            if (order.getEndDate().isBefore(today)) {
-                order.setCar(null);
-                orderRepository.save(order);
+            for (Order order : orders) {
+                if (order.getEndDate().isBefore(today)) {
+                    order.setCar(null);
+                    orderRepository.save(order);
+                }
+                if (!today.isBefore(order.getStartDate()) && !today.isAfter(order.getEndDate())) {
+                    throw new ConflictException("Car cannot be deleted due to ongoing booking.");
+                }
+                if (order.getStartDate().isAfter(today)) {
+                    Car carToReplaceWith = carRepository.findFirstAvailableCarBetween(order.getStartDate(), order.getEndDate(), id).orElseThrow(() -> new ResourceNotFoundException("No replacement car available for the specified dates of upcoming order. Car cannot be deleted."));
+                    order.setCar(carToReplaceWith);
+                    orderRepository.save(order);
+                }
             }
-            if (!today.isBefore(order.getStartDate()) && !today.isAfter(order.getEndDate())) {
-                throw new ConflictException("Car cannot be deleted due to ongoing booking.");
-            }
-            if (order.getStartDate().isAfter(today)) {
-                Car carToReplaceWith = carRepository.findFirstAvailableCarBetween(order.getStartDate(), order.getEndDate(),id).orElseThrow(() ->new ResourceNotFoundException("No replacement car available for the specified dates of upcoming order. Car cannot be deleted."));
-                order.setCar(carToReplaceWith);
-                System.out.println(carToReplaceWith.toString());
-                orderRepository.save(order);
-            }
-        }
     }
 
     // WIG-24-AWS
@@ -211,5 +233,4 @@ public class CarServiceImpl implements CarService{
             throw new UniqueConflictException("Registration number",regNumber);
         }
     }
-
 }
