@@ -89,9 +89,9 @@ public class AdminController {
     }
 
     //SA //AA
-    @DeleteMapping("/removecar/{idOrRegistrationNumber}")//Radera bil
+    @DeleteMapping("/removecar/{idOrRegistrationNumber}")
     public ResponseEntity<String>removeCar(@PathVariable String idOrRegistrationNumber, Principal principal){
-        return ResponseEntity.ok(carService.deleteCar(idOrRegistrationNumber, principal));
+        return new ResponseEntity<>(carService.deleteCar(idOrRegistrationNumber,principal), HttpStatus.CREATED);
     }
 
     //SA
