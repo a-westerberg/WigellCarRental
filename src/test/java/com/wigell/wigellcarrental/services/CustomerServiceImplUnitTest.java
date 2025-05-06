@@ -252,4 +252,26 @@ class CustomerServiceImplUnitTest {
         assertEquals("kalle.andka@gmail.com", updatedCustomer.getEmail());
 
     }
+
+    //WIG-49-AA
+    @Test
+    void getAllCustomerShouldReturnListOfAllCustomers() {
+        when(mockCustomerRepository.findAll()).thenReturn(List.of(customerInDB));
+
+        List<Customer> customersInDB = customerService.getAllCustomers();
+        List<Customer> expectedCustomersInDB = List.of(customerInDB);
+
+        assertEquals(customersInDB, expectedCustomersInDB);
+    }
+
+    //WIG-49-AA
+    @Test
+    void getAllCustomersShouldThrowResourceNotFoundExceptionWhenListOfCustomersIsEmpty() {
+        when(mockCustomerRepository.findAll()).thenReturn(List.of());
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class, () -> customerService.getAllCustomers());
+        String expectedMessage = "List not found with customers: 0";
+
+        assertEquals(expectedMessage, e.getMessage());
+    }
 }
