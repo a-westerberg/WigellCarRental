@@ -64,14 +64,14 @@ class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest 
     //SA
     @Test
     void getCustomerByIdShouldReturnCustomer() {
-        Customer FoundCustomer = customerService.getCustomerById(customerInDB.getId());
+        Customer foundCustomer = customerService.getCustomerById(customerInDB.getId());
 
-        assertEquals(FoundCustomer.getFirstName(), customerInDB.getFirstName());
-        assertEquals(FoundCustomer.getLastName(), customerInDB.getLastName());
-        assertEquals(FoundCustomer.getEmail(), customerInDB.getEmail());
-        assertEquals(FoundCustomer.getPhoneNumber(), customerInDB.getPhoneNumber());
-        assertEquals(FoundCustomer.getAddress(), customerInDB.getAddress());
-        assertEquals(FoundCustomer.getPersonalIdentityNumber(), customerInDB.getPersonalIdentityNumber());
+        assertEquals(foundCustomer.getFirstName(), customerInDB.getFirstName());
+        assertEquals(foundCustomer.getLastName(), customerInDB.getLastName());
+        assertEquals(foundCustomer.getEmail(), customerInDB.getEmail());
+        assertEquals(foundCustomer.getPhoneNumber(), customerInDB.getPhoneNumber());
+        assertEquals(foundCustomer.getAddress(), customerInDB.getAddress());
+        assertEquals(foundCustomer.getPersonalIdentityNumber(), customerInDB.getPersonalIdentityNumber());
     }
 
     //SA

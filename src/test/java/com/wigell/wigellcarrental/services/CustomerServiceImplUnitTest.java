@@ -103,8 +103,8 @@ class CustomerServiceImplUnitTest {
                 customerFromRequestOrders
         );
 
-        when(mockCustomerRepository.findById(customerInDB.getId())).thenReturn(Optional.of(customerInDB));
-        when(mockCustomerRepository.save(any(Customer.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(mockCustomerRepository.findById(customerFromRequest.getId())).thenReturn(Optional.of(customerInDB));
+        when(mockCustomerRepository.getCustomersById(customerFromRequest.getId())).thenReturn(customerInDB);
 
         Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, PRINCIPAL);
 
@@ -119,7 +119,6 @@ class CustomerServiceImplUnitTest {
     }
 
 
-
     //SA //Kanske ta bort senare om principal admin tas bort
     @Test
     void updateCustomerShouldReturnUpdatedCustomerIfPrincipalIsAdmin() {
@@ -127,14 +126,13 @@ class CustomerServiceImplUnitTest {
         Customer customerFromRequest = new Customer(customerInDB.getId());
         customerFromRequest.setAddress("123 Street");
 
-        Principal principal = () -> "admin";
+        Principal principalAdmin = () -> "admin";
 
-        when(mockCustomerRepository.findById(customerInDB.getId())).thenReturn(Optional.of(customerInDB));
-        when(mockCustomerRepository.save(any(Customer.class))).thenAnswer(i -> i.getArguments()[0]);
-
+        when(mockCustomerRepository.findById(customerFromRequest.getId())).thenReturn(Optional.of(customerInDB));
+        when(mockCustomerRepository.getCustomersById(customerFromRequest.getId())).thenReturn(customerInDB);
 
         //When
-        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, principal);
+        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, principalAdmin);
 
         //Then
         verify(mockCustomerRepository).save(any(Customer.class));
@@ -188,8 +186,8 @@ class CustomerServiceImplUnitTest {
         customerFromRequest.setPhoneNumber("3941");
 
 
-        when(mockCustomerRepository.findById(customerInDB.getId())).thenReturn(Optional.of(customerInDB));
-        when(mockCustomerRepository.save(any(Customer.class))).thenAnswer(i -> i.getArguments()[0]);
+        when(mockCustomerRepository.findById(customerFromRequest.getId())).thenReturn(Optional.of(customerInDB));
+        when(mockCustomerRepository.getCustomersById(customerFromRequest.getId())).thenReturn(customerInDB);
 
         //When
         Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, PRINCIPAL);
@@ -198,9 +196,9 @@ class CustomerServiceImplUnitTest {
         verify(mockCustomerRepository).save(customerInDB);
         assertEquals(updatedCustomer.getId(), customerInDB.getId());
         assertEquals(updatedCustomer.getPersonalIdentityNumber(), customerInDB.getPersonalIdentityNumber());
-        assertEquals( updatedCustomer.getFirstName(),customerInDB.getFirstName());
+        assertEquals(updatedCustomer.getFirstName(),customerInDB.getFirstName());
         assertEquals(updatedCustomer.getAddress(),customerInDB.getAddress());
-        assertEquals( updatedCustomer.getPhoneNumber(),customerFromRequest.getPhoneNumber());
+        assertEquals(updatedCustomer.getPhoneNumber(),customerFromRequest.getPhoneNumber());
 
         assertNotEquals(updatedCustomer.getPersonalIdentityNumber(), customerFromRequest.getPersonalIdentityNumber());
         assertNotEquals(updatedCustomer.getFirstName(), customerFromRequest.getFirstName());
