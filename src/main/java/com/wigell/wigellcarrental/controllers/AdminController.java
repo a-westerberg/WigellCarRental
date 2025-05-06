@@ -135,10 +135,11 @@ public class AdminController {
     //SA
     @RequestMapping("/statistics")//String...  En oändlig array utan utsatt antal i, array oavsett om man skickar med en inparametrar
     public ResponseEntity<?> getStatistics(@RequestParam String choice, @RequestParam String... data){
-        /*if(choice.contains("incomemonth")){//Total intäkt under en viss tidsperiod, månad och år
-            return ResponseEntity.ok(service.getIncomeOnMoth(data[0],data[1]));
+        // WIG-114-AWS
+        if(choice.contains("incomemonth")){ //Total intäkt under en viss tidsperiod, månad och år
+            return ResponseEntity.ok(orderService.getIncomeOnMonth(data[0],data[1]));
 
-        } else */
+        } else
         if (choice.contains("brand")) {//mest hyrda bilmärke under en viss period, brand, datum1 och 2
             return ResponseEntity.ok(orderService.getPopularBrand(data[0],data[1]));
 

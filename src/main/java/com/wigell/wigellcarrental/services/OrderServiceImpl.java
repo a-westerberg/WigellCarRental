@@ -419,5 +419,20 @@ public class OrderServiceImpl implements OrderService{
             throw e;
         }
     }
+    // WIG-114-AWS
+    @Override
+    public MonthlyIncomeStats getIncomeOnMonth(String monthString, String yearString ){
+        int month = Integer.parseInt(monthString);
+        int year = Integer.parseInt(yearString);
+
+        List<Order> orders = orderRepository.findAll();
+
+        BigDecimal totalIncome = orders.stream()
+                .filter(o -> o.getStartDate().getYear() == year && o.getStartDate().getMonthValue() == month)
+                .map(Order::getTotalPrice)
+                .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+        return new MonthlyIncomeStats(month, year, totalIncome);
+    }
 
 }

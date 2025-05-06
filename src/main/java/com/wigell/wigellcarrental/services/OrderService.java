@@ -33,4 +33,7 @@ public interface OrderService {
 
     // WIG-25-AWS
     String removeOrderById(Long orderId, Principal principal);
+
+    // WIG-114-AWS
+    Object getIncomeOnMonth(String datum, String datum1);
 }
