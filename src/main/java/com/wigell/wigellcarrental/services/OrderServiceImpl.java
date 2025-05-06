@@ -226,8 +226,12 @@ public class OrderServiceImpl implements OrderService{
                     throw new ResourceNotFoundException("Invalid status '"+status+"'. There is 'away', 'back' and 'service'");
                 }
 
-                Order oldOrder = optionalOrder.get();
                 Order orderToUpdate = optionalOrder.get();
+
+                Map<String, Object> oldValues = Map.of(
+                        "isActive",orderToUpdate.getIsActive(),
+                        "status",orderToUpdate.getCar().getStatus()
+                );
 
                 switch (status) {
                     case "away" -> {
@@ -252,29 +256,17 @@ public class OrderServiceImpl implements OrderService{
                     }
                 }
 
-                Map<String, Object> oldValues = Map.of(
-                        "isActive",oldOrder.getIsActive()
-                );
                 Map<String, Object> newValues = Map.of(
-                        "isActive",orderToUpdate.getIsActive()
+                        "isActive",orderToUpdate.getIsActive(),
+                        "status",orderToUpdate.getCar().getStatus()
                 );
+
                 String change = LogMethods.logUpdateBuilder(
                         oldValues,newValues
                 );
                 USER_ANALYZER_LOGGER.info("User '{}' updated order status: {}",
                         principal.getName(),
                         change);
-                /*USER_ANALYZER_LOGGER.info("User '{}' has updated order with ID '{}'" +
-                                "\n\tOrder status: {} -> {}" +
-                                "\n\tRegistation: {}" +
-                                "\n\tCar status: {} -> {}",
-                        principal.getName(),
-                        orderId,
-                        wasIsActive,
-                        orderToUpdate.getIsActive().toString(),
-                        orderToUpdate.getCar().getRegistrationNumber(),
-                        oldCarStatus.toString(),
-                        orderToUpdate.getCar().getStatus().toString());*/
 
                 return "Order with id '" + orderId + "' has been updated" +
                         "\nOrder status: " + orderToUpdate.getIsActive().toString() +
@@ -330,6 +322,11 @@ public class OrderServiceImpl implements OrderService{
             Order oldOrder = optionalOrder.get();
             Car oldCar = orderToUpdate.getCar();
 
+            /*Map<String, Object> oldValues = Map.of(
+                        "isActive",orderToUpdate.getIsActive(),
+                        "status",orderToUpdate.getCar().getStatus()
+                );
+
             orderToUpdate.setCar(carToUpdate);
             orderRepository.save(orderToUpdate);
             carRepository.save(carToUpdate);
@@ -349,9 +346,9 @@ public class OrderServiceImpl implements OrderService{
             USER_ANALYZER_LOGGER.info("User '{}' updated car on order: {}",
                     principal.getName(),
                     LogMethods.logUpdateBuilder(
-                            oldOrder.getCar(),
-                            orderToUpdate.getCar(),
-                            "id"
+                            oldOrder,
+                            orderToUpdate,
+                            "car"
                     ));
 
             return "Updated order '" + orderId + "' to have car " + carToUpdate.getRegistrationNumber();
