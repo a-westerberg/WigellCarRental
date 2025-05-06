@@ -61,7 +61,7 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
 
         testCar = carRepository.save(new Car(null, "Volvo", "V90","ABC789", CarStatus.AVAILABLE, BigDecimal.valueOf(1000), List.of()));
         testCustomer = customerRepository.save(new Customer(null, "19890101-1234", "Anna", "Andersson", "anna@test.se", "070-1234567", "Solrosvägen 1, 90347 Umeå", List.of()));
-        testOrder = orderRepository.save(new Order(null, LocalDate.of(2025,1,1),LocalDate.now().plusDays(1),LocalDate.now().plusDays(6), testCar, testCustomer, BigDecimal.valueOf(5000),true));
+        testOrder = orderRepository.save(new Order(null, LocalDate.of(2025,1,1),LocalDate.now().plusDays(1),LocalDate.now().plusDays(6), testCar, testCustomer, BigDecimal.valueOf(5000),true,false));
 
         testPrincipal = () -> testCustomer.getPersonalIdentityNumber();
     }
@@ -97,7 +97,7 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
     @Test
     void cancelOrderShouldThrowConflictExceptionIfOrderBelongsToAnotherCustomer() {
         Customer anotherTestCustomer = customerRepository.save(new Customer(null, "19890201-5678", "Erik", "Eriksson", "erik@test.se", "070-1234568", "Solrosvägen 1, 90347 Umeå", List.of()));
-        Order anotherCustomersOrder = orderRepository.save(new Order(null, LocalDate.of(2025,1,1),LocalDate.now().plusDays(10),LocalDate.now().plusDays(15), testCar, anotherTestCustomer, BigDecimal.valueOf(5000),true));
+        Order anotherCustomersOrder = orderRepository.save(new Order(null, LocalDate.of(2025,1,1),LocalDate.now().plusDays(10),LocalDate.now().plusDays(15), testCar, anotherTestCustomer, BigDecimal.valueOf(5000),true, false));
 
         ConflictException e = assertThrows(ConflictException.class, () -> customerController.cancelOrder(anotherCustomersOrder.getId(),testPrincipal));
         String expectedMessage = "No order for '" + testPrincipal.getName() + "' with id: " + anotherCustomersOrder.getId();
