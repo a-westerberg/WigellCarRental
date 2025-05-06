@@ -84,7 +84,7 @@ class CustomerServiceImplUnitTest {
                 () -> customerService.getCustomerById(MISSING_CUSTOMER_ID));
 
         //Then
-        assertEquals(exception.getMessage(), "Customer not found with id: 0");
+        assertEquals("Customer not found with id: 0",exception.getMessage());
 
     }
 
@@ -136,8 +136,8 @@ class CustomerServiceImplUnitTest {
 
         //Then
         verify(mockCustomerRepository).save(any(Customer.class));
-        assertThat(updatedCustomer.getAddress()).isEqualTo("123 Street");
-        assertThat(updatedCustomer.getFirstName()).isEqualTo("John");
+        assertThat("123 Street").isEqualTo(updatedCustomer.getAddress());
+        assertThat("John").isEqualTo(updatedCustomer.getFirstName());
     }
 
     //SA
@@ -156,7 +156,7 @@ class CustomerServiceImplUnitTest {
         );
 
         //Then
-        assertEquals(exception.getMessage(), "Customer not found with id: 0");
+        assertEquals("Customer not found with id: 0",exception.getMessage());
     }
 
     //SA
@@ -172,7 +172,7 @@ class CustomerServiceImplUnitTest {
                 () -> customerService.updateCustomer(customerInDB, wrongPrincipal)
         );
 
-        assertEquals(exception.getMessage(), "User not authorized for function.");
+        assertEquals("User not authorized for function.", exception.getMessage());
     }
 
     //SA

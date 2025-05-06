@@ -84,7 +84,7 @@ class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest 
                 ResourceNotFoundException.class,
                 ()-> customerService.getCustomerById(MISSING_CUSTOMER_ID));
 
-        assertThat(exception.getMessage()).isEqualTo("Customer not found with id: 0");
+        assertThat("Customer not found with id: 0").isEqualTo(exception.getMessage());
     }
 
     //updateCustomer
@@ -125,7 +125,7 @@ class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest 
                 ResourceNotFoundException.class,
                 ()-> customerService.updateCustomer(customerFromRequest, PRINCIPAL)
         );
-        assertThat(exception.getMessage()).isEqualTo("Customer not found with id: 0");
+        assertThat("Customer not found with id: 0").isEqualTo(exception.getMessage());
     }
 
     //SA
@@ -136,7 +136,7 @@ class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest 
                 ConflictException.class,
                 ()-> customerService.updateCustomer(customerInDB, unAuthorizedPrincipal)
         );
-        assertThat(exception.getMessage()).isEqualTo("User not authorized for function.");
+        assertThat("User not authorized for function.").isEqualTo(exception.getMessage());
     }
 
     //SA
