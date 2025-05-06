@@ -88,14 +88,14 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
     }
 
     @Test
-    void cancelOrderShouldReturnResponseStatusNotFoundIfOrderDoesNotExist() {
+    void cancelOrderShouldThrowResourceNotFoundIfOrderDoesNotExist() {
         ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class, () -> customerController.cancelOrder(-1L,testPrincipal));
-
-        //TODO assertEquals(HttpStatus.NOT_FOUND, e.getStatus());
+        assertEquals("Order not found with id: " + -1L, e.getMessage());
     }
 
     @Test
-    void cancelOrderShouldReturnResponseStatusConflictIfOrderBelongsToAnotherCustomer() {
+    void cancelOrderShouldThrowConflictExceptionIfOrderBelongsToAnotherCustomer() {
+
 
     }
 
