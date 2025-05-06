@@ -1,6 +1,7 @@
 package com.wigell.wigellcarrental.controllers;
 
 import com.wigell.wigellcarrental.enums.CarStatus;
+import com.wigell.wigellcarrental.exceptions.ConflictException;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.models.entities.Car;
 import com.wigell.wigellcarrental.models.entities.Customer;
@@ -19,7 +20,7 @@ import org.springframework.test.annotation.Rollback;
 import static org.assertj.core.api.Assertions.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-import static org.springframework.data.util.Predicates.isTrue;
+
 
 
 import java.math.BigDecimal;
@@ -95,18 +96,36 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
 
     @Test
     void cancelOrderShouldThrowConflictExceptionIfOrderBelongsToAnotherCustomer() {
+        Customer anotherTestCustomer = customerRepository.save(new Customer(null, "19890201-5678", "Erik", "Eriksson", "erik@test.se", "070-1234568", "Solrosvägen 1, 90347 Umeå", List.of()));
+        Order anotherCustomersOrder = orderRepository.save(new Order(null, LocalDate.of(2025,1,1),LocalDate.now().plusDays(10),LocalDate.now().plusDays(15), testCar, anotherTestCustomer, BigDecimal.valueOf(5000),true));
 
+        ConflictException e = assertThrows(ConflictException.class, () -> customerController.cancelOrder(anotherCustomersOrder.getId(),testPrincipal));
+        String expectedMessage = "No order for '" + testPrincipal.getName() + "' with id: " + anotherCustomersOrder.getId();
 
+        assertEquals(expectedMessage, e.getMessage());
     }
 
     @Test
-    void cancelOrderShouldReturnResponseStatusConflictIfOrderAlreadyStarted(){
+    void cancelOrderShouldThrowConflictExceptionIfOrderAlreadyStarted(){
+        testOrder.setStartDate(LocalDate.now().minusDays(1));
+        testOrder.setEndDate(LocalDate.now().plusDays(4));
+        orderRepository.save(testOrder);
+        ConflictException e = assertThrows(ConflictException.class, () -> customerController.cancelOrder(testOrder.getId(),testPrincipal));
 
+        String expectedMessage = "Order has already started and can't then be cancelled";
+
+        assertEquals(expectedMessage, e.getMessage());
     }
 
     @Test
-    void cancelOrderShouldReturnResponseStatusConflictIfOrderAlreadyEnded(){
+    void cancelOrderShouldThrowConflictExceptionIfOrderAlreadyEnded(){
+        testOrder.setStartDate(LocalDate.now().minusDays(6));
+        testOrder.setEndDate(LocalDate.now().minusDays(1));
+        orderRepository.save(testOrder);
+        ConflictException e = assertThrows(ConflictException.class, () -> customerController.cancelOrder(testOrder.getId(),testPrincipal));
 
+        String expectedMessage = "Order has already ended";
+        assertEquals(expectedMessage, e.getMessage());
     }
 
 }
