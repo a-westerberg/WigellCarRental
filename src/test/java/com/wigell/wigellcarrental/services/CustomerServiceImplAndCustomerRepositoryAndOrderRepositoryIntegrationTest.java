@@ -20,6 +20,7 @@ import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.when;
 
 //SA
 @SpringBootTest
@@ -171,6 +172,26 @@ class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest 
         assertDoesNotThrow(() -> customerService.updateCustomer(customerFromRequest, principalAdmin));
         assertEquals(updatedCustomer.getFirstName(), customerFromRequest.getFirstName());
 
+    }
+
+    //AA
+    @Test
+    void getAllCustomerShouldReturnListOfAllCustomers() {
+        List<Customer> customersInDB = customerService.getAllCustomers();
+        List<Customer> expectedCustomersInDB = List.of(customerInDB);
+
+        assertEquals(customersInDB, expectedCustomersInDB);
+    }
+
+    //AA
+    @Test
+    void getAllCustomersShouldThrowResourceNotFoundExceptionWhenListOfCustomersIsEmpty() {
+        customerRepository.deleteAll();
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class, () -> customerService.getAllCustomers());
+        String expectedMessage = "List not found with customers: 0";
+
+        assertEquals(expectedMessage, e.getMessage());
     }
 
 }
