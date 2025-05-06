@@ -68,15 +68,18 @@ public class CarServiceImpl implements CarService{
             return isInputId(input) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
         } catch (Exception e) {
             Car placeHolder = new Car();
+            String field;
 
             if (isInputId(input)) {
                 placeHolder.setId(Long.parseLong(input));
+                field = "id";
             } else {
                 placeHolder.setRegistrationNumber(input);
+                field = "registrationNumber";
             }
             USER_ANALYZER_LOGGER.warn("User: {} failed to delete car. {}",
                     principal.getName(),
-                    LogMethods.logExceptionBuilder(placeHolder,e,"id", "registrationNumber"));
+                    LogMethods.logExceptionBuilder(placeHolder,e,field));
             throw e;
         }
     }
@@ -108,11 +111,17 @@ public class CarServiceImpl implements CarService{
 
         for (Car car : cars) {
             BigDecimal totalIncome = BigDecimal.valueOf(0);
+            int rentedTimes = 0;
             for (Order order : car.getOrders()) {
-                totalIncome = totalIncome.add(order.getTotalPrice());
+                if(order.getStartDate().isBefore(LocalDate.now())){
+                    totalIncome = totalIncome.add(order.getTotalPrice());
+                    if(!order.getIsCancelled()) {
+                        rentedTimes++;
+                    }
+                }
             }
 
-            incomeCars.add(new IncomeCar(car,car.getOrders().size(),totalIncome));
+            incomeCars.add(new IncomeCar(car,rentedTimes,totalIncome));
         }
         return incomeCars;
     }
