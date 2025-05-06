@@ -13,6 +13,7 @@ import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
 import com.wigell.wigellcarrental.services.utilities.LogMethods;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
+import org.apache.juli.logging.Log;
 import org.apache.logging.log4j.LogManager;
 import org.apache.logging.log4j.Logger;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -68,66 +69,108 @@ public class OrderServiceImpl implements OrderService{
     //SA
     @Override
     public String cancelOrder(Long orderId, Principal principal) {
-        Optional<Order> optionalOrder = orderRepository.findById(orderId);
-        if(optionalOrder.isEmpty()){
-            USER_ANALYZER_LOGGER.warn("User {} tried to cancel an order which does not exist. " +
-                    "\n\tID: {}",
-                    principal.getName(), orderId);
-            throw new ResourceNotFoundException("Order","id",orderId);
-        }
-
-        Order orderToCancel = optionalOrder.get();
-
-        if(!orderToCancel.getCustomer().getPersonalIdentityNumber().equals(principal.getName())){
-            USER_ANALYZER_LOGGER.warn("User {} tried to cancel an order they don't own. " +
-                    "\n\tID: {}",
-                    principal.getName(), orderId);
-            return "No order for '" + principal.getName() + "' with id: " + orderId;
-        }
-
+        String conflictExceptionReason = null;
         LocalDate today = LocalDate.now();
+        try {
+            Optional<Order> optionalOrder = orderRepository.findById(orderId);
+            if (optionalOrder.isEmpty()) {
+                throw new ResourceNotFoundException("Order", "id", orderId);
+            }
 
-        if(orderToCancel.getStartDate().isBefore(today) && orderToCancel.getEndDate().isAfter(today)){
-            USER_ANALYZER_LOGGER.warn("User {} tried to cancel and order that has already started. " +
-                    "\n\tID: {}" +
-                    "\n\tStart date: {}" +
-                    "\n\tEnd date: {}" +
-                    "\n\tToday: {}",
-                    principal.getName(), orderId, orderToCancel.getStartDate(), orderToCancel.getEndDate(),today);
-            return "Order has already started and can't then be cancelled";
-        } else if (orderToCancel.getEndDate().isBefore(today)) {
-            USER_ANALYZER_LOGGER.warn("User {} tried to cancel an order that has already happened." +
-                    "\n\tID: {}" +
-                    "\n\tEnd date: {}" +
-                    "\n\tToday: {}",
-                    principal.getName(), orderId, orderToCancel.getEndDate(),today);
-            return "Order has already ended";
+            Order orderToCancel = optionalOrder.get();
+
+            if (!orderToCancel.getCustomer().getPersonalIdentityNumber().equals(principal.getName())) {
+                conflictExceptionReason = "unauthorized";
+                throw new ConflictException("No order for '" + principal.getName() + "' with id: " + orderId);
+            }
+
+            if (orderToCancel.getStartDate().isBefore(today) && orderToCancel.getEndDate().isAfter(today)) {
+                conflictExceptionReason = "invalid date";
+                throw new ConflictException("Order has already started and can't then be cancelled");
+
+            } else if (orderToCancel.getEndDate().isBefore(today)) {
+                conflictExceptionReason = "invalid date";
+                throw new ConflictException("Order has already ended");
+            }
+
+            Map<String, Object> oldValues = Map.of(
+                    "totalPrice",orderToCancel.getTotalPrice(),
+                    "isActive",orderToCancel.getIsActive()
+            );
+
+            BigDecimal cancellationFee = calculateCancellationFee(orderToCancel);
+            orderToCancel.setTotalPrice(cancellationFee);
+            orderToCancel.setIsActive(false);
+
+            orderRepository.save(orderToCancel);
+
+            Map<String, Object> newValues = Map.of(
+                    "totalPrice",orderToCancel.getTotalPrice(),
+                    "isActive",orderToCancel.getIsActive()
+            );
+
+            String change = LogMethods.logUpdateBuilder(
+                    oldValues,newValues
+            );
+
+            USER_ANALYZER_LOGGER.info("User '{}' cancelled order: {}",
+                    principal.getName(),
+                    change);
+
+            return "Order with id '" + orderId + "' is cancelled, cancellation fee becomes: "+cancellationFee;
+
+        }catch (ResourceNotFoundException resourceNotFoundException){
+            USER_ANALYZER_LOGGER.warn("User '{}' failed to cancel order: '{}'",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(Map.of("id", orderId), resourceNotFoundException));
+            throw resourceNotFoundException;
+
+
+        }catch (ConflictException conflictException){
+            if(conflictExceptionReason.equals("unauthorized")) {
+                USER_ANALYZER_LOGGER.warn("User '{}' failed to cancel order: {}",
+                        principal.getName(),
+                        LogMethods.logExceptionBuilder(Map.of("id", orderId), conflictException));
+                throw conflictException;
+            } else if (conflictExceptionReason.equals("invalid date")) {
+                Order orderToCancel = orderRepository.findById(orderId).get();
+                USER_ANALYZER_LOGGER.warn("User '{}' failed to cancel order: {}",
+                        principal.getName(),
+                        LogMethods.logExceptionBuilder(Map.of(
+                                "id", orderId,
+                                        "startDate",orderToCancel.getStartDate(),
+                                        "endDate",orderToCancel.getEndDate(),
+                                        "today",today),
+                                conflictException));
+                throw conflictException;
+            }else {
+                throw conflictException;
+            }
         }
 
-        BigDecimal cancellationFee = calculateCancellationFee(orderToCancel);
-        orderToCancel.setTotalPrice(cancellationFee);
-        orderToCancel.setIsActive(false);
-
-        orderRepository.save(orderToCancel);
-
-        USER_ANALYZER_LOGGER.info("User '{}' cancelled order with ID '{}'. Cancellation fee: {}", principal.getName(), orderId, cancellationFee);
-        return "Order with id '" + orderId + "' is cancelled";
     }
 
     //SA
     @Override
     public String removeOrdersBeforeDate(LocalDate date, Principal principal) {
-        List<Order>orders = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(date);
+        try {
+            List<Order> orders = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(date);
+            if (orders.isEmpty()) {
+                throw new ResourceNotFoundException("Found no inactive orders before '" + date + "'");
+            }
+            orderRepository.deleteAll(orders);
 
-        if(orders.isEmpty()){
-            USER_ANALYZER_LOGGER.warn("User {} tried to remove inactive orders before date, but no inactive order where found before: {}",
-                    principal.getName(),date);
-            return "Found no inactive orders before '"+date+"'";
+            USER_ANALYZER_LOGGER.info("User '{}' removed all order before: {}",
+                    principal.getName(),
+                    LogMethods.logBuilder(Map.of("date",date)));
+
+            return "All inactive orders before '" + date + "' has been removed";
+        }catch (Exception e){
+            USER_ANALYZER_LOGGER.warn("User '{}' failed to remove inactive orders before '{}'",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(Map.of("date", date), e));
+            throw e;
         }
-
-        orderRepository.deleteAll(orders);
-        USER_ANALYZER_LOGGER.info("User '{}' removed all orders before '{}'", principal.getName(), date);
-        return "All inactive orders before '"+date+"' has been removed";
     }
 
     // WIG-28-SJ
@@ -184,103 +227,158 @@ public class OrderServiceImpl implements OrderService{
     //SA
     @Override
     public String updateOrderStatus(Long orderId, String status, Principal principal) {
-        Optional<Order>optionalOrder = orderRepository.findById(orderId);
-        if (optionalOrder.isPresent()) {
+        String exceptionReason = "";
+        try {
+            Optional<Order> optionalOrder = orderRepository.findById(orderId);
+            if (optionalOrder.isPresent()) {
 
-            if(!status.equals("away") && !status.equals("back") && !status.equals("service")){
-                USER_ANALYZER_LOGGER.warn("User {} tried to update order '{}' but gave invalid status: {}", principal.getName(), orderId, status);
-                return "Invalid status, there is 'away', 'back' and 'service'";
+                if (!status.equals("away") && !status.equals("back") && !status.equals("service")) {
+                    exceptionReason = "invalid status";
+                    throw new ResourceNotFoundException("Invalid status '"+status+"'. There is 'away', 'back' and 'service'");
+                }
+
+                Order orderToUpdate = optionalOrder.get();
+
+                Map<String, Object> oldValues = Map.of(
+                        "isActive",orderToUpdate.getIsActive(),
+                        "status",orderToUpdate.getCar().getStatus()
+                );
+
+                switch (status) {
+                    case "away" -> {
+                        orderToUpdate.setIsActive(true);
+                        orderRepository.save(orderToUpdate);
+                        orderToUpdate.getCar().setStatus(CarStatus.BOOKED);
+                        carRepository.save(orderToUpdate.getCar());
+                    }
+                    case "back" -> {
+                        orderToUpdate.setIsActive(false);
+                        orderRepository.save(orderToUpdate);
+                        orderToUpdate.getCar().setStatus(CarStatus.AVAILABLE);
+                        carRepository.save(orderToUpdate.getCar());
+                    }
+                    case "service" -> {
+                        orderToUpdate.setIsActive(false);
+                        orderRepository.save(orderToUpdate);
+                        Car carToService = orderToUpdate.getCar();
+                        carToService.setStatus(CarStatus.IN_SERVICE);
+                        carRepository.save(carToService);
+
+                    }
+                }
+
+                Map<String, Object> newValues = Map.of(
+                        "isActive",orderToUpdate.getIsActive(),
+                        "status",orderToUpdate.getCar().getStatus()
+                );
+
+                String change = LogMethods.logUpdateBuilder(
+                        oldValues,newValues
+                );
+
+                USER_ANALYZER_LOGGER.info("User '{}' updated order status: {}",
+                        principal.getName(),
+                        change);
+
+                return "Order with id '" + orderId + "' has been updated" +
+                        "\nOrder status: " + orderToUpdate.getIsActive().toString() +
+                        "\nCar registration: " + orderToUpdate.getCar().getRegistrationNumber() +
+                        "\nCar status: " + orderToUpdate.getCar().getStatus().toString();
+            }else {
+                throw new ResourceNotFoundException("Order", "id", orderId);
             }
 
-            Order orderToUpdate = optionalOrder.get();
-            boolean wasIsActive = orderToUpdate.getIsActive();
-            CarStatus oldCarStatus = orderToUpdate.getCar().getStatus();
-
-            switch (status) {
-                case "away" -> {
-                    orderToUpdate.setIsActive(true);
-                    orderRepository.save(orderToUpdate);
-                    orderToUpdate.getCar().setStatus(CarStatus.BOOKED);
-                    carRepository.save(orderToUpdate.getCar());
-                }
-                case "back" -> {
-                    orderToUpdate.setIsActive(false);
-                    orderRepository.save(orderToUpdate);
-                    orderToUpdate.getCar().setStatus(CarStatus.AVAILABLE);
-                    carRepository.save(orderToUpdate.getCar());
-                }
-                case "service" -> {
-                    orderToUpdate.setIsActive(false);
-                    orderRepository.save(orderToUpdate);
-                    Car carToService = orderToUpdate.getCar();
-                    carToService.setStatus(CarStatus.IN_SERVICE);
-                    carRepository.save(carToService);
-
-                }
+        }catch (Exception e){
+            if(exceptionReason.equals("invalid status")){
+                USER_ANALYZER_LOGGER.warn("USER '{}' failed to update order status {}",
+                        principal.getName(),
+                        LogMethods.logExceptionBuilder(Map.of(
+                                "status",status),
+                                e));
+                throw e;
+            }else {
+                USER_ANALYZER_LOGGER.warn("User '{}' failed to update order status {}",
+                        principal.getName(),
+                        LogMethods.logExceptionBuilder(Map.of(
+                                "id",orderId),
+                                e));
+                throw e;
             }
 
-            USER_ANALYZER_LOGGER.info("User '{}' has updated order with ID '{}'" +
-                            "\n\tOrder status: {} -> {}" +
-                            "\n\tRegistation: {}" +
-                            "\n\tCar status: {} -> {}",
-                    principal.getName(),
-                    orderId,
-                    wasIsActive,
-                    orderToUpdate.getIsActive().toString(),
-                    orderToUpdate.getCar().getRegistrationNumber(),
-                    oldCarStatus.toString(),
-                    orderToUpdate.getCar().getStatus().toString());
-
-            return "Order with id '" + orderId + "' has been updated" +
-                    "\nOrder status: "+orderToUpdate.getIsActive().toString()+
-                    "\nCar registration: " +orderToUpdate.getCar().getRegistrationNumber()+
-                    "\nCar status: "+orderToUpdate.getCar().getStatus().toString();
         }
-        USER_ANALYZER_LOGGER.warn("User {} tried to update an order which does not exist." +
-                "\n\tID: {}",
-                principal.getName(), orderId);
-        throw new ResourceNotFoundException("Order","id",orderId);
     }
 
     @Override
     public String updateOrderCar(Long orderId, Long carId, Principal principal) {
-        Optional<Order>optionalOrder = orderRepository.findById(orderId);
-        Optional<Car>optionalCar = carRepository.findById(carId);
+        Optional<Order> optionalOrder = orderRepository.findById(orderId);
+        Optional<Car> optionalCar = carRepository.findById(carId);
+        String exceptionReason = "";
 
-        if(optionalCar.isEmpty()){
-            USER_ANALYZER_LOGGER.warn("User {} tried to update the car on an order but car with ID '{}' does not exist.", principal.getName(), carId);
-            throw new ResourceNotFoundException("Car","id",carId);
+        try {
+            if (optionalCar.isEmpty()) {
+                exceptionReason = "car not found";
+                throw new ResourceNotFoundException("Car", "id", carId);
+            }
+            if (optionalOrder.isEmpty()) {
+                exceptionReason = "order not found";
+                throw new ResourceNotFoundException("Order", "id", orderId);
+            }
+            if (!optionalCar.get().getStatus().equals(CarStatus.AVAILABLE)) {
+                exceptionReason = "car is not available";
+                throw new ResourceNotFoundException("Car with id '" + carId + "' is not available");
+            }
+
+            Order orderToUpdate = optionalOrder.get();
+            Car carToUpdate = optionalCar.get();
+
+            Map<String, Object> oldValues = Map.of(
+                    "car id",orderToUpdate.getCar().getId(),
+                    "registrationNumber",orderToUpdate.getCar().getRegistrationNumber()
+            );
+
+            orderToUpdate.setCar(carToUpdate);
+            orderRepository.save(orderToUpdate);
+            carRepository.save(carToUpdate);
+
+            Order updatedOrder = orderRepository.findById(orderId).get();
+            Map<String, Object> newValues = Map.of(
+                    "car id",orderToUpdate.getCar().getId(),
+                    "registrationNumber",updatedOrder.getCar().getRegistrationNumber()
+            );
+
+            String change = LogMethods.logUpdateBuilder(
+                    oldValues,newValues
+            );
+
+            USER_ANALYZER_LOGGER.info("User '{}' updated car on order: {}",
+                    principal.getName(),
+                    change);
+
+            return "Updated order '" + orderId + "' to have car " + carToUpdate.getRegistrationNumber();
+
+        }catch (Exception e){
+            if(exceptionReason.equals("order not found")){
+                USER_ANALYZER_LOGGER.warn("User '{}' failed to update car on order: {}",
+                        principal.getName(),
+                        LogMethods.logExceptionBuilder(Map.of("id",orderId),e));
+                throw e;
+            } else if (exceptionReason.equals("car not found")) {
+                USER_ANALYZER_LOGGER.warn("User '{}' failed to update car on order: {}",
+                        principal.getName(),
+                        LogMethods.logExceptionBuilder(Map.of("id",carId),e));
+                throw e;
+            }else {
+                Car car = optionalCar.get();
+                USER_ANALYZER_LOGGER.warn("User '{}' failed to update car on order: {}",
+                        principal.getName(),
+                        LogMethods.logExceptionBuilder(Map.of(
+                                "car id",carId,
+                                "status",car.getStatus()),
+                                e));
+                throw e;
+            }
+
         }
-        if (optionalOrder.isEmpty()) {
-            USER_ANALYZER_LOGGER.warn("User {} tried to update the car on an order but order with ID '{}' does not exist.", principal.getName(), orderId);
-            throw new ResourceNotFoundException("Order","id",orderId);
-        }
-        if(!optionalCar.get().getStatus().equals(CarStatus.AVAILABLE)){
-            USER_ANALYZER_LOGGER.warn("User {} tried to update the car on an order with order '{}' with car '{}', but car the status isn't available, it's: {}.", principal.getName(), orderId, carId,optionalCar.get().getStatus());
-            return "Car with id '" + carId + "' is not available";
-        }
-
-        Order orderToUpdate = optionalOrder.get();
-        Car carToUpdate = optionalCar.get();
-
-        Car oldCar = orderToUpdate.getCar();
-
-        orderToUpdate.setCar(carToUpdate);
-        orderRepository.save(orderToUpdate);
-        carRepository.save(carToUpdate);
-
-        USER_ANALYZER_LOGGER.info("User '{}' updated order with ID '{}' " +
-                        "\n\tCar ID: {} -> {}" +
-                        "\n\tCar, registration number: {} -> {}",
-                principal.getName(),
-                orderId,
-                oldCar.getId(),
-                carToUpdate.getId(),
-                oldCar.getRegistrationNumber(),
-                carToUpdate.getRegistrationNumber());
-
-        return "Updated order '" + orderId + "' to have car " + carToUpdate.getRegistrationNumber();
-
     }
 
     //WIG-85-AA, WIG-96-AA

@@ -21,6 +21,7 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 
+
 //SA
 @SpringBootTest
 @Transactional
@@ -28,8 +29,10 @@ import static org.junit.jupiter.api.Assertions.*;
 class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest {
 
     private CustomerService customerService;
-    private CustomerRepository customerRepository;
-    private OrderRepository orderRepository;
+    //AA added final
+    private final CustomerRepository customerRepository;
+    //AA added final
+    private final OrderRepository orderRepository;
 
     private Customer customerInDB;
     private final Long MISSING_CUSTOMER_ID = 0L;
@@ -171,6 +174,26 @@ class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest 
         assertDoesNotThrow(() -> customerService.updateCustomer(customerFromRequest, principalAdmin));
         assertEquals(updatedCustomer.getFirstName(), customerFromRequest.getFirstName());
 
+    }
+
+    //AA
+    @Test
+    void getAllCustomerShouldReturnListOfAllCustomers() {
+        List<Customer> customersInDB = customerService.getAllCustomers();
+        List<Customer> expectedCustomersInDB = List.of(customerInDB);
+
+        assertEquals(customersInDB, expectedCustomersInDB);
+    }
+
+    //AA
+    @Test
+    void getAllCustomersShouldThrowResourceNotFoundExceptionWhenListOfCustomersIsEmpty() {
+        customerRepository.deleteAll();
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class, () -> customerService.getAllCustomers());
+        String expectedMessage = "List not found with customers: 0";
+
+        assertEquals(expectedMessage, e.getMessage());
     }
 
 }
