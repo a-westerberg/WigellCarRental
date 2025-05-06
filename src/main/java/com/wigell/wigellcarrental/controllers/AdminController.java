@@ -25,7 +25,7 @@ public class AdminController {
     //Car service, Customer service, Order service?
     private final CustomerService customerService;
     private final CarService carService;            //aws
-    private OrderService orderService;
+    private final OrderService orderService; //AA added final
 
     @Autowired
     public AdminController(OrderService orderService, CustomerService customerService,CarService carService) {
@@ -79,7 +79,7 @@ public class AdminController {
     //SA //AA
     @PostMapping("/addcar")//Lägg till bil
     public ResponseEntity<Car>addCar(@RequestBody Car car, Principal principal){
-        return ResponseEntity.ok(carService.addCar(car, principal)); //TODO gör om till HTTP-status created!
+        return new ResponseEntity<>(carService.addCar(car,principal), HttpStatus.CREATED);
     }
 
     //SA //AWS
@@ -91,7 +91,7 @@ public class AdminController {
     //SA //AA
     @DeleteMapping("/removecar/{idOrRegistrationNumber}")
     public ResponseEntity<String>removeCar(@PathVariable String idOrRegistrationNumber, Principal principal){
-        return new ResponseEntity<>(carService.deleteCar(idOrRegistrationNumber,principal), HttpStatus.CREATED);
+        return ResponseEntity.ok(carService.deleteCar(idOrRegistrationNumber, principal));
     }
 
     //SA
