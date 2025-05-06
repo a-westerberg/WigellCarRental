@@ -3,6 +3,7 @@ package com.wigell.wigellcarrental.services;
 import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.models.valueobjects.AverageOrderCostStats;
 import com.wigell.wigellcarrental.models.valueobjects.AverageRentalPeriodStats;
+import com.wigell.wigellcarrental.models.valueobjects.IncomeBetweenDates;
 import com.wigell.wigellcarrental.models.valueobjects.PopularBrandStats;
 
 import java.security.Principal;
@@ -33,7 +34,8 @@ public interface OrderService {
 
     // WIG-25-AWS
     String removeOrderById(Long orderId, Principal principal);
-
-    // WIG-114-AWS
-    Object getIncomeOnMonth(String datum, String datum1);
+    //WIG-114-AWS
+    IncomeBetweenDates getIncomeOnMonth(String year, String month);
+    IncomeBetweenDates getIncomeBetweenDates(String startDate, String endDate);
+    IncomeBetweenDates getIncomeByYear(String year);
 }

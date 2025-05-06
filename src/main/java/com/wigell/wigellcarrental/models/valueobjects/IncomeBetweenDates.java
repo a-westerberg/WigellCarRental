@@ -2,11 +2,11 @@ package com.wigell.wigellcarrental.models.valueobjects;
 
 import java.math.BigDecimal;
 import java.time.LocalDate;
-
+    //WIG-114-AWS
 public class IncomeBetweenDates {
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private BigDecimal totalIncome;
+    private final LocalDate startDate;
+    private final LocalDate endDate;
+    private final BigDecimal totalIncome;
 
     public IncomeBetweenDates(LocalDate startDate, LocalDate endDate, BigDecimal totalIncome) {
         this.startDate = startDate;
@@ -14,27 +14,15 @@ public class IncomeBetweenDates {
         this.totalIncome = totalIncome;
     }
 
-    public LocalDate getStartDate() {
-        return startDate;
-    }
+        public LocalDate getStartDate() {
+            return startDate;
+        }
 
-    public void setStartDate(LocalDate startDate) {
-        this.startDate = startDate;
-    }
+        public LocalDate getEndDate() {
+            return endDate;
+        }
 
-    public LocalDate getEndDate() {
-        return endDate;
+        public BigDecimal getTotalIncome() {
+            return totalIncome;
+        }
     }
-
-    public void setEndDate(LocalDate endDate) {
-        this.endDate = endDate;
-    }
-
-    public BigDecimal getTotalIncome() {
-        return totalIncome;
-    }
-
-    public void setTotalIncome(BigDecimal totalIncome) {
-        this.totalIncome = totalIncome;
-    }
-}

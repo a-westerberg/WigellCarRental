@@ -520,20 +520,79 @@ public class OrderServiceImpl implements OrderService{
             throw e;
         }
     }
+
     // WIG-114-AWS
     @Override
-    public MonthlyIncomeStats getIncomeOnMonth(String monthString, String yearString ){
-        int month = Integer.parseInt(monthString);
-        int year = Integer.parseInt(yearString);
+    public IncomeBetweenDates getIncomeOnMonth(String year, String month) {
+        try{
+            int y = Integer.parseInt(year);
+            int m = Integer.parseInt(month);
 
-        List<Order> orders = orderRepository.findAll();
+            if(m<1 || m>12){
+                throw new InvalidInputException("Month", "1-12", month);
+            }
 
-        BigDecimal totalIncome = orders.stream()
-                .filter(o -> o.getStartDate().getYear() == year && o.getStartDate().getMonthValue() == month)
+            LocalDate start = LocalDate.of(y, m, 1);
+            LocalDate end = start.withDayOfMonth(start.lengthOfMonth());
+
+            return getIncomeBetweenDates(start.toString(), end.toString());
+        } catch (NumberFormatException e){
+            throw new InvalidInputException("Year/Month", "numeric", year+"/"+month);
+        }
+    }
+
+    // WIG-114-AWS
+    @Override
+    public IncomeBetweenDates getIncomeBetweenDates(String start, String end) {
+        LocalDate startDate = MicroMethods.parseStringToDate(start);
+        LocalDate endDate = MicroMethods.parseStringToDate(end);
+
+        if(startDate.isAfter(endDate)){
+            throw new InvalidInputException("Date range", "start must be before end", start+" > "+end);
+        }
+
+        List<Order> orders = orderRepository.findAll().stream()
+                .filter(order -> {
+                    LocalDate date = order.getStartDate();
+                    return !date.isBefore(startDate) && !date.isAfter(endDate);
+                })
+                .toList();
+        if(orders.isEmpty()){
+            throw new ResourceNotFoundException("Orders","start between", start + " and " + end);
+        }
+
+        BigDecimal total = orders.stream()
                 .map(Order::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return new MonthlyIncomeStats(month, year, totalIncome);
+        return new IncomeBetweenDates(startDate, endDate, total);
+    }
+
+    // WIG-114-AWS
+    @Override
+    public IncomeBetweenDates getIncomeByYear(String year) {
+       try{
+           int y = Integer.parseInt(year);
+
+           List<Order> orders = orderRepository.findAll().stream()
+                   .filter(order -> order.getStartDate().getYear() == y)
+                   .toList();
+
+           if(orders.isEmpty()){
+               throw new ResourceNotFoundException("Orders","year", year);
+           }
+
+           BigDecimal total = orders.stream()
+                   .map(Order::getTotalPrice)
+                   .reduce(BigDecimal.ZERO, BigDecimal::add);
+
+           return new IncomeBetweenDates(LocalDate.of(y, 1, 1), LocalDate.of(y, 12, 31), total);
+
+       } catch (NumberFormatException e){
+           throw new InvalidInputException("Year", "numeric", year);
+       }
+
+
     }
 
 }

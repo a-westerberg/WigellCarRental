@@ -138,9 +138,14 @@ public class AdminController {
         // WIG-114-AWS
         if(choice.contains("incomemonth")){ //Total intäkt under en viss tidsperiod, månad och år
             return ResponseEntity.ok(orderService.getIncomeOnMonth(data[0],data[1]));
-
-        } else
-        if (choice.contains("brand")) {//mest hyrda bilmärke under en viss period, brand, datum1 och 2
+        }
+        else if (choice.contains("incomebetweendates")) {
+            return ResponseEntity.ok(orderService.getIncomeBetweenDates(data[0],data[1]));
+        }
+        else if (choice.contains("incomeyear")) {
+            return ResponseEntity.ok(orderService.getIncomeByYear(data[0]));
+        }
+        else if (choice.contains("brand")) {//mest hyrda bilmärke under en viss period, brand, datum1 och 2
             return ResponseEntity.ok(orderService.getPopularBrand(data[0],data[1]));
 
         }
