@@ -22,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 
 //WIG-44-AA
@@ -64,19 +65,23 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
 
     @Test
     void cancelOrderShouldReturnResponseEntityOkAndString() {
+        BigDecimal originalPrice = testOrder.getTotalPrice();
         ResponseEntity<String> response = customerController.cancelOrder(testOrder.getId(),testPrincipal);
 
-        long orderDaysLong = 5L;
+        long orderDaysLong = ChronoUnit.DAYS.between(testOrder.getStartDate(), testOrder.getEndDate());
 
-        BigDecimal expectedFee = testOrder.getTotalPrice()
+
+        BigDecimal expectedFee = originalPrice
                 .multiply(BigDecimal.valueOf(0.05))
                 .multiply(BigDecimal.valueOf(orderDaysLong));
 
-        String expectedResponseString = "Order with id " + testOrder.getId() + " is cancelled, cancellation fee becomes: " + expectedFee;
+        String expectedResponseString = "Order with id '" + testOrder.getId() + "' is cancelled, cancellation fee becomes: " + expectedFee;
+
+        Order canceledOrder = orderRepository.findById(testOrder.getId()).orElseThrow(() -> new IllegalStateException("Order not found after cancellation"));
 
         assertEquals(expectedResponseString, response.getBody());
         assertThat(response.getStatusCode().isSameCodeAs(HttpStatus.OK)).isTrue();
-        assertThat(testOrder.getIsActive()).isFalse();
+        assertThat(canceledOrder.getIsActive()).isFalse();
     }
 
     @Test
