@@ -95,18 +95,21 @@ public class OrderServiceImpl implements OrderService{
 
             Map<String, Object> oldValues = Map.of(
                     "totalPrice",orderToCancel.getTotalPrice(),
-                    "isActive",orderToCancel.getIsActive()
+                    "isActive",orderToCancel.getIsActive(),
+                    "isCancelled",orderToCancel.getIsCancelled()
             );
 
             BigDecimal cancellationFee = calculateCancellationFee(orderToCancel);
             orderToCancel.setTotalPrice(cancellationFee);
             orderToCancel.setIsActive(false);
+            orderToCancel.setIsCancelled(true);
 
             orderRepository.save(orderToCancel);
 
             Map<String, Object> newValues = Map.of(
                     "totalPrice",orderToCancel.getTotalPrice(),
-                    "isActive",orderToCancel.getIsActive()
+                    "isActive",orderToCancel.getIsActive(),
+                    "isCancelled",orderToCancel.getIsCancelled()
             );
 
             String change = LogMethods.logUpdateBuilder(
