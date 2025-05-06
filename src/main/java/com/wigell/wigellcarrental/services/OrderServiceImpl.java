@@ -411,12 +411,10 @@ public class OrderServiceImpl implements OrderService{
 
             return "Order with ID '"+orderId+"' has been removed.";
         } catch (Exception e) {
-            Order placeHolder = new Order();
-            placeHolder.setId(orderId);
 
             USER_ANALYZER_LOGGER.warn("User '{}' failed to remove order: {}",
                     principal.getName(),
-                    LogMethods.logExceptionBuilder(placeHolder, e, "id")
+                    LogMethods.logExceptionBuilder(Map.of("id", orderId), e)
             );
             throw e;
         }
