@@ -111,8 +111,9 @@ class OrderServiceImplUnitTest {
         when(mockOrderRepository.save(any(Order.class))).thenReturn(testOrder);
 
         String returnMessage = orderService.cancelOrder(1L, testPrincipal);
+        BigDecimal fee = testOrder.getTotalPrice();
 
-        assertEquals("Order with id '1' is cancelled", returnMessage);
+        assertEquals("Order with id '1' is cancelled, cancellation fee becomes: " + fee, returnMessage);
     }
 
     //AA
