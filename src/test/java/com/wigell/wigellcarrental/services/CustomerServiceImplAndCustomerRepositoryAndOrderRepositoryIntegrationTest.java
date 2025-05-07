@@ -194,6 +194,7 @@ class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest 
     //AA
     @Test
     void getAllCustomersShouldThrowResourceNotFoundExceptionWhenListOfCustomersIsEmpty() {
+        orderRepository.deleteAll();
         customerRepository.deleteAll();
 
         ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class, () -> customerService.getAllCustomers());
