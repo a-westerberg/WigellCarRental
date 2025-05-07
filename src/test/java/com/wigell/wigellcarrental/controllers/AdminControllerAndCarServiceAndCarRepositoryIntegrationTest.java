@@ -70,7 +70,7 @@ class AdminControllerAndCarServiceAndCarRepositoryIntegrationTest {
         orderRepository.deleteAll();
         carRepository.deleteAll();
 
-        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class, () -> adminController.getAllAvailableCars());
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class, adminController::getAllAvailableCars);
         assertEquals("List not found with cars with status: AVAILABLE", e.getMessage());
     }
 
