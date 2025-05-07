@@ -179,8 +179,14 @@ class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest 
     //AA
     @Test
     void getAllCustomerShouldReturnListOfAllCustomers() {
+        orderRepository.deleteAll();
+        customerRepository.deleteAll();
+
+        Customer customer = new Customer(null, "19890101-1234", "Anna", "Andersson", "anna@teste.se", "0701234567", "Stora gatan 1, 123 45, Stockholm", List.of());
+        Customer savedCustomer = customerRepository.save(customer);
+
         List<Customer> customersInDB = customerService.getAllCustomers();
-        List<Customer> expectedCustomersInDB = List.of(customerInDB);
+        List<Customer> expectedCustomersInDB = List.of(savedCustomer);
 
         assertEquals(customersInDB, expectedCustomersInDB);
     }
