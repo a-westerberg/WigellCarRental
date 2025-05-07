@@ -21,6 +21,7 @@ import org.mockito.junit.jupiter.MockitoExtension;
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
@@ -92,7 +93,7 @@ class OrderServiceImplUnitTest {
     void cancelOrderShouldSetCorrectCancellationFee(){
         when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
 
-        long orderDaysLong = 5L;
+        long orderDaysLong = ChronoUnit.DAYS.between(testOrder.getStartDate(), testOrder.getEndDate());
         BigDecimal originalPrice = testOrder.getTotalPrice();
         orderService.cancelOrder(1L, testPrincipal);
 
@@ -117,7 +118,7 @@ class OrderServiceImplUnitTest {
 
     //AA
     @Test
-    void cancelOrderShouldThrowResourceNotFoundExceptionIfOrderIdDoseNotExist(){
+    void cancelOrderShouldThrowResourceNotFoundExceptionIfOrderIdDoesNotExist(){
         Long missingOrderId = -1L;
         when(mockOrderRepository.findById(missingOrderId)).thenReturn(Optional.empty());
 
@@ -143,7 +144,7 @@ class OrderServiceImplUnitTest {
 
     //AA
     @Test
-    void cancelOrderShouldThrowConflictExceptionIfOrderAlreadyStarted(){
+    void cancelOrderShouldThrowConflictExceptionIfOrderAlreadyStartedBeforeToday(){
         when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
 
         testOrder.setStartDate(LocalDate.now().minusDays(1));
@@ -157,7 +158,20 @@ class OrderServiceImplUnitTest {
 
     //AA
     @Test
-    void cancelOrderShouldReturnMessageIfOrderAlreadyEnded(){
+    void cancelOrderShouldThrowConflictExceptionIfOrderStartsToday(){
+        when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
+
+        testOrder.setStartDate(LocalDate.now());
+        testOrder.setEndDate(LocalDate.now().plusDays(3));
+
+        ConflictException e = assertThrows(ConflictException.class, () -> orderService.cancelOrder(testOrder.getId(), testPrincipal));
+
+        assertEquals("Order has already started and can't then be cancelled", e.getMessage());
+    }
+
+    //AA
+    @Test
+    void cancelOrderShouldThrowConflictExceptionIfOrderAlreadyEnded(){
         when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
 
         testOrder.setStartDate(LocalDate.now().minusDays(10));
