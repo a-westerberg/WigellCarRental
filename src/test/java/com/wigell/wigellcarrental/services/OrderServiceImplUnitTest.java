@@ -59,7 +59,7 @@ class OrderServiceImplUnitTest {
 
         testCar = new Car(10L, "Volvo", "V90","ABC789", CarStatus.AVAILABLE, BigDecimal.valueOf(1000), List.of());
         testCustomer = new Customer(1L, "19890101-1234", "Anna", "Andersson", "anna@test.se", "070-1234567", "Solrosvägen 1, 90347 Umeå", List.of());
-        testOrder = new Order(1L, LocalDate.of(2025,1,1),LocalDate.now(),LocalDate.now().plusDays(5), testCar, testCustomer, BigDecimal.valueOf(5000),true);
+        testOrder = new Order(1L, LocalDate.of(2025,1,1),LocalDate.now(),LocalDate.now().plusDays(5), testCar, testCustomer, BigDecimal.valueOf(5000),true, false);
         testPrincipal = () -> testCustomer.getPersonalIdentityNumber();
     }
 
@@ -102,7 +102,13 @@ class OrderServiceImplUnitTest {
 
         String returnMessage = orderService.cancelOrder(1L, testPrincipal);
 
-        assertEquals("Order with id '1' is cancelled", returnMessage);
+        long orderDaysLong = 5L;
+        BigDecimal originalPrice = testOrder.getTotalPrice();
+        BigDecimal fee = originalPrice
+                .multiply(BigDecimal.valueOf(0.05))
+                .multiply(BigDecimal.valueOf(orderDaysLong));
+
+        assertEquals("Order with id '1' is cancelled, cancellation fee becomes: " + fee, returnMessage);
     }
 
     //AA
@@ -134,7 +140,8 @@ class OrderServiceImplUnitTest {
                 testCar,
                 otherCustomer,
                 BigDecimal.valueOf(2000),
-                true
+                true,
+                false
         );
 
         when(mockOrderRepository.findById(orderId)).thenReturn(Optional.of(foreignOrder));
