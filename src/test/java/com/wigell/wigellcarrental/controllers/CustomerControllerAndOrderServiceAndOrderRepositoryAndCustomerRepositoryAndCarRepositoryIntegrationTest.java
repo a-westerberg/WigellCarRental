@@ -33,7 +33,7 @@ import java.util.List;
 @SpringBootTest
 @Transactional
 @Rollback
-class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
+class CustomerControllerAndOrderServiceAndOrderRepositoryAndCustomerRepositoryAndCarRepositoryIntegrationTest {
 
     private final OrderRepository orderRepository;
     private final CarRepository carRepository;
@@ -48,7 +48,7 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
 
     //AA
     @Autowired
-    CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest(OrderRepository orderRepository, CarRepository carRepository, CustomerRepository customerRepository, CustomerController customerController) {
+    CustomerControllerAndOrderServiceAndOrderRepositoryAndCustomerRepositoryAndCarRepositoryIntegrationTest(OrderRepository orderRepository, CarRepository carRepository, CustomerRepository customerRepository, CustomerController customerController) {
         this.orderRepository = orderRepository;
         this.carRepository = carRepository;
         this.customerRepository = customerRepository;
@@ -66,7 +66,7 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
         testPrincipal = () -> testCustomer.getPersonalIdentityNumber();
     }
 
-
+    //AA
     @Test
     void cancelOrderShouldReturnResponseEntityOkWithStringAndSetOrderToCancelledAndInactive() {
         BigDecimal originalPrice = testOrder.getTotalPrice();
@@ -89,12 +89,14 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
         assertThat(canceledOrder.getIsCancelled()).isTrue();
     }
 
+    //AA
     @Test
-    void cancelOrderShouldThrowResourceNotFoundIfOrderDoesNotExist() {
+    void cancelOrderShouldThrowResourceNotFoundExceptionIfOrderDoesNotExist() {
         ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class, () -> customerController.cancelOrder(-1L,testPrincipal));
         assertEquals("Order not found with id: " + -1L, e.getMessage());
     }
 
+    //AA
     @Test
     void cancelOrderShouldThrowConflictExceptionIfOrderBelongsToAnotherCustomer() {
         Customer anotherTestCustomer = customerRepository.save(new Customer(null, "19890201-5678", "Erik", "Eriksson", "erik@test.se", "070-1234568", "Solrosvägen 1, 90347 Umeå", List.of()));
@@ -106,8 +108,9 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
         assertEquals(expectedMessage, e.getMessage());
     }
 
+    //AA
     @Test
-    void cancelOrderShouldThrowConflictExceptionIfOrderAlreadyStarted(){
+    void cancelOrderShouldThrowConflictExceptionIfOrderAlreadyStartedBeforeToday(){
         testOrder.setStartDate(LocalDate.now().minusDays(1));
         testOrder.setEndDate(LocalDate.now().plusDays(4));
         orderRepository.save(testOrder);
@@ -118,6 +121,21 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
         assertEquals(expectedMessage, e.getMessage());
     }
 
+    //AA
+    @Test
+    void cancelOrderShouldThrowConflictExceptionIfOrderStartsToday(){
+
+        testOrder.setStartDate(LocalDate.now());
+        testOrder.setEndDate(LocalDate.now().plusDays(5));
+        orderRepository.save(testOrder);
+        ConflictException e = assertThrows(ConflictException.class, () -> customerController.cancelOrder(testOrder.getId(),testPrincipal));
+
+        String expectedMessage = "Order has already started and can't then be cancelled";
+
+        assertEquals(expectedMessage, e.getMessage());
+    }
+
+    //AA
     @Test
     void cancelOrderShouldThrowConflictExceptionIfOrderAlreadyEnded(){
         testOrder.setStartDate(LocalDate.now().minusDays(6));
@@ -128,5 +146,4 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
         String expectedMessage = "Order has already ended";
         assertEquals(expectedMessage, e.getMessage());
     }
-
 }

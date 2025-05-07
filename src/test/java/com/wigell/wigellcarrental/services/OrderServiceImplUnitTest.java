@@ -1,6 +1,7 @@
 package com.wigell.wigellcarrental.services;
 
 import com.wigell.wigellcarrental.enums.CarStatus;
+import com.wigell.wigellcarrental.exceptions.ConflictException;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.models.entities.Car;
 import com.wigell.wigellcarrental.models.entities.Customer;
@@ -14,16 +15,17 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
 
 import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.ArgumentMatchers.any;
 
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.security.Principal;
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.List;
 import java.util.Optional;
 
+import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
 //WIG-48-AA
@@ -59,7 +61,7 @@ class OrderServiceImplUnitTest {
 
         testCar = new Car(10L, "Volvo", "V90","ABC789", CarStatus.AVAILABLE, BigDecimal.valueOf(1000), List.of());
         testCustomer = new Customer(1L, "19890101-1234", "Anna", "Andersson", "anna@test.se", "070-1234567", "Solrosvägen 1, 90347 Umeå", List.of());
-        testOrder = new Order(1L, LocalDate.of(2025,1,1),LocalDate.now(),LocalDate.now().plusDays(5), testCar, testCustomer, BigDecimal.valueOf(5000),true, false);
+        testOrder = new Order(1L, LocalDate.of(2025,1,1),LocalDate.now().plusDays(1),LocalDate.now().plusDays(6), testCar, testCustomer, BigDecimal.valueOf(5000),true, false);
         testPrincipal = () -> testCustomer.getPersonalIdentityNumber();
     }
 
@@ -68,22 +70,30 @@ class OrderServiceImplUnitTest {
     @Test
     void cancelOrderShouldSetIsActiveToFalse() {
         when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
-        when(mockOrderRepository.save(any(Order.class))).thenReturn(testOrder);
 
         orderService.cancelOrder(1L, testPrincipal);
 
         assertFalse(testOrder.getIsActive());
+        verify(mockOrderRepository).save(testOrder);
+
+    }
+
+    @Test
+    void cancelOrderShouldSetIsCancelledToTrue() {
+        when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
+
+        orderService.cancelOrder(1L, testPrincipal);
+
+        assertTrue(testOrder.getIsCancelled());
+        verify(mockOrderRepository).save(testOrder);
     }
 
     //AA
     @Test
     void cancelOrderShouldSetCorrectCancellationFee(){
         when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
-        when(mockOrderRepository.save(any(Order.class))).thenReturn(testOrder);
 
-        orderService.cancelOrder(1L, testPrincipal);
-        long orderDaysLong = 5L;
-
+        long orderDaysLong = ChronoUnit.DAYS.between(testOrder.getStartDate(), testOrder.getEndDate());
         BigDecimal originalPrice = testOrder.getTotalPrice();
         orderService.cancelOrder(1L, testPrincipal);
 
@@ -92,28 +102,23 @@ class OrderServiceImplUnitTest {
                 .multiply(BigDecimal.valueOf(orderDaysLong));
 
         assertEquals(0, expectedFee.compareTo(testOrder.getTotalPrice()));
+        verify(mockOrderRepository).save(testOrder);
     }
 
     //AA
     @Test
     void cancelOrderShouldReturnStringMessageOrderWithIdIsCancelled(){
         when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
-        when(mockOrderRepository.save(any(Order.class))).thenReturn(testOrder);
 
         String returnMessage = orderService.cancelOrder(1L, testPrincipal);
-
-        long orderDaysLong = 5L;
-        BigDecimal originalPrice = testOrder.getTotalPrice();
-        BigDecimal fee = originalPrice
-                .multiply(BigDecimal.valueOf(0.05))
-                .multiply(BigDecimal.valueOf(orderDaysLong));
+        BigDecimal fee = testOrder.getTotalPrice();
 
         assertEquals("Order with id '1' is cancelled, cancellation fee becomes: " + fee, returnMessage);
     }
 
     //AA
     @Test
-    void cancelOrderShouldThrowResourceNotFoundExceptionIfOrderIdDoseNotExist(){
+    void cancelOrderShouldThrowResourceNotFoundExceptionIfOrderIdDoesNotExist(){
         Long missingOrderId = -1L;
         when(mockOrderRepository.findById(missingOrderId)).thenReturn(Optional.empty());
 
@@ -124,58 +129,57 @@ class OrderServiceImplUnitTest {
 
     //AA
     @Test
-    void cancelOrderShouldReturnMessageIfNoOrderWithThatIdExist(){
+    void cancelOrderShouldThrowConflictExceptionIfOrderBelongsToAnotherCustomer(){
         Long orderId = 1L;
 
-        Customer otherCustomer = new Customer(
-                2L, "20000101-9999", "Ove", "Olsson", "ove@fake.se", "070-1111111", "Falskgatan 1", List.of()
-        );
-
-
-        Order foreignOrder = new Order(
-                orderId,
-                LocalDate.now().plusDays(1),
-                LocalDate.now().plusDays(3),
-                LocalDate.now(),
-                testCar,
-                otherCustomer,
-                BigDecimal.valueOf(2000),
-                true,
-                false
-        );
+        Customer otherCustomer = new Customer(2L, "20000101-9999", "Ove", "Olsson", "ove@test.se", "070-1111111", "Falskgatan 1", List.of());
+        Order foreignOrder = new Order(orderId, LocalDate.now().plusDays(1), LocalDate.now().plusDays(3), LocalDate.now(), testCar, otherCustomer, BigDecimal.valueOf(2000), true, false);
 
         when(mockOrderRepository.findById(orderId)).thenReturn(Optional.of(foreignOrder));
 
-        String returnMessage = orderService.cancelOrder(orderId, testPrincipal);
+        ConflictException e = assertThrows(ConflictException.class, () -> orderService.cancelOrder(foreignOrder.getId(), testPrincipal));
 
-        assertEquals("No order for '19890101-1234' with id: 1", returnMessage);
+        assertEquals("No order for '19890101-1234' with id: 1", e.getMessage());
     }
 
     //AA
     @Test
-    void cancelOrderShouldReturnMessageIfOrderAlreadyStarted(){
+    void cancelOrderShouldThrowConflictExceptionIfOrderAlreadyStartedBeforeToday(){
         when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
 
         testOrder.setStartDate(LocalDate.now().minusDays(1));
         testOrder.setEndDate(LocalDate.now().plusDays(1));
 
-        String returnMessage = orderService.cancelOrder(testOrder.getId(), testPrincipal);
+        ConflictException e = assertThrows(ConflictException.class, () -> orderService.cancelOrder(testOrder.getId(), testPrincipal));
 
-        assertEquals("Order has already started and can't then be cancelled", returnMessage);
+        assertEquals("Order has already started and can't then be cancelled", e.getMessage());
 
     }
 
     //AA
     @Test
-    void cancelOrderShouldReturnMessageIfOrderAlreadyEnded(){
+    void cancelOrderShouldThrowConflictExceptionIfOrderStartsToday(){
+        when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
+
+        testOrder.setStartDate(LocalDate.now());
+        testOrder.setEndDate(LocalDate.now().plusDays(3));
+
+        ConflictException e = assertThrows(ConflictException.class, () -> orderService.cancelOrder(testOrder.getId(), testPrincipal));
+
+        assertEquals("Order has already started and can't then be cancelled", e.getMessage());
+    }
+
+    //AA
+    @Test
+    void cancelOrderShouldThrowConflictExceptionIfOrderAlreadyEnded(){
         when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
 
         testOrder.setStartDate(LocalDate.now().minusDays(10));
         testOrder.setEndDate(LocalDate.now().minusDays(8));
 
-        String returnMessage = orderService.cancelOrder(testOrder.getId(), testPrincipal);
+        ConflictException e = assertThrows(ConflictException.class, () -> orderService.cancelOrder(testOrder.getId(), testPrincipal));
 
-        assertEquals("Order has already ended", returnMessage);
+        assertEquals("Order has already ended", e.getMessage());
 
     }
 
