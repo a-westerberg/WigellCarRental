@@ -86,11 +86,11 @@ public class OrderServiceImpl implements OrderService{
                 throw new ConflictException("No order for '" + principal.getName() + "' with id: " + orderId);
             }
 
-            if (orderToCancel.getStartDate().isBefore(today) && orderToCancel.getEndDate().isAfter(today)) {
+            if (orderToCancel.getStartDate().isBefore(today) && orderToCancel.getEndDate().isAfter(today) || orderToCancel.getStartDate().isEqual(today)) {
                 exceptionReason = "invalid date";
                 throw new ConflictException("Order has already started and can't then be cancelled");
 
-            } else if (orderToCancel.getEndDate().isBefore(today)) {
+            } else if (orderToCancel.getEndDate().isBefore(today) || orderToCancel.getEndDate().isEqual(today)) {
                 exceptionReason = "invalid date";
                 throw new ConflictException("Order has already ended");
             }
