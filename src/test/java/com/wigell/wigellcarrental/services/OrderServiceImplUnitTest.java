@@ -75,6 +75,16 @@ class OrderServiceImplUnitTest {
         assertFalse(testOrder.getIsActive());
     }
 
+    @Test
+    void cancelOrderShouldSetIsCancelledToTrue() {
+        when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
+        when(mockOrderRepository.save(any(Order.class))).thenReturn(testOrder);
+
+        orderService.cancelOrder(1L, testPrincipal);
+
+        assertTrue(testOrder.getIsCancelled());
+    }
+
     //AA
     @Test
     void cancelOrderShouldSetCorrectCancellationFee(){
