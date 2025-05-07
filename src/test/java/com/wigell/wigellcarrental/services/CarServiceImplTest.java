@@ -11,6 +11,7 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.Mock;
+import static org.mockito.Mockito.verify;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
@@ -78,24 +79,33 @@ class CarServiceImplTest {
     //WIG-102-SJ
     @Test
     void updateCarShouldUpdateCarCorrectly() {
-        Car updatedCar = new Car(
+
+        Car updateRequest = new Car(
                 1L,
-                "Volvo",
-                "XC60", //*
-                "VOL123",
-                CarStatus.BOOKED,
-                BigDecimal.valueOf(799.00), //*
+                "Toyota",
+                "Corolla",
+                "NEW987",
+                CarStatus.IN_SERVICE,
+                BigDecimal.valueOf(499.00),
                 List.of()
         );
 
         when(mockCarRepository.findById(exsistingCar.getId())).thenReturn(Optional.of(exsistingCar));
-        when(mockCarRepository.save(any(Car.class))).thenReturn(updatedCar);
 
-        Car result = carService.updateCar(updatedCar, principal);
+        when(mockCarRepository.save(any(Car.class))).thenAnswer(invocationOnMock -> exsistingCar);
 
-        assertEquals("XC60", result.getModel());
-        assertEquals(CarStatus.BOOKED, result.getStatus());
-        assertEquals(BigDecimal.valueOf(799.00), result.getPricePerDay());
+        Car result = carService.updateCar(updateRequest, principal);
+
+        assertEquals("Toyota", exsistingCar.getMake());
+        assertEquals("Corolla", exsistingCar.getModel());
+        assertEquals("NEW987", exsistingCar.getRegistrationNumber());
+        assertEquals(CarStatus.IN_SERVICE, exsistingCar.getStatus());
+        assertEquals(BigDecimal.valueOf(499.00), exsistingCar.getPricePerDay());
+
+        verify(mockCarRepository).save(exsistingCar);
+
+        assertSame(exsistingCar, result);
+
     }
 
     //WIG-102-SJ
