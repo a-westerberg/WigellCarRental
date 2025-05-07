@@ -33,7 +33,7 @@ import java.util.List;
 @SpringBootTest
 @Transactional
 @Rollback
-class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
+class CustomerControllerAndOrderServiceAndOrderRepositoryAndCustomerRepositoryAndCarRepositoryIntegrationTest {
 
     private final OrderRepository orderRepository;
     private final CarRepository carRepository;
@@ -48,7 +48,7 @@ class CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest {
 
     //AA
     @Autowired
-    CustomerControllerAndOrderServiceAndOrderRepositoryIntegrationTest(OrderRepository orderRepository, CarRepository carRepository, CustomerRepository customerRepository, CustomerController customerController) {
+    CustomerControllerAndOrderServiceAndOrderRepositoryAndCustomerRepositoryAndCarRepositoryIntegrationTest(OrderRepository orderRepository, CarRepository carRepository, CustomerRepository customerRepository, CustomerController customerController) {
         this.orderRepository = orderRepository;
         this.carRepository = carRepository;
         this.customerRepository = customerRepository;
