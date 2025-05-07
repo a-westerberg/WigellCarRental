@@ -79,6 +79,7 @@ class CarServiceImplTest {
     //WIG-102-SJ
     @Test
     void updateCarShouldUpdateCarCorrectly() {
+
         Car updateRequest = new Car(
                 1L,
                 "Toyota",
@@ -91,20 +92,20 @@ class CarServiceImplTest {
 
         when(mockCarRepository.findById(exsistingCar.getId())).thenReturn(Optional.of(exsistingCar));
 
+        when(mockCarRepository.save(any(Car.class))).thenAnswer(invocationOnMock -> exsistingCar);
+
         Car result = carService.updateCar(updateRequest, principal);
 
-        // Kontrollera fältuppdatering
         assertEquals("Toyota", exsistingCar.getMake());
         assertEquals("Corolla", exsistingCar.getModel());
         assertEquals("NEW987", exsistingCar.getRegistrationNumber());
         assertEquals(CarStatus.IN_SERVICE, exsistingCar.getStatus());
         assertEquals(BigDecimal.valueOf(499.00), exsistingCar.getPricePerDay());
 
-        // Verifiera att objektet skickades till .save()
         verify(mockCarRepository).save(exsistingCar);
 
-        // Samma objekt returneras
         assertSame(exsistingCar, result);
+
     }
 
     //WIG-102-SJ
