@@ -69,27 +69,29 @@ public class OrderServiceImpl implements OrderService{
     //SA
     @Override
     public String cancelOrder(Long orderId, Principal principal) {
-        String conflictExceptionReason = null;
+        String exceptionReason = null;
         LocalDate today = LocalDate.now();
+        Order orderToCancel = new Order();
         try {
             Optional<Order> optionalOrder = orderRepository.findById(orderId);
             if (optionalOrder.isEmpty()) {
+                exceptionReason = "not found";
                 throw new ResourceNotFoundException("Order", "id", orderId);
             }
 
-            Order orderToCancel = optionalOrder.get();
+            orderToCancel = optionalOrder.get();
 
             if (!orderToCancel.getCustomer().getPersonalIdentityNumber().equals(principal.getName())) {
-                conflictExceptionReason = "unauthorized";
+                exceptionReason = "unauthorized";
                 throw new ConflictException("No order for '" + principal.getName() + "' with id: " + orderId);
             }
 
-            if (orderToCancel.getStartDate().isBefore(today) && orderToCancel.getEndDate().isAfter(today)) {
-                conflictExceptionReason = "invalid date";
+            if (orderToCancel.getStartDate().isBefore(today) && orderToCancel.getEndDate().isAfter(today) || orderToCancel.getStartDate().isEqual(today)) {
+                exceptionReason = "invalid date";
                 throw new ConflictException("Order has already started and can't then be cancelled");
 
-            } else if (orderToCancel.getEndDate().isBefore(today)) {
-                conflictExceptionReason = "invalid date";
+            } else if (orderToCancel.getEndDate().isBefore(today) || orderToCancel.getEndDate().isEqual(today)) {
+                exceptionReason = "invalid date";
                 throw new ConflictException("Order has already ended");
             }
 
@@ -122,33 +124,24 @@ public class OrderServiceImpl implements OrderService{
 
             return "Order with id '" + orderId + "' is cancelled, cancellation fee becomes: "+cancellationFee;
 
-        }catch (ResourceNotFoundException resourceNotFoundException){
-            USER_ANALYZER_LOGGER.warn("User '{}' failed to cancel order: '{}'",
-                    principal.getName(),
-                    LogMethods.logExceptionBuilder(Map.of("id", orderId), resourceNotFoundException));
-            throw resourceNotFoundException;
+        }catch (Exception e){
+            Map<String, Object> changes = new HashMap<>();
 
-
-        }catch (ConflictException conflictException){
-            if(conflictExceptionReason.equals("unauthorized")) {
-                USER_ANALYZER_LOGGER.warn("User '{}' failed to cancel order: {}",
-                        principal.getName(),
-                        LogMethods.logExceptionBuilder(Map.of("id", orderId), conflictException));
-                throw conflictException;
-            } else if (conflictExceptionReason.equals("invalid date")) {
-                Order orderToCancel = orderRepository.findById(orderId).get();
-                USER_ANALYZER_LOGGER.warn("User '{}' failed to cancel order: {}",
-                        principal.getName(),
-                        LogMethods.logExceptionBuilder(Map.of(
-                                "id", orderId,
-                                        "startDate",orderToCancel.getStartDate(),
-                                        "endDate",orderToCancel.getEndDate(),
-                                        "today",today),
-                                conflictException));
-                throw conflictException;
-            }else {
-                throw conflictException;
+            if(exceptionReason.equals("unauthorized") || exceptionReason.equals("not found")){
+                changes = Map.of("id",orderId);
+            } else if (exceptionReason.equals("invalid date")) {
+                changes = Map.of(
+                        "id", orderId,
+                        "startDate",orderToCancel.getStartDate(),
+                        "endDate",orderToCancel.getEndDate(),
+                        "today",today);
             }
+
+            USER_ANALYZER_LOGGER.warn("User '{}' failed to canel order: {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(changes, e));
+
+            throw e;
         }
 
     }
@@ -292,21 +285,17 @@ public class OrderServiceImpl implements OrderService{
             }
 
         }catch (Exception e){
+            Map<String, Object> changes;
             if(exceptionReason.equals("invalid status")){
-                USER_ANALYZER_LOGGER.warn("USER '{}' failed to update order status {}",
-                        principal.getName(),
-                        LogMethods.logExceptionBuilder(Map.of(
-                                "status",status),
-                                e));
-                throw e;
+                changes = Map.of("status",status);
             }else {
-                USER_ANALYZER_LOGGER.warn("User '{}' failed to update order status {}",
-                        principal.getName(),
-                        LogMethods.logExceptionBuilder(Map.of(
-                                "id",orderId),
-                                e));
-                throw e;
+                changes = Map.of("id",orderId);
             }
+
+            USER_ANALYZER_LOGGER.warn("User '{}' failed to update order status: {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(changes,e));
+            throw e;
 
         }
     }
@@ -316,6 +305,7 @@ public class OrderServiceImpl implements OrderService{
         Optional<Order> optionalOrder = orderRepository.findById(orderId);
         Optional<Car> optionalCar = carRepository.findById(carId);
         String exceptionReason = "";
+        Car carToUpdate = new Car();
 
         try {
             if (optionalCar.isEmpty()) {
@@ -326,13 +316,14 @@ public class OrderServiceImpl implements OrderService{
                 exceptionReason = "order not found";
                 throw new ResourceNotFoundException("Order", "id", orderId);
             }
-            if (!optionalCar.get().getStatus().equals(CarStatus.AVAILABLE)) {
+
+            Order orderToUpdate = optionalOrder.get();
+            carToUpdate = optionalCar.get();
+
+            if (!carToUpdate.getStatus().equals(CarStatus.AVAILABLE)) {
                 exceptionReason = "car is not available";
                 throw new ResourceNotFoundException("Car with id '" + carId + "' is not available");
             }
-
-            Order orderToUpdate = optionalOrder.get();
-            Car carToUpdate = optionalCar.get();
 
             Map<String, Object> oldValues = Map.of(
                     "car id",orderToUpdate.getCar().getId(),
@@ -343,10 +334,9 @@ public class OrderServiceImpl implements OrderService{
             orderRepository.save(orderToUpdate);
             carRepository.save(carToUpdate);
 
-            Order updatedOrder = orderRepository.findById(orderId).get();
             Map<String, Object> newValues = Map.of(
                     "car id",orderToUpdate.getCar().getId(),
-                    "registrationNumber",updatedOrder.getCar().getRegistrationNumber()
+                    "registrationNumber",orderToUpdate.getCar().getRegistrationNumber()
             );
 
             String change = LogMethods.logUpdateBuilder(
@@ -360,26 +350,21 @@ public class OrderServiceImpl implements OrderService{
             return "Updated order '" + orderId + "' to have car " + carToUpdate.getRegistrationNumber();
 
         }catch (Exception e){
-            if(exceptionReason.equals("order not found")){
-                USER_ANALYZER_LOGGER.warn("User '{}' failed to update car on order: {}",
-                        principal.getName(),
-                        LogMethods.logExceptionBuilder(Map.of("id",orderId),e));
-                throw e;
-            } else if (exceptionReason.equals("car not found")) {
-                USER_ANALYZER_LOGGER.warn("User '{}' failed to update car on order: {}",
-                        principal.getName(),
-                        LogMethods.logExceptionBuilder(Map.of("id",carId),e));
-                throw e;
-            }else {
-                Car car = optionalCar.get();
-                USER_ANALYZER_LOGGER.warn("User '{}' failed to update car on order: {}",
-                        principal.getName(),
-                        LogMethods.logExceptionBuilder(Map.of(
-                                "car id",carId,
-                                "status",car.getStatus()),
-                                e));
-                throw e;
+            Map<String, Object> changes = new HashMap<>();
+
+            switch (exceptionReason) {
+                case "order not found" -> changes = Map.of("id", orderId);
+
+                case "car not found" -> changes = Map.of("id", carId);
+
+                case "car is not available" -> changes = Map.of("car id", carId,
+                        "status", carToUpdate.getStatus());
             }
+
+            USER_ANALYZER_LOGGER.warn("User '{}' failed to update car on order: {}",
+                    principal.getName(),
+                    LogMethods.logExceptionBuilder(changes, e));
+            throw e;
 
         }
     }
