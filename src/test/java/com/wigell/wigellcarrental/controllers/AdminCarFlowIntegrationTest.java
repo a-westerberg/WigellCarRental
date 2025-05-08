@@ -77,7 +77,7 @@ class AdminCarFlowIntegrationTest {
         assertEquals("List not found with cars with status: AVAILABLE", e.getMessage());
     }
 
-    //WIG-105-SJ
+    //WIG-108-SJ
     @Test
     void updateCarShouldReturnUpdatedCarWithNewAttributes() {
         Car updateRequest = new Car(
@@ -102,7 +102,7 @@ class AdminCarFlowIntegrationTest {
         assertEquals(updateRequest.getPricePerDay(), updatedCar.getPricePerDay());
     }
 
-    //WIG-105-SJ
+    //WIG-108-SJ
     @Test
     void updateCarShouldThrowIfIdIsNull(){
         Car invalidCar = new Car(
