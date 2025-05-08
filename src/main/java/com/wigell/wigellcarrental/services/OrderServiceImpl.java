@@ -86,6 +86,11 @@ public class OrderServiceImpl implements OrderService{
                 throw new ConflictException("No order for '" + principal.getName() + "' with id: " + orderId);
             }
 
+            if(orderToCancel.getIsCancelled()){
+                exceptionReason = "cancelled";
+                throw new ConflictException("Order is already cancelled");
+            }
+
             if (orderToCancel.getStartDate().isBefore(today) && orderToCancel.getEndDate().isAfter(today) || orderToCancel.getStartDate().isEqual(today)) {
                 exceptionReason = "invalid date";
                 throw new ConflictException("Order has already started and can't then be cancelled");
@@ -135,6 +140,10 @@ public class OrderServiceImpl implements OrderService{
                         "startDate",orderToCancel.getStartDate(),
                         "endDate",orderToCancel.getEndDate(),
                         "today",today);
+            } else if (exceptionReason.equals("cancelled")) {
+                changes = Map.of(
+                        "isCancelled",orderToCancel.getIsCancelled()
+                );
             }
 
             USER_ANALYZER_LOGGER.warn("User '{}' failed to canel order: {}",
@@ -320,6 +329,11 @@ public class OrderServiceImpl implements OrderService{
             Order orderToUpdate = optionalOrder.get();
             carToUpdate = optionalCar.get();
 
+            if(orderToUpdate.getCar().getId().equals(carToUpdate.getId())){
+                exceptionReason = "car already on order";
+                throw new ConflictException("Car '"+carId+"' is already on order '" + orderId+"'");
+            }
+
             if (!carToUpdate.getStatus().equals(CarStatus.AVAILABLE)) {
                 exceptionReason = "car is not available";
                 throw new ResourceNotFoundException("Car with id '" + carId + "' is not available");
@@ -359,6 +373,7 @@ public class OrderServiceImpl implements OrderService{
 
                 case "car is not available" -> changes = Map.of("car id", carId,
                         "status", carToUpdate.getStatus());
+                case "car already on order" -> changes = Map.of("orderId",orderId,"carId",carId);
             }
 
             USER_ANALYZER_LOGGER.warn("User '{}' failed to update car on order: {}",
