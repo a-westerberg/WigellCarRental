@@ -27,7 +27,7 @@ public class Car {
     private String registrationNumber;
 
     //WIG-7-AA
-    @Column(name = "status", nullable = true) //set nullable = true när detta lgas i i sql
+    @Column(name = "status")
     @Enumerated(EnumType.STRING)
     private CarStatus status;
 
@@ -52,7 +52,7 @@ public class Car {
     }
 
     public Car() {
-        orders = new ArrayList<Order>();
+        orders = new ArrayList<>();
     }
 
     public Long getId() {
@@ -103,7 +103,6 @@ public class Car {
         this.pricePerDay = pricePerDay;
     }
 
-    //Just nu visas inte ordrar när man tar fram customer utan man behöver gå via /orders för att se dem. Vill vi fortsätta ha det så?
     @JsonIgnore
     public List<Order> getOrders() {
         return orders;
