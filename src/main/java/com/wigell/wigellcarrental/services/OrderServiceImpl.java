@@ -447,6 +447,8 @@ public class OrderServiceImpl implements OrderService{
         Long carId = order.getCar().getId();
         Long customerId = order.getCustomer().getId();
 
+        order.setIsCancelled(false);
+
         Car car = carRepository.findById(carId).orElseThrow(()->new ResourceNotFoundException("Car", "id", carId));
         Customer customer = customerRepository.findById(customerId).orElseThrow(()->new ResourceNotFoundException("Customer", "id", customerId));
 
