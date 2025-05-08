@@ -146,4 +146,28 @@ class CustomerOrderFlowIntegrationTest {
         String expectedMessage = "Order has already ended";
         assertEquals(expectedMessage, e.getMessage());
     }
+
+    //
+    @Test
+    void cancelOrderShouldThrowConflictExceptionIfOrderEndsToday(){
+        testOrder.setStartDate(LocalDate.now().minusDays(5));
+        testOrder.setEndDate(LocalDate.now());
+        orderRepository.save(testOrder);
+        ConflictException e = assertThrows(ConflictException.class, () -> customerController.cancelOrder(testOrder.getId(),testPrincipal));
+
+        String expectedMessage = "Order has already ended";
+        assertEquals(expectedMessage, e.getMessage());
+    }
+
+    //AA
+    @Test
+    void cancelOrderShouldThrowConflictExceptionIfOrderIsAlreadyCancelled(){
+        testOrder.setIsCancelled(true);
+        orderRepository.save(testOrder);
+
+        ConflictException e = assertThrows(ConflictException.class, () -> customerController.cancelOrder(testOrder.getId(),testPrincipal));
+        String expectedMessage = "Order is already cancelled";
+
+        assertEquals(expectedMessage, e.getMessage());
+    }
 }
