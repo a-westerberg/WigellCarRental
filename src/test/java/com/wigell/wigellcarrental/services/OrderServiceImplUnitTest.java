@@ -182,6 +182,30 @@ class OrderServiceImplUnitTest {
         assertEquals("Order has already ended", e.getMessage());
 
     }
+    //AA
+    @Test
+    void cancelOrderShouldThrowConflictExceptionIfOrderEndsToday(){
+        when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
 
+        testOrder.setStartDate(LocalDate.now().minusDays(2));
+        testOrder.setEndDate(LocalDate.now());
+
+        ConflictException e = assertThrows(ConflictException.class, () -> orderService.cancelOrder(testOrder.getId(), testPrincipal));
+
+        assertEquals("Order has already ended", e.getMessage());
+    }
+
+
+    //AA
+    @Test
+    void cancelOrderShouldThrowConflictExceptionIfOrderIsAlreadyCancelled(){
+        when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
+
+        testOrder.setIsCancelled(true);
+
+        ConflictException e = assertThrows(ConflictException.class, () -> orderService.cancelOrder(testOrder.getId(), testPrincipal));
+
+        assertEquals("Order is already cancelled", e.getMessage());
+    }
 
 }
