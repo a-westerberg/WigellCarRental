@@ -21,9 +21,6 @@ public interface CarRepository extends JpaRepository<Car,Long> {
     //WIG-20-AA
     Optional<Car> findByRegistrationNumber(String registrationNumber);
 
-    //WIG-37-AA
-    Optional<Car> findFirstByStatusAndIdNot(CarStatus carStatus, Long id);
-
     //WIG-122-AA
     @Query(value = "SELECT * FROM cars c " +
             "WHERE c.id <> :excludedCarId " +
