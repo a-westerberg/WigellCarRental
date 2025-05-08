@@ -183,5 +183,16 @@ class OrderServiceImplUnitTest {
 
     }
 
+    //AA
+    @Test
+    void cancelOrderShouldThrowConflictExceptionIfOrderIsAlreadyCancelled(){
+        when(mockOrderRepository.findById(testOrder.getId())).thenReturn(Optional.of(testOrder));
+
+        testOrder.setIsCancelled(true);
+
+        ConflictException e = assertThrows(ConflictException.class, () -> orderService.cancelOrder(testOrder.getId(), testPrincipal));
+
+        assertEquals("Order is already cancelled", e.getMessage());
+    }
 
 }
