@@ -5,6 +5,7 @@ import com.wigell.wigellcarrental.exceptions.InvalidInputException;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
 import com.wigell.wigellcarrental.exceptions.UniqueConflictException;
 import com.wigell.wigellcarrental.models.entities.Car;
+import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
 import org.junit.jupiter.api.BeforeEach;
@@ -16,6 +17,8 @@ import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.math.BigDecimal;
 import java.security.Principal;
+import java.time.LocalDate;
+import java.util.Collections;
 import java.util.List;
 import java.util.Optional;
 
@@ -25,7 +28,7 @@ import static org.mockito.Mockito.when;
 
 //WIG-101-SJ
 @ExtendWith(MockitoExtension.class)
-class CarServiceImplTest {
+class CarServiceImplUnitTest {
 
     @Mock
     private CarRepository mockCarRepository;
@@ -183,6 +186,69 @@ class CarServiceImplTest {
         Car updatedCar = carService.updateCar(identicalCar, principal);
 
         assertEquals(exsistingCar.getId(), updatedCar.getId());
+    }
+
+    //WIG-104-AWS
+    @Test
+    void deleteCarShouldDeleteCarById(){
+        String input = "1";
+        Principal principal = () -> "admin";
+        Car car = new Car();
+        car.setId(1L);
+        car.setOrders(Collections.emptyList());
+
+        when(mockCarRepository.findById(1L)).thenReturn(Optional.of(car));
+
+        String result = carService.deleteCar(input, principal);
+
+        verify(mockCarRepository).delete(car);
+        assertEquals("Car  with id 1 deleted", result);
+    }
+    //WIG-104-AWS
+    @Test
+    void deleteCarShouldCallProcessOrderListWhenCarHasOrders(){
+        String input = "1";
+        Principal principal = () -> "admin";
+
+        Car carWithOrders = new Car();
+        carWithOrders.setId(1L);
+
+        Order order = new Order();
+        order.setStartDate(LocalDate.now().minusDays(5));
+        order.setEndDate(LocalDate.now().minusDays(1));
+        order.setCar(carWithOrders);
+
+        carWithOrders.setOrders(List.of(order));
+
+        when(mockCarRepository.findById(1L)).thenReturn(Optional.of(carWithOrders));
+
+        String result = carService.deleteCar(input, principal);
+
+        verify(mockCarRepository).delete(carWithOrders);
+        assertEquals("Car  with id 1 deleted", result);
+    }
+
+    //WIG-104-AWS
+    @Test
+    void deleteCarShouldTriggerCatchBlockWhenCarNotFound(){
+        String input = "1";
+        Principal principal = () -> "admin";
+
+        when(mockCarRepository.findById(1L)).thenReturn(Optional.empty());
+
+        Exception exception = assertThrows(RuntimeException.class, () -> carService.deleteCar(input, principal));
+    }
+
+    //WIG-104-AWS
+    @Test
+    void deleteCarShouldLogFailureWhenFindByRegistrationNumberThrows(){
+        String input = "ABC123";
+        Principal principal = () -> "admin";
+
+        when(mockCarRepository.findByRegistrationNumber("ABC123"))
+                .thenThrow(new RuntimeException("Mocked"));
+
+        assertThrows(RuntimeException.class, () -> carService.deleteCar(input, principal));
     }
 
 
