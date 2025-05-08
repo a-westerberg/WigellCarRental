@@ -152,34 +152,42 @@ public class CarServiceImpl implements CarService{
         MicroMethods.validateData("Car model", "model", car.getModel());
         MicroMethods.validateData("Price per day", "pricePerDay", car.getPricePerDay());
 
+        validateCarRegistrationNumberLength(car.getRegistrationNumber());
         checkUniqRegistrationNumber(car.getRegistrationNumber());
+    }
+
+    //WIG-134-AA
+    private void validateCarRegistrationNumberLength(String regNr) {
+        if (regNr.length() != 6){
+            throw new InvalidInputException("Car", "Registration Number", regNr);
+        }
     }
 
     //WIG-18-AA
     private void checkUniqRegistrationNumber(String input) {
-            Optional<Car> result = carRepository.findByRegistrationNumber(input);
-            if (result.isPresent()) {
-                throw new UniqueConflictException("Registration number", input);
-            }
+        Optional<Car> result = carRepository.findByRegistrationNumber(input);
+        if (result.isPresent()) {
+            throw new UniqueConflictException("Registration number", input);
+        }
     }
 
     //WIG-37-AA
     private void processOrderList(List<Order> orders, Long id) {
         LocalDate today = LocalDate.now();
-            for (Order order : orders) {
-                if (order.getEndDate().isBefore(today)) {
-                    order.setCar(null);
-                    orderRepository.save(order);
-                }
-                if (!today.isBefore(order.getStartDate()) && !today.isAfter(order.getEndDate())) {
-                    throw new ConflictException("Car cannot be deleted due to ongoing booking.");
-                }
-                if (order.getStartDate().isAfter(today)) {
-                    Car carToReplaceWith = carRepository.findFirstAvailableCarBetween(order.getStartDate(), order.getEndDate(), id).orElseThrow(() -> new ResourceNotFoundException("No replacement car available for the specified dates of upcoming order. Car cannot be deleted."));
-                    order.setCar(carToReplaceWith);
-                    orderRepository.save(order);
-                }
+        for (Order order : orders) {
+            if (order.getEndDate().isBefore(today)) {
+                order.setCar(null);
+                orderRepository.save(order);
             }
+            if (!today.isBefore(order.getStartDate()) && !today.isAfter(order.getEndDate())) {
+                throw new ConflictException("Car cannot be deleted due to ongoing booking.");
+            }
+            if (order.getStartDate().isAfter(today)) {
+                Car carToReplaceWith = carRepository.findFirstAvailableCarBetween(order.getStartDate(), order.getEndDate(), id).orElseThrow(() -> new ResourceNotFoundException("No replacement car available for the specified dates of upcoming order. Car cannot be deleted."));
+                order.setCar(carToReplaceWith);
+                orderRepository.save(order);
+            }
+        }
     }
 
     // WIG-24-AWS
