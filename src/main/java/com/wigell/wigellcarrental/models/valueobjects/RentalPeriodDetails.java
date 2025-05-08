@@ -5,10 +5,10 @@ import java.time.LocalDate;
 //WIG-97-SJ
 public class RentalPeriodDetails {
 
-    private long orderId;
-    private LocalDate startDate;
-    private LocalDate endDate;
-    private long numberOfDays;
+    private final long orderId;
+    private final LocalDate startDate;
+    private final LocalDate endDate;
+    private final long numberOfDays;
 
     public RentalPeriodDetails(long orderId,LocalDate startDate, LocalDate endDate, long numberOfDays) {
         this.orderId = orderId;

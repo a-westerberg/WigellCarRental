@@ -2,11 +2,12 @@ package com.wigell.wigellcarrental.models.valueobjects;
 
 import java.math.BigDecimal;
 
+//WIG-97-SJ
 public class OrderCostDetails {
 
-    private long orderId;
-    private long carId;
-    private BigDecimal totalPrice;
+    private final long orderId;
+    private final long carId;
+    private final BigDecimal totalPrice;
 
     public OrderCostDetails(long orderId, long carId, BigDecimal totalPrice) {
         this.orderId = orderId;
@@ -14,9 +15,7 @@ public class OrderCostDetails {
         this.totalPrice = totalPrice;
     }
 
-    public long getOrderId() {
-        return orderId;
-    }
+    public long getOrderId() {return orderId;}
 
     public long getCarId() {
         return carId;

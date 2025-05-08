@@ -30,19 +30,4 @@ public class AverageRentalPeriodStats {
                 ", rentalDetails=" + rentalDetails +
                 '}';
     }
-
-    /*
-    @Override
-    public String toString() {
-        StringBuilder sb = new StringBuilder();
-        sb.append("Genomsnitt: ").append(AverageRentalPeriodInDays).append("\n\n");
-        int count = 1;
-        for (RentalPeriodDetails detail : rentalDetails) {
-            sb.append("Order ").append(count++).append(" - ")
-                    .append(detail.toString()).append("\n");
-        }
-        return sb.toString();
-    }
-
-     */
 }

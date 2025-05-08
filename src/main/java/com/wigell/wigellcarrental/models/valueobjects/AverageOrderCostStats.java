@@ -3,10 +3,11 @@ package com.wigell.wigellcarrental.models.valueobjects;
 import java.math.BigDecimal;
 import java.util.List;
 
+//WIG-97-SJ
 public class AverageOrderCostStats {
 
-    private BigDecimal averageCostPerOrder;
-    private List<OrderCostDetails> orders;
+    private final BigDecimal averageCostPerOrder;
+    private final List<OrderCostDetails> orders;
 
     public AverageOrderCostStats(BigDecimal averageCostPerOrder, List<OrderCostDetails> orders) {
         this.averageCostPerOrder = averageCostPerOrder;
