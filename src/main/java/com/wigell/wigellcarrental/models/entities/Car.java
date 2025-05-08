@@ -23,7 +23,7 @@ public class Car {
     @Column(name = "model", nullable = false, length = 20)
     private String model;
 
-    @Column(name = "registration_number", nullable = false, length = 7)
+    @Column(name = "registration_number", nullable = false, length = 6)
     private String registrationNumber;
 
     //WIG-7-AA
