@@ -13,6 +13,7 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 
 import java.security.Principal;
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -20,6 +21,7 @@ import java.util.Optional;
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.verify;
 import static org.mockito.Mockito.when;
 
@@ -228,4 +230,40 @@ class CustomerServiceImplUnitTest {
 
         assertEquals(expectedMessage, e.getMessage());
     }
+
+    // WIG-103-AWS
+    @Test
+    void getOrdersShouldReturnOrdersForCustomer(){
+        Principal principal = () -> "123456-7890";
+        Customer customer = new Customer();
+        customer.setPersonalIdentityNumber("123456-7890");
+
+        Order mockOrder = new Order();
+        List<Order> expectedOrders = List.of(mockOrder);
+
+        when(mockCustomerRepository.findByPersonalIdentityNumber("123456-7890"))
+                .thenReturn(Optional.of(customer));
+
+        when(mockOrderRepository.findByCustomer_PersonalIdentityNumberAndEndDateBefore(
+                eq("123456-7890"), any(LocalDate.class)))
+                .thenReturn(expectedOrders);
+
+        List<Order> actualOrders = customerService.getOrders(principal);
+
+        assertEquals(expectedOrders, actualOrders);
+    }
+
+    // WIG-103-AWS
+    @Test
+    void getOrderShouldThrowResourceNotFoundExceptionWhenCustomerNotFound(){
+        Principal principal = () -> "000000-0000";
+
+        when(mockCustomerRepository.findByPersonalIdentityNumber("000000-0000"))
+                .thenReturn(Optional.empty());
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class, () -> customerService.getOrders(principal));
+
+        assertEquals("Customer not found with user: 000000-0000", e.getMessage());
+    }
+
 }
