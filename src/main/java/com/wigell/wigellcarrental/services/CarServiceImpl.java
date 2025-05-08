@@ -153,8 +153,18 @@ public class CarServiceImpl implements CarService{
         MicroMethods.validateData("Price per day", "pricePerDay", car.getPricePerDay());
 
         checkUniqRegistrationNumber(car.getRegistrationNumber());
+        validateCarRegistrationNumber(car.getRegistrationNumber());
     }
 
+    //WIG-134-AA
+    private void validateCarRegistrationNumber(String regNr) {
+        if (regNr.length() != 6){
+            throw new InvalidInputException("Car", "Registration Number", regNr);
+        }
+    }
+
+    //WIG-134-AA
+    private void validateCarStatus(String status) {}
     //WIG-18-AA
     private void checkUniqRegistrationNumber(String input) {
             Optional<Car> result = carRepository.findByRegistrationNumber(input);
