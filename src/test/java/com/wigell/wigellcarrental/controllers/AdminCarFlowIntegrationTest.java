@@ -25,7 +25,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @SpringBootTest
 @Transactional
 @Rollback
-class AdminControllerAndCarServiceAndCarRepositoryIntegrationTest {
+class AdminCarFlowIntegrationTest {
 
     private final AdminController adminController;
     private final CarRepository carRepository;
@@ -35,12 +35,13 @@ class AdminControllerAndCarServiceAndCarRepositoryIntegrationTest {
     private Principal testPrincipal;
 
     @Autowired
-    AdminControllerAndCarServiceAndCarRepositoryIntegrationTest(AdminController adminController, CarRepository carRepository, OrderRepository orderRepository) {
+    AdminCarFlowIntegrationTest(AdminController adminController, CarRepository carRepository, OrderRepository orderRepository) {
         this.adminController = adminController;
         this.carRepository = carRepository;
         this.orderRepository = orderRepository;
     }
 
+    //WIG-105-SJ
     @BeforeEach
     void setUp() {
         testCar = carRepository.save(new Car(
@@ -55,6 +56,7 @@ class AdminControllerAndCarServiceAndCarRepositoryIntegrationTest {
         testPrincipal = () -> "admin";
     }
 
+    //WIG-105-SJ
     @Test
     void getAllAvailableCarsShouldReturnListWithAvailableCars() {
         ResponseEntity<List<Car>> response = adminController.getAllAvailableCars();
@@ -65,6 +67,7 @@ class AdminControllerAndCarServiceAndCarRepositoryIntegrationTest {
         assertTrue(cars.stream().anyMatch(car -> car.getRegistrationNumber().equals("ABC123")));
     }
 
+    //WIG-105-SJ
     @Test
     void getAllAvailableCarsShouldThrowIfNoneAreAvailable() {
         orderRepository.deleteAll();
@@ -74,6 +77,7 @@ class AdminControllerAndCarServiceAndCarRepositoryIntegrationTest {
         assertEquals("List not found with cars with status: AVAILABLE", e.getMessage());
     }
 
+    //WIG-105-SJ
     @Test
     void updateCarShouldReturnUpdatedCarWithNewAttributes() {
         Car updateRequest = new Car(
@@ -98,6 +102,7 @@ class AdminControllerAndCarServiceAndCarRepositoryIntegrationTest {
         assertEquals(updateRequest.getPricePerDay(), updatedCar.getPricePerDay());
     }
 
+    //WIG-105-SJ
     @Test
     void updateCarShouldThrowIfIdIsNull(){
         Car invalidCar = new Car(
