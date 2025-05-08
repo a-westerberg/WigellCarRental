@@ -113,7 +113,7 @@ public class CarServiceImpl implements CarService{
             BigDecimal totalIncome = BigDecimal.valueOf(0);
             int rentedTimes = 0;
             for (Order order : car.getOrders()) {
-                if(order.getStartDate().isBefore(LocalDate.now())){
+                if(order.getStartDate().isBefore(LocalDate.now()) || order.getStartDate().isEqual(LocalDate.now())) {
                     totalIncome = totalIncome.add(order.getTotalPrice());
                     if(!order.getIsCancelled()) {
                         rentedTimes++;
