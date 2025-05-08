@@ -92,7 +92,7 @@ class CarServiceImplTest {
 
         when(mockCarRepository.findById(exsistingCar.getId())).thenReturn(Optional.of(exsistingCar));
 
-        when(mockCarRepository.save(any(Car.class))).thenAnswer(invocationOnMock -> exsistingCar);
+        when(mockCarRepository.save(any(Car.class))).thenAnswer(inv -> inv.getArgument(0));
 
         Car result = carService.updateCar(updateRequest, principal);
 
