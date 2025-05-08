@@ -15,7 +15,6 @@ import org.springframework.security.web.SecurityFilterChain;
 //SA
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)//Kolla om det fungerar utan på PreAuthorize i controllers
 public class WebSecurityConfig {
 
     //SA
@@ -36,7 +35,6 @@ public class WebSecurityConfig {
                 .httpBasic(Customizer.withDefaults());
 
         return http.build();
-        //Ändra till authenticated när UserDetailsService är inlagt, ta in PreAuthorize i controller klasserna också
     }
 
     // WIG-80-SJ

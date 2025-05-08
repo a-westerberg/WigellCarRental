@@ -29,14 +29,14 @@ import static org.mockito.Mockito.when;
 @ExtendWith(MockitoExtension.class)
 class CustomerServiceImplUnitTest {
 
-    //@InjectMocks //krachar med den
+    //SA
     private CustomerService customerService;
-
     @Mock
     private CustomerRepository mockCustomerRepository;
     @Mock
     private OrderRepository mockOrderRepository;
 
+    //SA
     private Customer customerInDB;
     private final Long MISSING_CUSTOMER_ID = 0L;
     private final Principal PRINCIPAL = () -> "123456-7890";
@@ -93,6 +93,7 @@ class CustomerServiceImplUnitTest {
     //SA
     @Test
     void updateCustomerOnAllFieldsAndCorrectPrincipalShouldReturnUpdatedCustomer() {
+        //Given
         List<Order>customerFromRequestOrders = new ArrayList<>();
         Customer customerFromRequest = new Customer(
                 customerInDB.getId(),
@@ -108,8 +109,10 @@ class CustomerServiceImplUnitTest {
         when(mockCustomerRepository.findById(customerFromRequest.getId())).thenReturn(Optional.of(customerInDB));
         when(mockCustomerRepository.getCustomersById(customerFromRequest.getId())).thenReturn(customerInDB);
 
+        //When
         Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, PRINCIPAL);
 
+        //Then
         verify(mockCustomerRepository).save(customerInDB);
         assertEquals(updatedCustomer.getId(), customerInDB.getId());
         assertEquals("Kalle", updatedCustomer.getFirstName());
@@ -121,7 +124,7 @@ class CustomerServiceImplUnitTest {
     }
 
 
-    //SA //Kanske ta bort senare om principal admin tas bort
+    //SA
     @Test
     void updateCustomerShouldReturnUpdatedCustomerIfPrincipalIsAdmin() {
         //Given
