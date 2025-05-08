@@ -170,4 +170,30 @@ class CustomerOrderFlowIntegrationTest {
 
         assertEquals(expectedMessage, e.getMessage());
     }
+
+    //WIG-106-AWS
+    @Test
+    void getOrderShouldReturnListOfPastOrdersForCustomer(){
+        testOrder.setEndDate(LocalDate.now().minusDays(1));
+        orderRepository.save(testOrder);
+
+        ResponseEntity<List<Order>> response = customerController.getOrders(testPrincipal);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        assertThat(response.getBody()).isNotNull();
+        assertThat(response.getBody()).hasSize(1);
+        assertEquals(testOrder.getId(), response.getBody().get(0).getId());
+    }
+
+    //WIG-106-AWS
+    @Test
+    void getOrdersShouldThrowResourceNotFoundExceptionIfCustomerNotFound(){
+        Principal unkownPrincipal = () -> "00000000-0000";
+
+        ResourceNotFoundException e = assertThrows(ResourceNotFoundException.class, () ->
+                customerController.getOrders(unkownPrincipal));
+
+        assertEquals("Customer not found with user: 00000000-0000", e.getMessage());
+    }
+
 }
