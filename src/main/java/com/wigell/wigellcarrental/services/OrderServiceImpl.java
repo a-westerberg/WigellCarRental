@@ -444,7 +444,7 @@ public class OrderServiceImpl implements OrderService{
     }
 
     // WIG-28-SJ
-    public Order validateOrder(Order order) {
+    public void validateOrder(Order order) {
         MicroMethods.validateData("Booking day", "bookedAt", order.getBookedAt());
         MicroMethods.validateData("Start date", "startDate", order.getStartDate());
         MicroMethods.validateData("End date", "endDate", order.getEndDate());
@@ -452,11 +452,10 @@ public class OrderServiceImpl implements OrderService{
         MicroMethods.validateData("Customer ID", "customer", order.getCustomer().getId());
         MicroMethods.validateData("Total price", "totalPrice", order.getTotalPrice());
         MicroMethods.validateData("Status", "isActive", order.getIsActive());
-        return order;
     }
 
     // WIG-28-SJ
-    public Order constructOrder(Order order) {
+    public void constructOrder(Order order) {
         Long carId = order.getCar().getId();
         Long customerId = order.getCustomer().getId();
 
@@ -467,8 +466,6 @@ public class OrderServiceImpl implements OrderService{
 
         order.setCar(car);
         order.setCustomer(customer);
-
-        return order;
     }
 
     //WIG-AA-85
