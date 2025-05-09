@@ -1,19 +1,15 @@
 package com.wigell.wigellcarrental.repositories;
 
-import com.wigell.wigellcarrental.enums.CarStatus;
 import com.wigell.wigellcarrental.models.entities.Car;
 import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.models.entities.Order;
-import org.junit.jupiter.api.AfterEach;
-import org.junit.jupiter.api.BeforeAll;
-import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.autoconfigure.orm.jpa.DataJpaTest;
 
-import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.util.List;
+import java.util.Optional;
 
 import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
@@ -25,6 +21,7 @@ class OrderRepositoryUnitTest {
     //TODO: Tar in från data.sql filen
     //SA
     private OrderRepository orderRepository;
+    private LocalDate testDate = LocalDate.of(2025,4,20);
     private Order order;
     private Order orderIsActiveFalse;
     private Car car;
@@ -59,7 +56,7 @@ class OrderRepositoryUnitTest {
 
     //SA
     @Test
-    void findAllByIsActiveTrueShouldReturnOrder() {
+    void findAllByIsActiveTrueShouldReturnOrdersWithIsActiveTrue() {
         //orderRepository.save(order);
         List<Order>allOrder = orderRepository.findAll();
         List<Order> allByIsActiveTrue = orderRepository.findAllByIsActiveTrue();
@@ -75,36 +72,50 @@ class OrderRepositoryUnitTest {
     //SA
     //Tar inte bort emellan
     @Test
-    void findAllByIsActiveFalseShouldNotReturnOrderIfOrderIsInActive() {
-        //orderRepository.save(orderIsActiveFalse);
+    void findAllByIsActiveFalseShouldNotReturnOrderIfOrderIsActiveFalse() {
         List<Order>allOrder = orderRepository.findAll();
         List<Order> allByIsActiveTrue = orderRepository.findAllByIsActiveTrue();
-        //System.out.println(orders.size());
+
         assertThat(allByIsActiveTrue.size()).isNotEqualTo(allOrder.size());
         for(Order o : allByIsActiveTrue) {
             assertThat(o.getIsActive()).isNotEqualTo(false);
         }
-        //assertFalse(orders.contains(orderIsActiveFalse));
 
-    }
-
-    //SA //fungerar inte just nu
-    @Test
-    void findAllByEndDateBeforeAndIsActiveFalseShouldReturnOrder() {
-        //orderRepository.save(orderIsActiveFalse);
-
-        List<Order>endenOrdersAndIsActiveFalse = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(LocalDate.of(2025,5,10));
-        //assertTrue(orders.contains(orderIsActiveFalse));
 
     }
 
     //SA
     @Test
-    void findAllByEndDateBeforeAndIsActiveFalseShouldNotReturnOrder(){
-        order.setIsActive(false);
-        orderRepository.save(order);
-        List<Order>orders = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(LocalDate.of(2025,5,10));
+    void findAllByEndDateBeforeAndIsActiveFalseShouldReturnOrder() {
+        List<Order>allOrder = orderRepository.findAll();
+        List<Order>endedOrdersAndIsActiveFalse = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(testDate);
 
-        assertFalse(orders.contains(order));
+        assertThat(allOrder.size()).isNotEqualTo(endedOrdersAndIsActiveFalse.size());
+
+        for(Order o : endedOrdersAndIsActiveFalse) {
+            assertThat(o.getIsActive()).isFalse();
+            assertThat(o.getEndDate()).isBefore(testDate);
+        }
+
+
+    }
+
+    //SA
+    @Test
+    void findAllByEndDateBeforeAndIsActiveFalseShouldNotReturnActiveOrderOrOrderAfterDateGiven(){
+        List<Order>orders = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(testDate);
+        Optional<Order> activeOrder = orderRepository.findById(4L);
+
+        if(activeOrder.isPresent()) {
+            Order order2 = activeOrder.get();
+            assertFalse(orders.contains(order2));
+        }
+
+        Optional<Order> orderAfter = orderRepository.findById(7L);
+        if(orderAfter.isPresent()) {
+            Order order3 = orderAfter.get();
+            assertFalse(orders.contains(order3));
+        }
+
     }
 }
