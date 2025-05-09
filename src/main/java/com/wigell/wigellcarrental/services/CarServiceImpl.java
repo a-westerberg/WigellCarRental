@@ -52,11 +52,13 @@ public class CarServiceImpl implements CarService{
     }
 
     //WIG-17-AA
+    @Override
     public List<Car> getAllCars(){
         return carRepository.findAll();
     }
 
     //WIG-20-AA //WIG-83-AA
+    @Override
     public String deleteCar(String input, Principal principal) {
         try {
             Car carToDelete = findCarToDelete(input);
@@ -65,7 +67,7 @@ public class CarServiceImpl implements CarService{
             }
             carRepository.delete(carToDelete);
             USER_ANALYZER_LOGGER.info("User: {} has deleted a car. {}", principal.getName(), LogMethods.logBuilder(carToDelete, "id", "registrationNumber"));
-            return isInputId(input) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
+            return isInputId(input) ? "Car with id " + input + " deleted" : "Car with registration number " + input + " deleted";
         } catch (Exception e) {
             Car placeHolder = new Car();
             String field;
@@ -85,6 +87,7 @@ public class CarServiceImpl implements CarService{
     }
 
     //WIG-18-AA //WIG-83-AA
+    @Override
     public Car addCar(Car car, Principal principal) {
         try {
             validateAddCarInput(car);

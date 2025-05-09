@@ -4,7 +4,7 @@ import com.wigell.wigellcarrental.models.DTO.IncomeBetweenDatesDTO;
 import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.models.DTO.AverageOrderCostStatsDTO;
 import com.wigell.wigellcarrental.models.DTO.AverageRentalPeriodStatsDTO;
-import com.wigell.wigellcarrental.models.DTO.PopularBrandStats;
+import com.wigell.wigellcarrental.models.DTO.PopularBrandStatsDTO;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -28,7 +28,7 @@ public interface OrderService {
     String updateOrderCar(Long orderId, Long carId, Principal principal);//SA
 
     //WIG-85-AA
-    PopularBrandStats getPopularBrand(String startDate, String endDate);
+    PopularBrandStatsDTO getPopularBrand(String startDate, String endDate);
 
     // WIG-97-SJ
     AverageRentalPeriodStatsDTO getAverageRentalPeriod();

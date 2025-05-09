@@ -17,11 +17,9 @@ public class Order {
     @Column(name = "booked_at", nullable = false)
     private LocalDate bookedAt;
 
-    //Ändra till LocalDateTime om det ska vara timmar/minuter och inte heldag
     @Column(name = "start_date", nullable = false)
     private LocalDate startDate;
 
-    //Ändra till LocalDateTime om det ska vara timmar/minuter och inte heldag
     @Column(name = "end_date", nullable = false)
     private LocalDate endDate;
 
