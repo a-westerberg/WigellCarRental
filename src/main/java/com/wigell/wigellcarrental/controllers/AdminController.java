@@ -21,9 +21,7 @@ import java.util.List;
 @RequestMapping("/api/v1/admin")
 public class AdminController {
 
-    //Services
-    //Car service, Customer service, Order service?
-    private final CustomerService customerService;
+    private final CustomerService customerService;//SA
     private final CarService carService;            //aws
     private final OrderService orderService; //AA added final
 
@@ -36,7 +34,7 @@ public class AdminController {
 
 
     //SA
-    @GetMapping("/customers")//Lista kunder
+    @GetMapping("/customers")
     public ResponseEntity<List<Customer>>customers(){
         return ResponseEntity.ok(customerService.getAllCustomers());
     }
@@ -95,13 +93,13 @@ public class AdminController {
     }
 
     //SA
-    @GetMapping("/activeorders")//Lista alla aktiva ordrar
+    @GetMapping("/activeorders")
     public ResponseEntity<List<Order>>getAllActiveOrders(){
         return ResponseEntity.ok(orderService.getActiveOrders());
     }
 
     //SA
-    @GetMapping("/orders")//Lista historiska ordrar
+    @GetMapping("/orders")
     public ResponseEntity<List<Order>>getAllOrders(){
         return ResponseEntity.ok(orderService.getAllOrdersHistory());
     }
@@ -113,7 +111,6 @@ public class AdminController {
     }
 
     //SA
-    //TODO: LocalDate
     @DeleteMapping("/removeorders-beforedate/{date}")
     public ResponseEntity<String>removeOrdersBeforeDate(@PathVariable LocalDate date, Principal principal){
         return ResponseEntity.ok(orderService.removeOrdersBeforeDate(date,principal));
@@ -132,7 +129,7 @@ public class AdminController {
     }
 
     //SA
-    @RequestMapping("/statistics")//String...  En oändlig array utan utsatt antal i, array oavsett om man skickar med en inparametrar
+    @RequestMapping("/statistics")
     public ResponseEntity<?> getStatistics(@RequestParam String choice, @RequestParam String... data){
         // WIG-114-AWS
         if(choice.contains("incomemonth")){
@@ -148,11 +145,6 @@ public class AdminController {
             return ResponseEntity.ok(orderService.getPopularBrand(data[0],data[1]));
 
         }
-        /*
-        else if (choice.contains("car")) {//Antal gånger varje bil hyrts ut, bils-regNr
-            return ResponseEntity.ok(service.getRented(data[0])); }
-        */
-
         //WIG-97-SJ
         else if (choice.contains("rentalperiod")) {//vanligaste hyresperiod (antal dagar)
             return ResponseEntity.ok(orderService.getAverageRentalPeriod());
@@ -163,16 +155,12 @@ public class AdminController {
             return ResponseEntity.ok(orderService.costPerOrder());
 
         }
-
-
-        else if (choice.contains("incomecar")) {//Total intäkt per bil och hur många gånger de hyrts ut
+        //SA
+        else if (choice.contains("incomecar")) {
             return ResponseEntity.ok(carService.incomeOnCars());
 
-        } /*else {
-            return ResponseEntity.notFound(service.notfound());//Ok att göra?
-        }*/
-        return ResponseEntity.badRequest().body("Ta bort senare/Choice for '" + choice + "' not found");
-//egen package med ValueObjects utanför entities, en klass för varje
+        }
+        return ResponseEntity.badRequest().body("Choice for '" + choice + "' not found");
     }
 
 }
