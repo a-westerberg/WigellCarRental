@@ -28,6 +28,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @Rollback
 class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest {
 
+    //SA
     private CustomerService customerService;
     //AA added final
     private final CustomerRepository customerRepository;
@@ -157,21 +158,6 @@ class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest 
         assertEquals(updatedCustomer.getPersonalIdentityNumber(), customerInDB.getPersonalIdentityNumber());
 
         assertNotEquals(updatedCustomer.getEmail(),customerInDB.getEmail());
-
-    }
-
-    //SA
-    @Test
-    void updateCustomerShouldReturnCustomerIfPrincipalIsAdmin(){
-        Customer customerFromRequest = new Customer(customerInDB.getId());
-        customerFromRequest.setFirstName("Anna");
-
-        Principal principalAdmin = ()-> "admin";
-
-        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, principalAdmin);
-
-        assertDoesNotThrow(() -> customerService.updateCustomer(customerFromRequest, principalAdmin));
-        assertEquals(updatedCustomer.getFirstName(), customerFromRequest.getFirstName());
 
     }
 

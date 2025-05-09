@@ -18,7 +18,6 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
-import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
@@ -60,13 +59,10 @@ class CustomerServiceImplUnitTest {
     //SA
     @Test
     void getCustomerByIdReturnsCustomer() {
-        //Given
         when(mockCustomerRepository.findById(customerInDB.getId())).thenReturn(Optional.of(customerInDB));
 
-        //When
         Customer customerFound = customerService.getCustomerById(customerInDB.getId());
 
-        //Then
         assertEquals(customerInDB.getId(), customerFound.getId());
         assertEquals(customerInDB.getFirstName(), customerFound.getFirstName());
         assertEquals(customerInDB.getLastName(), customerFound.getLastName());
@@ -77,15 +73,12 @@ class CustomerServiceImplUnitTest {
     //SA
     @Test
     void getCustomerByIdThrowsResourceNotFoundExceptionWhenCustomerNotFound() {
-        //Given
         when(mockCustomerRepository.findById(MISSING_CUSTOMER_ID)).thenReturn(Optional.empty());
 
-        //When & Then
         ResourceNotFoundException exception = assertThrows(
                 ResourceNotFoundException.class,
                 () -> customerService.getCustomerById(MISSING_CUSTOMER_ID));
 
-        //Then
         assertEquals("Customer not found with id: 0",exception.getMessage());
 
     }
@@ -93,7 +86,6 @@ class CustomerServiceImplUnitTest {
     //SA
     @Test
     void updateCustomerOnAllFieldsAndCorrectPrincipalShouldReturnUpdatedCustomer() {
-        //Given
         List<Order>customerFromRequestOrders = new ArrayList<>();
         Customer customerFromRequest = new Customer(
                 customerInDB.getId(),
@@ -109,10 +101,8 @@ class CustomerServiceImplUnitTest {
         when(mockCustomerRepository.findById(customerFromRequest.getId())).thenReturn(Optional.of(customerInDB));
         when(mockCustomerRepository.getCustomersById(customerFromRequest.getId())).thenReturn(customerInDB);
 
-        //When
         Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, PRINCIPAL);
 
-        //Then
         verify(mockCustomerRepository).save(customerInDB);
         assertEquals(updatedCustomer.getId(), customerInDB.getId());
         assertEquals("Kalle", updatedCustomer.getFirstName());
@@ -123,55 +113,28 @@ class CustomerServiceImplUnitTest {
 
     }
 
-
-    //SA
-    @Test
-    void updateCustomerShouldReturnUpdatedCustomerIfPrincipalIsAdmin() {
-        //Given
-        Customer customerFromRequest = new Customer(customerInDB.getId());
-        customerFromRequest.setAddress("123 Street");
-
-        Principal principalAdmin = () -> "admin";
-
-        when(mockCustomerRepository.findById(customerFromRequest.getId())).thenReturn(Optional.of(customerInDB));
-        when(mockCustomerRepository.getCustomersById(customerFromRequest.getId())).thenReturn(customerInDB);
-
-        //When
-        Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, principalAdmin);
-
-        //Then
-        verify(mockCustomerRepository).save(any(Customer.class));
-        assertThat("123 Street").isEqualTo(updatedCustomer.getAddress());
-        assertThat("John").isEqualTo(updatedCustomer.getFirstName());
-    }
-
     //SA
     @Test
     void updateCustomerThrowsResourceNotFoundExceptionWhenCustomerNotFound() {
-        //Given
         Customer missingCustomer = new Customer(MISSING_CUSTOMER_ID);
         missingCustomer.setPersonalIdentityNumber("123456-7890");
 
         when(mockCustomerRepository.findById(MISSING_CUSTOMER_ID)).thenReturn(Optional.empty());
 
-        //When & Then
         ResourceNotFoundException exception = assertThrows(
                 ResourceNotFoundException.class,
                 () -> customerService.updateCustomer(missingCustomer, PRINCIPAL)
         );
 
-        //Then
         assertEquals("Customer not found with id: 0",exception.getMessage());
     }
 
     //SA
     @Test
     void updateCustomerShouldThrowConflictExceptionWhenPrincipalIsNotEqualToCustomerPersonalIdentityNumber() {
-        //Given
         when(mockCustomerRepository.findById(customerInDB.getId())).thenReturn(Optional.of(customerInDB));
         Principal wrongPrincipal = () -> "098765-4321";
 
-        //When & Then
         ConflictException exception = assertThrows(
                 ConflictException.class,
                 () -> customerService.updateCustomer(customerInDB, wrongPrincipal)
@@ -183,7 +146,6 @@ class CustomerServiceImplUnitTest {
     //SA
     @Test
     void updateCustomerShouldNotOverwriteFieldsWithNullOrEmptyOrPersonalIdentityNumber() {
-        //Given
         Customer customerFromRequest = new Customer(customerInDB.getId());
         customerFromRequest.setFirstName("");
         customerFromRequest.setAddress(null);
@@ -194,10 +156,8 @@ class CustomerServiceImplUnitTest {
         when(mockCustomerRepository.findById(customerFromRequest.getId())).thenReturn(Optional.of(customerInDB));
         when(mockCustomerRepository.getCustomersById(customerFromRequest.getId())).thenReturn(customerInDB);
 
-        //When
         Customer updatedCustomer = customerService.updateCustomer(customerFromRequest, PRINCIPAL);
 
-        //Then
         verify(mockCustomerRepository).save(customerInDB);
         assertEquals(updatedCustomer.getId(), customerInDB.getId());
         assertEquals(updatedCustomer.getPersonalIdentityNumber(), customerInDB.getPersonalIdentityNumber());

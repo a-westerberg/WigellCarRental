@@ -5,15 +5,15 @@ import com.wigell.wigellcarrental.models.entities.Car;
 import java.math.BigDecimal;
 
 //SA
-public class IncomeCar {
+public class IncomeCarDTO {
     private Car car;
     private int rentedTimes;
     private BigDecimal totalIncome;
 
-    public IncomeCar() {
+    public IncomeCarDTO() {
     }
 
-    public IncomeCar(Car car, int rentedTimes, BigDecimal totalIncome) {
+    public IncomeCarDTO(Car car, int rentedTimes, BigDecimal totalIncome) {
         this.car = car;
         this.rentedTimes = rentedTimes;
         this.totalIncome = totalIncome;
