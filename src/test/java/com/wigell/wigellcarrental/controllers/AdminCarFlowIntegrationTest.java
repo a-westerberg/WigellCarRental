@@ -134,7 +134,7 @@ class AdminCarFlowIntegrationTest {
         ResponseEntity<String> response = adminController.removeCar(input, testPrincipal);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
-        assertEquals("Car  with id " + input + " deleted", response.getBody());
+        assertEquals("Car with id " + input + " deleted", response.getBody());
         assertTrue(carRepository.findById(testCar.getId()).isEmpty());
     }
 

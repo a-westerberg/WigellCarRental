@@ -11,7 +11,7 @@ import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
 import com.wigell.wigellcarrental.services.utilities.LogMethods;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
-import com.wigell.wigellcarrental.models.DTO.IncomeCar;
+import com.wigell.wigellcarrental.models.DTO.IncomeCarDTO;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -104,13 +104,13 @@ public class CarServiceImpl implements CarService{
 
     //SA
     @Override
-    public List<IncomeCar> incomeOnCars() {
+    public List<IncomeCarDTO> incomeOnCars() {
         List<Car> cars = carRepository.findAll();
         if(cars.isEmpty()) {
             throw new ResourceNotFoundException("List","cars",0);
         }
 
-        List<IncomeCar> incomeCars = new ArrayList<>();
+        List<IncomeCarDTO> incomeCars = new ArrayList<>();
 
         for (Car car : cars) {
             BigDecimal totalIncome = BigDecimal.valueOf(0);
@@ -124,7 +124,7 @@ public class CarServiceImpl implements CarService{
                 }
             }
 
-            incomeCars.add(new IncomeCar(car,rentedTimes,totalIncome));
+            incomeCars.add(new IncomeCarDTO(car,rentedTimes,totalIncome));
         }
         return incomeCars;
     }
