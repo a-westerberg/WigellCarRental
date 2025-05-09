@@ -18,6 +18,14 @@ public interface CustomerRepository extends JpaRepository<Customer,Long> {
 
     Customer getCustomersById(Long id);
 
+
+    /*
+    // WIG-29-SJ
+    // If values of Email & Phone needs to be unique. If not, remove code later.
+    boolean existsByEmail(String email);
+    boolean existsByPhoneNumber(String phone);
+     */
+
     // WIG-23-AWS
     //Optional<Customer> findByPersonalIdentityNumber(String personalIdentityNumber);
 }

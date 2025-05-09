@@ -55,7 +55,7 @@ public class CustomerController {
 
 
     //SA //AWS
-    @GetMapping("/activeorders")//Se aktiva bokningar
+    @GetMapping("/activeorders")
     public ResponseEntity<List<Order>> getActiveOrders(Principal principal) {
         String personalIdentityNumber = principal.getName();
         List<Order> activeOrders = orderService.getActiveOrdersForCustomer(personalIdentityNumber);
