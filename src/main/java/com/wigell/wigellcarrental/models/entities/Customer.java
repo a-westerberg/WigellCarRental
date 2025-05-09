@@ -113,7 +113,6 @@ public class Customer {
         this.address = address;
     }
 
-    //Just nu visas inte ordrar när man tar fram customer utan man behöver gå via /orders för att se dem. Vill vi fortsätta ha det så?
     @JsonIgnore
     public List<Order> getOrders() {
         return orders;
