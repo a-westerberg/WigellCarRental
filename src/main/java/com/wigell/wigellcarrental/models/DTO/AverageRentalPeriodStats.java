@@ -1,4 +1,4 @@
-package com.wigell.wigellcarrental.models.valueobjects;
+package com.wigell.wigellcarrental.models.DTO;
 
 import com.fasterxml.jackson.annotation.JsonPropertyOrder;
 

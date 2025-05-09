@@ -1,4 +1,4 @@
-package com.wigell.wigellcarrental.models.valueobjects;
+package com.wigell.wigellcarrental.models.DTO;
 
 import java.math.BigDecimal;
 import java.util.List;
