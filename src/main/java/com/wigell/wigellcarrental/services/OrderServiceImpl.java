@@ -480,6 +480,7 @@ public class OrderServiceImpl implements OrderService{
     //WIG-85-AA
     private Map<String, Long> countMakes (List<Order> orders) {
         return orders.stream()
+                .filter(order -> order.getCar() != null)
                 .collect(Collectors.groupingBy(
                         order -> order.getCar().getMake(),
                         Collectors.counting()
