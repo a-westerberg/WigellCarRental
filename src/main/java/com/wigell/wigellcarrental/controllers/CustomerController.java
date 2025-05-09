@@ -61,7 +61,7 @@ public class CustomerController {
 
 
     //SA //AA
-    @GetMapping("/orders")//Se tidigare bokningar
+    @GetMapping("/orders")
     public ResponseEntity<List<Order>>getOrders(Principal principal){
         return ResponseEntity.ok(customerService.getOrders(principal));
     }
