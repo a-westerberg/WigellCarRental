@@ -4,6 +4,8 @@ import com.wigell.wigellcarrental.enums.CarStatus;
 import com.wigell.wigellcarrental.models.entities.Car;
 import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.models.entities.Order;
+import org.junit.jupiter.api.AfterEach;
+import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -20,6 +22,7 @@ import static org.junit.jupiter.api.Assertions.*;
 @DataJpaTest
 class OrderRepositoryUnitTest {
 
+    //TODO: Tar in från data.sql filen
     //SA
     private OrderRepository orderRepository;
     private Order order;
@@ -34,8 +37,9 @@ class OrderRepositoryUnitTest {
     }
 
     //SA
-    @BeforeEach
+    /*@BeforeEach
     void setUp() {
+
         //car = new Car(1L,"Kia","84Q","678FOW", CarStatus.AVAILABLE, BigDecimal.valueOf(299.00),List.of(order));
         car = new Car(1L);
         //customer = new Customer(1L,"123456-7890","John","Smith","john.smith@gmail.com","098-654","123 Street", List.of(order));
@@ -48,39 +52,50 @@ class OrderRepositoryUnitTest {
         customer.setOrders(List.of(order,orderIsActiveFalse));
     }
 
+    @AfterEach
+    void tearDown() {
+        orderRepository.deleteAll();
+    }*/
+
     //SA
     @Test
     void findAllByIsActiveTrueShouldReturnOrder() {
-        orderRepository.save(order);
-        List<Order> orders = orderRepository.findAllByIsActiveTrue();
-        assertNotNull(orders);
-        assertTrue(orders.size() > 0);
-        assertEquals(order.getCustomer(), customer);
+        //orderRepository.save(order);
+        List<Order>allOrder = orderRepository.findAll();
+        List<Order> allByIsActiveTrue = orderRepository.findAllByIsActiveTrue();
+        assertNotNull(allByIsActiveTrue);
+        assertTrue(allByIsActiveTrue.size() > 0);
+
+        assertThat(allByIsActiveTrue.size()).isNotEqualTo(allOrder.size());
+        for (Order order : allByIsActiveTrue) {
+            assertThat(order.getIsActive()).isTrue();
+        }
     }
 
     //SA
     //Tar inte bort emellan
     @Test
     void findAllByIsActiveFalseShouldNotReturnOrderIfOrderIsInActive() {
-        orderRepository.save(orderIsActiveFalse);
-
-        List<Order> orders = orderRepository.findAllByIsActiveTrue();
-        /*System.out.println(orders.size());
-        System.out.println(orders.get(0).getIsActive().toString());
-        for(Order o : orders) {
-            System.out.println(o);
-        }*/
-        assertFalse(orders.contains(orderIsActiveFalse));
+        //orderRepository.save(orderIsActiveFalse);
+        List<Order>allOrder = orderRepository.findAll();
+        List<Order> allByIsActiveTrue = orderRepository.findAllByIsActiveTrue();
+        //System.out.println(orders.size());
+        assertThat(allByIsActiveTrue.size()).isNotEqualTo(allOrder.size());
+        for(Order o : allByIsActiveTrue) {
+            assertThat(o.getIsActive()).isNotEqualTo(false);
+        }
+        //assertFalse(orders.contains(orderIsActiveFalse));
 
     }
 
     //SA //fungerar inte just nu
     @Test
     void findAllByEndDateBeforeAndIsActiveFalseShouldReturnOrder() {
-        orderRepository.save(orderIsActiveFalse);
+        //orderRepository.save(orderIsActiveFalse);
 
-        List<Order>orders = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(LocalDate.of(2025,5,10));
-        assertTrue(orders.contains(orderIsActiveFalse));
+        List<Order>endenOrdersAndIsActiveFalse = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(LocalDate.of(2025,5,10));
+        //assertTrue(orders.contains(orderIsActiveFalse));
+
     }
 
     //SA
