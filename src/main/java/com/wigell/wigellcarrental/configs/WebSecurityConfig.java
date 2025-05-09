@@ -24,6 +24,7 @@ public class WebSecurityConfig {
                         .requestMatchers("/h2-console/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/admin/**").hasRole("ADMIN")
                         .requestMatchers("/api/v1/**").hasRole("USER")
+                        .anyRequest().authenticated()
                 )
                 .csrf(csrf -> csrf
                         .disable()
