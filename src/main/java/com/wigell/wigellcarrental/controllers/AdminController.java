@@ -49,7 +49,7 @@ public class AdminController {
 
 
     //SA // WIG-23-AWS
-    @PostMapping("/addcustomer")//Lägga till ny kund
+    @PostMapping("/addcustomer")
     public ResponseEntity<Customer>addCustomer(@RequestBody Customer customer, Principal principal){
         return new ResponseEntity<>(customerService.addCustomer(customer, principal), HttpStatus.CREATED);
     }
@@ -64,7 +64,7 @@ public class AdminController {
 
 
     //SA // AWS
-    @GetMapping("/cars")//Lista tillgängliga bilar
+    @GetMapping("/cars")
     public ResponseEntity<List<Car>>getAllAvailableCars(){
         List<Car> availableCars = carService.getAvailableCars();
         return ResponseEntity.ok(availableCars);
@@ -83,7 +83,7 @@ public class AdminController {
     }
 
     //SA //AWS
-    @PutMapping("/updatecar")//Uppdatera bilinformation
+    @PutMapping("/updatecar")
     public ResponseEntity<Car>updateCar(@RequestBody Car car, Principal principal){
         return ResponseEntity.ok(carService.updateCar(car, principal));
     }
@@ -107,8 +107,7 @@ public class AdminController {
     }
 
     //SA //AWS
-    //TODO: PathVariable. Integer?
-    @DeleteMapping("/removeorder/{orderId}")//Ta bort bokning från systemet
+    @DeleteMapping("/removeorder/{orderId}")
     public ResponseEntity<String>removeOrder(@PathVariable Long orderId, Principal principal){
         return ResponseEntity.ok(orderService.removeOrderById(orderId, principal));
     }
@@ -136,7 +135,7 @@ public class AdminController {
     @RequestMapping("/statistics")//String...  En oändlig array utan utsatt antal i, array oavsett om man skickar med en inparametrar
     public ResponseEntity<?> getStatistics(@RequestParam String choice, @RequestParam String... data){
         // WIG-114-AWS
-        if(choice.contains("incomemonth")){ //Total intäkt under en viss tidsperiod, månad och år
+        if(choice.contains("incomemonth")){
             return ResponseEntity.ok(orderService.getIncomeOnMonth(data[0],data[1]));
         }
         else if (choice.contains("incomebetweendates")) {
