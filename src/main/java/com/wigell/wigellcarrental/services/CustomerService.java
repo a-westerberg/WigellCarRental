@@ -8,6 +8,7 @@ import java.util.List;
 
 //SA
 public interface CustomerService {
+    //SA
     List<Customer> getAllCustomers();
 
     // WIG-27-SJ

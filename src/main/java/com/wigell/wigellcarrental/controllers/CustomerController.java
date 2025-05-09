@@ -32,14 +32,11 @@ public class CustomerController {
         this.customerService = customerService;
     }
 
-    //Services
     //SA / WIG-26-SJ
     @GetMapping("/cars")
     public ResponseEntity<List<Car>>allCars(){
         return ResponseEntity.ok(carService.getAvailableCars());
     }
-
-
 
     //SA / WIG-28-SJ
     @PostMapping("/addorder")
@@ -48,7 +45,7 @@ public class CustomerController {
     }
 
     //SA
-    @PutMapping("/cancelorder/{orderId}")//Avboka order
+    @PutMapping("/cancelorder/{orderId}")
     public ResponseEntity<String> cancelOrder(@PathVariable Long orderId, Principal principal) {
         return ResponseEntity.ok(orderService.cancelOrder(orderId,principal));
     }

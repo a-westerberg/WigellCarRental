@@ -20,7 +20,8 @@ public interface CarService {
     //WIG-18-AA
     Car addCar(Car car, Principal principal);
 
-    List<IncomeCar> incomeOnCars();//SA
+    //SA
+    List<IncomeCar> incomeOnCars();
 
     //WIG-24-AWS
     Car updateCar(Car car, Principal principal);

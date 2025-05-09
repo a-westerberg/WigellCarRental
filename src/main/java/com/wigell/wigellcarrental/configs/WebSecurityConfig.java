@@ -3,7 +3,6 @@ package com.wigell.wigellcarrental.configs;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
 import org.springframework.security.config.Customizer;
-import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import org.springframework.security.config.annotation.web.builders.HttpSecurity;
 import org.springframework.security.config.annotation.web.configuration.EnableWebSecurity;
 import org.springframework.security.core.userdetails.User;
@@ -15,7 +14,6 @@ import org.springframework.security.web.SecurityFilterChain;
 //SA
 @Configuration
 @EnableWebSecurity
-@EnableMethodSecurity(prePostEnabled = true)//Kolla om det fungerar utan på PreAuthorize i controllers
 public class WebSecurityConfig {
 
     //SA
@@ -36,7 +34,6 @@ public class WebSecurityConfig {
                 .httpBasic(Customizer.withDefaults());
 
         return http.build();
-        //Ändra till authenticated när UserDetailsService är inlagt, ta in PreAuthorize i controller klasserna också
     }
 
     // WIG-80-SJ
