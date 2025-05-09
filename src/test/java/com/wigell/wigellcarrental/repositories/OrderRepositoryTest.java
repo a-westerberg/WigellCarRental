@@ -98,7 +98,6 @@ class OrderRepositoryTest {
 
         assertTrue(orders.contains(orderIsActiveFalse));
 
-
         for (Order o : orders) {
             assertThat(o.getIsActive()).isFalse();
             assertThat(o.getEndDate()).isBefore(testDate);
