@@ -37,10 +37,12 @@ public class Car {
    @OneToMany(mappedBy = "car")
    private List<Order> orders;
 
+   //SA
     public Car(Long id) {
         this.id = id;
     }
 
+    //SA
     public Car(Long id, String make, String model, String registrationNumber, CarStatus status, BigDecimal pricePerDay, List<Order> orders) {
         this.id = id;
         this.make = make;

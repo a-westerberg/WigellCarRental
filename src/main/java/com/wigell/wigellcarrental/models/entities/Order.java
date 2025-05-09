@@ -37,6 +37,7 @@ public class Order {
     @Column(name = "active", nullable = false)
     private Boolean isActive;
 
+    //SA
     @Column(name = "cancelled",nullable = false)
     private Boolean isCancelled;
 
@@ -44,10 +45,12 @@ public class Order {
 
     }
 
+    //SA
     public Order(Long id) {
         this.id = id;
     }
 
+    //SA
     public Order(Long id, LocalDate bookedAt, LocalDate startDate, LocalDate endDate, Car car, Customer customer, BigDecimal totalPrice, Boolean isActive, Boolean isCancelled) {
         this.id = id;
         this.bookedAt = bookedAt;
@@ -124,10 +127,12 @@ public class Order {
         isActive = active;
     }
 
+    //SA
     public Boolean getIsCancelled() {
         return isCancelled;
     }
 
+    //SA
     public void setIsCancelled(Boolean cancelled) {
         isCancelled = cancelled;
     }

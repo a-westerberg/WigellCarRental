@@ -34,6 +34,7 @@ class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest 
     //AA added final
     private final OrderRepository orderRepository;
 
+    //SA
     private Customer customerInDB;
     private final Long MISSING_CUSTOMER_ID = 0L;
     private final Principal PRINCIPAL = ()-> "123456-7890";
@@ -86,8 +87,6 @@ class CustomerServiceImplAndCustomerRepositoryAndOrderRepositoryIntegrationTest 
 
         assertThat("Customer not found with id: 0").isEqualTo(exception.getMessage());
     }
-
-    //updateCustomer
 
     //SA
     @Test
