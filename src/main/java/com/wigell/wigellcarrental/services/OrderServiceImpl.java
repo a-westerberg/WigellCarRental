@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 //SA
 @Service
 public class OrderServiceImpl implements OrderService{
-    //AWS
+    //AWS //SJ
     private final OrderRepository orderRepository;
     private final CarRepository carRepository;
     private final CustomerRepository customerRepository;
@@ -37,7 +37,7 @@ public class OrderServiceImpl implements OrderService{
     //WIG-71-AA
     private static final Logger USER_ANALYZER_LOGGER = LogManager.getLogger("userlog");
 
-    //AWS
+    //AWS //SJ
     @Autowired
     public OrderServiceImpl(OrderRepository orderRepository, CarRepository carRepository, CustomerRepository customerRepository) {
         this.orderRepository = orderRepository;
@@ -188,6 +188,7 @@ public class OrderServiceImpl implements OrderService{
             }
 
             orderRepository.save(order);
+
             // WIG-89-SJ
             USER_ANALYZER_LOGGER.info("User '{}' has placed new order:{}",
                     principal.getName(),

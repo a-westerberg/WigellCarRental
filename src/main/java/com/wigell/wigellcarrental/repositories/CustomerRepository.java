@@ -16,6 +16,7 @@ public interface CustomerRepository extends JpaRepository<Customer,Long> {
     //WIG-22-AA
     Optional<Customer> findByPersonalIdentityNumber(String personalIdentityNumber);
 
+    // WIG-61-SJ
     Customer getCustomersById(Long id);
 
 }
