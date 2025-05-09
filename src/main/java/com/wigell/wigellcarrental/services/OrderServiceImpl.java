@@ -385,7 +385,7 @@ public class OrderServiceImpl implements OrderService{
 
     //WIG-85-AA, WIG-96-AA
     @Override
-    public PopularBrandStats getPopularBrand(String startDate, String endDate) {
+    public PopularBrandStatsDTO getPopularBrand(String startDate, String endDate) {
         LocalDate startPeriod = MicroMethods.parseStringToDate(startDate);
         LocalDate endPeriod = MicroMethods.parseStringToDate(endDate);
 
@@ -397,7 +397,7 @@ public class OrderServiceImpl implements OrderService{
         Map<String, Long> makeCountMap = countMakes(orders);
         Map<String,Long> sortedMap = MicroMethods.sortMapByValueThenKey(makeCountMap);
 
-        return new PopularBrandStats(startPeriod, endPeriod, sortedMap);
+        return new PopularBrandStatsDTO(startPeriod, endPeriod, sortedMap);
     }
 
     // WIG-97-SJ

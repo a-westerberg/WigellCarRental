@@ -4,17 +4,17 @@ import java.time.LocalDate;
 import java.util.Map;
 
 //WIG-96-AA
-public class PopularBrandStats {
+public class PopularBrandStatsDTO {
 
     private LocalDate startDate;
     private LocalDate endDate;
     Map<String,Long> brandCounts;
 
-    public PopularBrandStats() {
+    public PopularBrandStatsDTO() {
 
     }
 
-    public PopularBrandStats(LocalDate startDate, LocalDate endDate, Map<String,Long> brandCounts) {
+    public PopularBrandStatsDTO(LocalDate startDate, LocalDate endDate, Map<String,Long> brandCounts) {
         this.startDate = startDate;
         this.endDate = endDate;
         this.brandCounts = brandCounts;
@@ -46,7 +46,7 @@ public class PopularBrandStats {
 
     @Override
     public String toString() {
-        return "PopularBrandStats{" +
+        return "PopularBrandStatsDTO{" +
                 "StartDate=" + startDate +
                 ", EndDate=" + endDate +
                 ", brandCounts=" + brandCounts +
