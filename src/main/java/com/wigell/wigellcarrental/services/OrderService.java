@@ -16,7 +16,7 @@ public interface OrderService {
     List<Order> getActiveOrdersForCustomer(String personalIdentityNumber);//AWS
     String cancelOrder(Long orderId, Principal principal);//SA
 
-    String removeOrdersBeforeDate(LocalDate date, Principal principal);
+    String removeOrdersBeforeDate(LocalDate date, Principal principal);//SA
     Order addOrder(Order order, Principal principal); // WIG-28-SJ
 
     List<Order> getAllOrdersHistory();//SA

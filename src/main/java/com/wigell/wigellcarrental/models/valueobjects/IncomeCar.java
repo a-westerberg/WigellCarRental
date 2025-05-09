@@ -4,6 +4,7 @@ import com.wigell.wigellcarrental.models.entities.Car;
 
 import java.math.BigDecimal;
 
+//SA
 public class IncomeCar {
     private Car car;
     private int rentedTimes;

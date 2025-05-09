@@ -12,11 +12,13 @@ import java.util.List;
 //SA
 @Repository
 public interface OrderRepository extends JpaRepository<Order, Long> {
-    List<Order>findAllByIsActiveTrue();//SA
+    //SA
+    List<Order>findAllByIsActiveTrue();
     //AWS
     List<Order> findByCustomer_PersonalIdentityNumberAndIsActiveTrue(String personalIdentityNumber);
 
-    List<Order>findAllByEndDateBeforeAndIsActiveFalse(LocalDate beforeThisDate);//SA
+    //SA
+    List<Order>findAllByEndDateBeforeAndIsActiveFalse(LocalDate beforeThisDate);
 
     //WIG-22-AA
     List<Order> findByCustomer_PersonalIdentityNumberAndEndDateBefore(String personalIdentityNumber, LocalDate dateBeforeThisDate);
