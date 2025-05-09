@@ -62,7 +62,7 @@ public class CustomerServiceImpl implements CustomerService{
             customerToUpdate = customerRepository.findById(customer.getId()).orElseThrow(() ->
                     new ResourceNotFoundException("Customer","id",customer.getId()));
 
-            if (!principal.getName().equals(customerToUpdate.getPersonalIdentityNumber()) && !principal.getName().equals("admin")) {
+            if (!principal.getName().equals(customerToUpdate.getPersonalIdentityNumber())) {
                 throw new ConflictException("User not authorized for function.");
             }
 

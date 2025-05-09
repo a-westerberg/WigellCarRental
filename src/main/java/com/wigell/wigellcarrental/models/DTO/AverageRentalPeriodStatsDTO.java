@@ -6,13 +6,13 @@ import java.util.List;
 
 //WIG-97-SJ
 @JsonPropertyOrder({ "averageRentalPeriodInDays", "rentalDetails" })
-public class AverageRentalPeriodStats {
+public class AverageRentalPeriodStatsDTO {
 
     private double AverageRentalPeriodInDays;
-    private List<RentalPeriodDetails> rentalDetails;
+    private List<RentalPeriodDetailsDTO> rentalDetails;
 
-    public AverageRentalPeriodStats() {}
-    public AverageRentalPeriodStats(double AverageRentalPeriodInDays, List<RentalPeriodDetails> rentalDetails) {
+    public AverageRentalPeriodStatsDTO() {}
+    public AverageRentalPeriodStatsDTO(double AverageRentalPeriodInDays, List<RentalPeriodDetailsDTO> rentalDetails) {
         this.AverageRentalPeriodInDays = AverageRentalPeriodInDays;
         this.rentalDetails = rentalDetails;
     }
@@ -20,8 +20,8 @@ public class AverageRentalPeriodStats {
     public double getAverageRentalPeriodInDays() {return AverageRentalPeriodInDays;}
     public void setAverageRentalPeriodInDays(double AverageRentalPeriodInDays) {this.AverageRentalPeriodInDays = AverageRentalPeriodInDays;}
 
-    public List<RentalPeriodDetails> getRentalDetails() {return rentalDetails;}
-    public void setRentalDetails(List<RentalPeriodDetails> rentalDetails) {this.rentalDetails = rentalDetails;}
+    public List<RentalPeriodDetailsDTO> getRentalDetails() {return rentalDetails;}
+    public void setRentalDetails(List<RentalPeriodDetailsDTO> rentalDetails) {this.rentalDetails = rentalDetails;}
 
     @Override
     public String toString() {
