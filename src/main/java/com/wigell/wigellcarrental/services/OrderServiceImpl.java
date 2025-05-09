@@ -7,7 +7,7 @@ import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.enums.CarStatus;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
-import com.wigell.wigellcarrental.models.valueobjects.*;
+import com.wigell.wigellcarrental.models.DTO.*;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 //SA
 @Service
 public class OrderServiceImpl implements OrderService{
-    //AWS
+    //AWS //SJ
     private final OrderRepository orderRepository;
     private final CarRepository carRepository;
     private final CustomerRepository customerRepository;
@@ -37,7 +37,7 @@ public class OrderServiceImpl implements OrderService{
     //WIG-71-AA
     private static final Logger USER_ANALYZER_LOGGER = LogManager.getLogger("userlog");
 
-    //AWS
+    //AWS //SJ
     @Autowired
     public OrderServiceImpl(OrderRepository orderRepository, CarRepository carRepository, CustomerRepository customerRepository) {
         this.orderRepository = orderRepository;
@@ -188,6 +188,7 @@ public class OrderServiceImpl implements OrderService{
             }
 
             orderRepository.save(order);
+
             // WIG-89-SJ
             USER_ANALYZER_LOGGER.info("User '{}' has placed new order:{}",
                     principal.getName(),
@@ -384,7 +385,7 @@ public class OrderServiceImpl implements OrderService{
 
     //WIG-85-AA, WIG-96-AA
     @Override
-    public PopularBrandStats getPopularBrand(String startDate, String endDate) {
+    public PopularBrandStatsDTO getPopularBrand(String startDate, String endDate) {
         LocalDate startPeriod = MicroMethods.parseStringToDate(startDate);
         LocalDate endPeriod = MicroMethods.parseStringToDate(endDate);
 
@@ -396,36 +397,36 @@ public class OrderServiceImpl implements OrderService{
         Map<String, Long> makeCountMap = countMakes(orders);
         Map<String,Long> sortedMap = MicroMethods.sortMapByValueThenKey(makeCountMap);
 
-        return new PopularBrandStats(startPeriod, endPeriod, sortedMap);
+        return new PopularBrandStatsDTO(startPeriod, endPeriod, sortedMap);
     }
 
     // WIG-97-SJ
     @Override
-    public AverageRentalPeriodStats getAverageRentalPeriod() {
+    public AverageRentalPeriodStatsDTO getAverageRentalPeriod() {
         List<Order> allOrders = orderRepository.findAll();
 
-        List<RentalPeriodDetails> rentalDetails = allOrders.stream()
+        List<RentalPeriodDetailsDTO> rentalDetails = allOrders.stream()
                 .map(order -> {
                     long days = ChronoUnit.DAYS.between(order.getStartDate(), order.getEndDate());
-                    return new RentalPeriodDetails(order.getId(),order.getStartDate(), order.getEndDate(), days);
+                    return new RentalPeriodDetailsDTO(order.getId(),order.getStartDate(), order.getEndDate(), days);
                 })
                 .toList();
 
         double average = rentalDetails.stream()
-                .mapToLong(RentalPeriodDetails::getNumberOfDays)
+                .mapToLong(RentalPeriodDetailsDTO::getNumberOfDays)
                 .average()
                 .orElse(0.0);
 
-        return new AverageRentalPeriodStats(average, rentalDetails);
+        return new AverageRentalPeriodStatsDTO(average, rentalDetails);
     }
 
     // WIG-97-SJ
     @Override
-    public AverageOrderCostStats costPerOrder() {
+    public AverageOrderCostStatsDTO costPerOrder() {
         List<Order> allOrders = orderRepository.findAll();
 
-        List<OrderCostDetails> orderDetails = allOrders.stream()
-                .map(order -> new OrderCostDetails(
+        List<OrderCostDetailsDTO> orderDetails = allOrders.stream()
+                .map(order -> new OrderCostDetailsDTO(
                         order.getId(),
                         order.getCar().getId(),
                         order.getTotalPrice()
@@ -433,14 +434,14 @@ public class OrderServiceImpl implements OrderService{
                 .toList();
 
         BigDecimal total = orderDetails.stream()
-                .map(OrderCostDetails::getTotalPrice)
+                .map(OrderCostDetailsDTO::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal average = orderDetails.isEmpty()
                 ? BigDecimal.ZERO
                 : total.divide(BigDecimal.valueOf(orderDetails.size()), 2, RoundingMode.HALF_UP);
 
-        return new AverageOrderCostStats(average, orderDetails);
+        return new AverageOrderCostStatsDTO(average, orderDetails);
     }
 
     // WIG-28-SJ
@@ -476,6 +477,7 @@ public class OrderServiceImpl implements OrderService{
     //WIG-85-AA
     private Map<String, Long> countMakes (List<Order> orders) {
         return orders.stream()
+                .filter(order -> order.getCar() != null)
                 .collect(Collectors.groupingBy(
                         order -> order.getCar().getMake(),
                         Collectors.counting()
@@ -520,7 +522,7 @@ public class OrderServiceImpl implements OrderService{
 
     // WIG-114-AWS
     @Override
-    public IncomeBetweenDates getIncomeOnMonth(String year, String month) {
+    public IncomeBetweenDatesDTO getIncomeOnMonth(String year, String month) {
         try{
             int y = Integer.parseInt(year);
             int m = Integer.parseInt(month);
@@ -540,7 +542,7 @@ public class OrderServiceImpl implements OrderService{
 
     // WIG-114-AWS
     @Override
-    public IncomeBetweenDates getIncomeBetweenDates(String start, String end) {
+    public IncomeBetweenDatesDTO getIncomeBetweenDates(String start, String end) {
         LocalDate startDate = MicroMethods.parseStringToDate(start);
         LocalDate endDate = MicroMethods.parseStringToDate(end);
 
@@ -562,12 +564,12 @@ public class OrderServiceImpl implements OrderService{
                 .map(Order::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return new IncomeBetweenDates(startDate, endDate, total);
+        return new IncomeBetweenDatesDTO(startDate, endDate, total);
     }
 
     // WIG-114-AWS
     @Override
-    public IncomeBetweenDates getIncomeByYear(String year) {
+    public IncomeBetweenDatesDTO getIncomeByYear(String year) {
        try{
            int y = Integer.parseInt(year);
 
@@ -583,7 +585,7 @@ public class OrderServiceImpl implements OrderService{
                    .map(Order::getTotalPrice)
                    .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-           return new IncomeBetweenDates(LocalDate.of(y, 1, 1), LocalDate.of(y, 12, 31), total);
+           return new IncomeBetweenDatesDTO(LocalDate.of(y, 1, 1), LocalDate.of(y, 12, 31), total);
 
        } catch (NumberFormatException e){
            throw new InvalidInputException("Year", "numeric", year);

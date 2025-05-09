@@ -1,10 +1,10 @@
 package com.wigell.wigellcarrental.services;
 
+import com.wigell.wigellcarrental.models.DTO.IncomeBetweenDatesDTO;
 import com.wigell.wigellcarrental.models.entities.Order;
-import com.wigell.wigellcarrental.models.valueobjects.AverageOrderCostStats;
-import com.wigell.wigellcarrental.models.valueobjects.AverageRentalPeriodStats;
-import com.wigell.wigellcarrental.models.valueobjects.IncomeBetweenDates;
-import com.wigell.wigellcarrental.models.valueobjects.PopularBrandStats;
+import com.wigell.wigellcarrental.models.DTO.AverageOrderCostStatsDTO;
+import com.wigell.wigellcarrental.models.DTO.AverageRentalPeriodStatsDTO;
+import com.wigell.wigellcarrental.models.DTO.PopularBrandStatsDTO;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -17,7 +17,9 @@ public interface OrderService {
     String cancelOrder(Long orderId, Principal principal);//SA
 
     String removeOrdersBeforeDate(LocalDate date, Principal principal);//SA
-    Order addOrder(Order order, Principal principal); // WIG-28-SJ
+
+    // WIG-28-SJ
+    Order addOrder(Order order, Principal principal);
 
     List<Order> getAllOrdersHistory();//SA
 
@@ -26,16 +28,16 @@ public interface OrderService {
     String updateOrderCar(Long orderId, Long carId, Principal principal);//SA
 
     //WIG-85-AA
-    PopularBrandStats getPopularBrand(String startDate, String endDate);
+    PopularBrandStatsDTO getPopularBrand(String startDate, String endDate);
 
     // WIG-97-SJ
-    AverageRentalPeriodStats getAverageRentalPeriod();
-    AverageOrderCostStats costPerOrder();
+    AverageRentalPeriodStatsDTO getAverageRentalPeriod();
+    AverageOrderCostStatsDTO costPerOrder();
 
     // WIG-25-AWS
     String removeOrderById(Long orderId, Principal principal);
     //WIG-114-AWS
-    IncomeBetweenDates getIncomeOnMonth(String year, String month);
-    IncomeBetweenDates getIncomeBetweenDates(String startDate, String endDate);
-    IncomeBetweenDates getIncomeByYear(String year);
+    IncomeBetweenDatesDTO getIncomeOnMonth(String year, String month);
+    IncomeBetweenDatesDTO getIncomeBetweenDates(String startDate, String endDate);
+    IncomeBetweenDatesDTO getIncomeByYear(String year);
 }

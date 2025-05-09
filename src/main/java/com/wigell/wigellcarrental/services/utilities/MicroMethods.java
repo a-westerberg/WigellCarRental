@@ -29,7 +29,6 @@ public class MicroMethods {
     }
 
     // WIG-29-SJ
-    // If values multiple values needs to be unique. If not, remove code later.
     public static <T> void validateUniqueValue(String fieldName, T value, java.util.function.Predicate<T> existsFunction) {
         if (value != null && existsFunction.test(value)) {
             throw new UniqueConflictException(fieldName, value);
@@ -55,9 +54,6 @@ public class MicroMethods {
 
     //WIG-96-AA
     public static Map<String, Long> sortMapByValueThenKey(Map<String, Long> makeCountMap) {
-        // Exempel: Sorterar bilmärken utifrån antal uthyrningar (värden) i fallande ordning.
-        // Om två bilmärken har samma antal uthyrningar, sorteras de alfabetiskt (stigande).
-        // Resultatet samlas i en LinkedHashMap för att bevara den sorterade ordningen i JSON-svaret.
         return makeCountMap.entrySet().stream()
                 .sorted(Comparator
                         .comparing(Map.Entry<String,Long> ::getValue, Comparator.reverseOrder())

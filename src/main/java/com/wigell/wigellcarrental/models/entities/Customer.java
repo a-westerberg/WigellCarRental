@@ -54,7 +54,7 @@ public class Customer {
     }
 
     public Customer() {
-        orders = new ArrayList<Order>();
+        orders = new ArrayList<>();
     }
 
     public Long getId() {
