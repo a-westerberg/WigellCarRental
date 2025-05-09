@@ -11,7 +11,7 @@ import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
 import com.wigell.wigellcarrental.services.utilities.LogMethods;
 import com.wigell.wigellcarrental.services.utilities.MicroMethods;
-import com.wigell.wigellcarrental.models.valueobjects.IncomeCar;
+import com.wigell.wigellcarrental.models.DTO.IncomeCar;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

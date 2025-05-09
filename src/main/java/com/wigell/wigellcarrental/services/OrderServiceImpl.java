@@ -7,7 +7,7 @@ import com.wigell.wigellcarrental.models.entities.Customer;
 import com.wigell.wigellcarrental.models.entities.Order;
 import com.wigell.wigellcarrental.enums.CarStatus;
 import com.wigell.wigellcarrental.exceptions.ResourceNotFoundException;
-import com.wigell.wigellcarrental.models.valueobjects.*;
+import com.wigell.wigellcarrental.models.DTO.*;
 import com.wigell.wigellcarrental.repositories.CarRepository;
 import com.wigell.wigellcarrental.repositories.CustomerRepository;
 import com.wigell.wigellcarrental.repositories.OrderRepository;
@@ -523,7 +523,7 @@ public class OrderServiceImpl implements OrderService{
 
     // WIG-114-AWS
     @Override
-    public IncomeBetweenDates getIncomeOnMonth(String year, String month) {
+    public IncomeBetweenDatesDTO getIncomeOnMonth(String year, String month) {
         try{
             int y = Integer.parseInt(year);
             int m = Integer.parseInt(month);
@@ -543,7 +543,7 @@ public class OrderServiceImpl implements OrderService{
 
     // WIG-114-AWS
     @Override
-    public IncomeBetweenDates getIncomeBetweenDates(String start, String end) {
+    public IncomeBetweenDatesDTO getIncomeBetweenDates(String start, String end) {
         LocalDate startDate = MicroMethods.parseStringToDate(start);
         LocalDate endDate = MicroMethods.parseStringToDate(end);
 
@@ -565,12 +565,12 @@ public class OrderServiceImpl implements OrderService{
                 .map(Order::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-        return new IncomeBetweenDates(startDate, endDate, total);
+        return new IncomeBetweenDatesDTO(startDate, endDate, total);
     }
 
     // WIG-114-AWS
     @Override
-    public IncomeBetweenDates getIncomeByYear(String year) {
+    public IncomeBetweenDatesDTO getIncomeByYear(String year) {
        try{
            int y = Integer.parseInt(year);
 
@@ -586,7 +586,7 @@ public class OrderServiceImpl implements OrderService{
                    .map(Order::getTotalPrice)
                    .reduce(BigDecimal.ZERO, BigDecimal::add);
 
-           return new IncomeBetweenDates(LocalDate.of(y, 1, 1), LocalDate.of(y, 12, 31), total);
+           return new IncomeBetweenDatesDTO(LocalDate.of(y, 1, 1), LocalDate.of(y, 12, 31), total);
 
        } catch (NumberFormatException e){
            throw new InvalidInputException("Year", "numeric", year);

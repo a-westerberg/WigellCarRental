@@ -1,10 +1,10 @@
 package com.wigell.wigellcarrental.services;
 
+import com.wigell.wigellcarrental.models.DTO.IncomeBetweenDatesDTO;
 import com.wigell.wigellcarrental.models.entities.Order;
-import com.wigell.wigellcarrental.models.valueobjects.AverageOrderCostStats;
-import com.wigell.wigellcarrental.models.valueobjects.AverageRentalPeriodStats;
-import com.wigell.wigellcarrental.models.valueobjects.IncomeBetweenDates;
-import com.wigell.wigellcarrental.models.valueobjects.PopularBrandStats;
+import com.wigell.wigellcarrental.models.DTO.AverageOrderCostStats;
+import com.wigell.wigellcarrental.models.DTO.AverageRentalPeriodStats;
+import com.wigell.wigellcarrental.models.DTO.PopularBrandStats;
 
 import java.security.Principal;
 import java.time.LocalDate;
@@ -35,7 +35,7 @@ public interface OrderService {
     // WIG-25-AWS
     String removeOrderById(Long orderId, Principal principal);
     //WIG-114-AWS
-    IncomeBetweenDates getIncomeOnMonth(String year, String month);
-    IncomeBetweenDates getIncomeBetweenDates(String startDate, String endDate);
-    IncomeBetweenDates getIncomeByYear(String year);
+    IncomeBetweenDatesDTO getIncomeOnMonth(String year, String month);
+    IncomeBetweenDatesDTO getIncomeBetweenDates(String startDate, String endDate);
+    IncomeBetweenDatesDTO getIncomeByYear(String year);
 }
