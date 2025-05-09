@@ -29,7 +29,6 @@ public class MicroMethods {
     }
 
     // WIG-29-SJ
-    // If values multiple values needs to be unique. If not, remove code later.
     public static <T> void validateUniqueValue(String fieldName, T value, java.util.function.Predicate<T> existsFunction) {
         if (value != null && existsFunction.test(value)) {
             throw new UniqueConflictException(fieldName, value);
