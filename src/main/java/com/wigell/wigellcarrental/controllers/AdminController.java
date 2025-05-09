@@ -21,7 +21,7 @@ import java.util.List;
 @RequestMapping("/api/v1/admin")
 public class AdminController {
 
-    private final CustomerService customerService;
+    private final CustomerService customerService;//SA
     private final CarService carService;            //aws
     private final OrderService orderService; //AA added final
 
@@ -145,11 +145,6 @@ public class AdminController {
             return ResponseEntity.ok(orderService.getPopularBrand(data[0],data[1]));
 
         }
-        /*
-        else if (choice.contains("car")) {//Antal gånger varje bil hyrts ut, bils-regNr
-            return ResponseEntity.ok(service.getRented(data[0])); }
-        */
-
         //WIG-97-SJ
         else if (choice.contains("rentalperiod")) {//vanligaste hyresperiod (antal dagar)
             return ResponseEntity.ok(orderService.getAverageRentalPeriod());

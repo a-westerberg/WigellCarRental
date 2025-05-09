@@ -12,7 +12,7 @@ INSERT INTO customers (personal_identity_number, first_name, last_name, email, p
 -- CAR
 INSERT INTO cars (make, model, registration_number, price_per_day,status) VALUES
 ('Volvo', '740', 'ABC123', 999.00,'AVAILABLE'),
-('BMW', 'Z8', 'DEF567', 699.00,'BOOKED'),--BOOKED när vi lämnar in
+('BMW', 'Z8', 'DEF567', 699.00,'BOOKED'),
 ('Tesla', 'Roadster', 'TES123', 899.00,'IN_SERVICE'),
 ('Audi', 'Quattro', 'AUD456', 749.00,'BOOKED'),
 ('Kia', 'Ceed', 'KIA890', 549.00,'IN_SERVICE');

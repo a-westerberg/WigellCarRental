@@ -36,10 +36,12 @@ public class Customer {
     @OneToMany(mappedBy = "customer")
     private List<Order> orders;
 
+    //SA
     public Customer(Long id) {
         this.id = id;
     }
 
+    //SA
     public Customer(Long id, String personalIdentityNumber, String firstName, String lastName, String email, String phoneNumber, String address, List<Order> orders) {
         this.id = id;
         this.personalIdentityNumber = personalIdentityNumber;
