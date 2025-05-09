@@ -145,7 +145,8 @@ public class AdminController {
         else if (choice.contains("incomeyear")) {
             return ResponseEntity.ok(orderService.getIncomeByYear(data[0]));
         }
-        else if (choice.contains("brand")) {//mest hyrda bilmärke under en viss period, brand, datum1 och 2
+        //AA
+        else if (choice.contains("brand")) {
             return ResponseEntity.ok(orderService.getPopularBrand(data[0],data[1]));
 
         }

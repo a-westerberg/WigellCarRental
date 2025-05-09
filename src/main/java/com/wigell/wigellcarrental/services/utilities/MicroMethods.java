@@ -55,9 +55,6 @@ public class MicroMethods {
 
     //WIG-96-AA
     public static Map<String, Long> sortMapByValueThenKey(Map<String, Long> makeCountMap) {
-        // Exempel: Sorterar bilmärken utifrån antal uthyrningar (värden) i fallande ordning.
-        // Om två bilmärken har samma antal uthyrningar, sorteras de alfabetiskt (stigande).
-        // Resultatet samlas i en LinkedHashMap för att bevara den sorterade ordningen i JSON-svaret.
         return makeCountMap.entrySet().stream()
                 .sorted(Comparator
                         .comparing(Map.Entry<String,Long> ::getValue, Comparator.reverseOrder())

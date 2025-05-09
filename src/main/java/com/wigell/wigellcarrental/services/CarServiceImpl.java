@@ -65,7 +65,7 @@ public class CarServiceImpl implements CarService{
             }
             carRepository.delete(carToDelete);
             USER_ANALYZER_LOGGER.info("User: {} has deleted a car. {}", principal.getName(), LogMethods.logBuilder(carToDelete, "id", "registrationNumber"));
-            return isInputId(input) ? "Car  with id " + input + " deleted" : "Car with registration number " + input + " deleted";
+            return isInputId(input) ? "Car with id " + input + " deleted" : "Car with registration number " + input + " deleted";
         } catch (Exception e) {
             Car placeHolder = new Car();
             String field;
