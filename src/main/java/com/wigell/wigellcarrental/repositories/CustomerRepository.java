@@ -10,9 +10,6 @@ import java.util.Optional;
 @Repository
 public interface CustomerRepository extends JpaRepository<Customer,Long> {
 
-    // WIG-27-SJ
-    Customer findById(long id);
-
     //WIG-22-AA
     Optional<Customer> findByPersonalIdentityNumber(String personalIdentityNumber);
 
