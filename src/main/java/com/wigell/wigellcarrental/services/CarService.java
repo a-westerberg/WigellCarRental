@@ -1,7 +1,7 @@
 package com.wigell.wigellcarrental.services;
 
 import com.wigell.wigellcarrental.models.entities.Car;
-import com.wigell.wigellcarrental.models.valueobjects.IncomeCarDTO;
+import com.wigell.wigellcarrental.models.DTO.IncomeCarDTO;
 
 import java.security.Principal;
 import java.util.List;
