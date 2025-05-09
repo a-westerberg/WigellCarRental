@@ -25,7 +25,7 @@ public class CustomerServiceImpl implements CustomerService{
     //AA
     private final OrderRepository orderRepository;
     //SA
-    private CustomerRepository customerRepository;
+    private final CustomerRepository customerRepository;
 
     //WIG-71-AA
     private static final Logger USER_ANALYZER_LOGGER = LogManager.getLogger("userlog");
@@ -56,13 +56,13 @@ public class CustomerServiceImpl implements CustomerService{
     // WIG-29-SJ
     @Override
     public Customer updateCustomer(Customer customer, Principal principal) {
-        Customer customerToUpdate = null;
+        Customer customerToUpdate;
 
         try {
             customerToUpdate = customerRepository.findById(customer.getId()).orElseThrow(() ->
                     new ResourceNotFoundException("Customer","id",customer.getId()));
 
-            if (!principal.getName().equals(customerToUpdate.getPersonalIdentityNumber()) && !principal.getName().equals("admin")) {
+            if (!principal.getName().equals(customerToUpdate.getPersonalIdentityNumber())) {
                 throw new ConflictException("User not authorized for function.");
             }
 
@@ -72,8 +72,6 @@ public class CustomerServiceImpl implements CustomerService{
             customerRepository.save(updatedCustomer);
 
             //WIG-90-SJ
-            System.out.println(customerToUpdate.toString());
-            System.out.println(updatedCustomer.toString());
             USER_ANALYZER_LOGGER.info("User '{}' has updated customer:{}" +
                             "\nUpdated fields: {}",
                     principal.getName(),

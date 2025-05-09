@@ -29,7 +29,7 @@ import java.util.stream.Collectors;
 //SA
 @Service
 public class OrderServiceImpl implements OrderService{
-    //AWS
+    //AWS //SJ
     private final OrderRepository orderRepository;
     private final CarRepository carRepository;
     private final CustomerRepository customerRepository;
@@ -37,7 +37,7 @@ public class OrderServiceImpl implements OrderService{
     //WIG-71-AA
     private static final Logger USER_ANALYZER_LOGGER = LogManager.getLogger("userlog");
 
-    //AWS
+    //AWS //SJ
     @Autowired
     public OrderServiceImpl(OrderRepository orderRepository, CarRepository carRepository, CustomerRepository customerRepository) {
         this.orderRepository = orderRepository;
@@ -188,6 +188,7 @@ public class OrderServiceImpl implements OrderService{
             }
 
             orderRepository.save(order);
+
             // WIG-89-SJ
             USER_ANALYZER_LOGGER.info("User '{}' has placed new order:{}",
                     principal.getName(),
@@ -401,31 +402,31 @@ public class OrderServiceImpl implements OrderService{
 
     // WIG-97-SJ
     @Override
-    public AverageRentalPeriodStats getAverageRentalPeriod() {
+    public AverageRentalPeriodStatsDTO getAverageRentalPeriod() {
         List<Order> allOrders = orderRepository.findAll();
 
-        List<RentalPeriodDetails> rentalDetails = allOrders.stream()
+        List<RentalPeriodDetailsDTO> rentalDetails = allOrders.stream()
                 .map(order -> {
                     long days = ChronoUnit.DAYS.between(order.getStartDate(), order.getEndDate());
-                    return new RentalPeriodDetails(order.getId(),order.getStartDate(), order.getEndDate(), days);
+                    return new RentalPeriodDetailsDTO(order.getId(),order.getStartDate(), order.getEndDate(), days);
                 })
                 .toList();
 
         double average = rentalDetails.stream()
-                .mapToLong(RentalPeriodDetails::getNumberOfDays)
+                .mapToLong(RentalPeriodDetailsDTO::getNumberOfDays)
                 .average()
                 .orElse(0.0);
 
-        return new AverageRentalPeriodStats(average, rentalDetails);
+        return new AverageRentalPeriodStatsDTO(average, rentalDetails);
     }
 
     // WIG-97-SJ
     @Override
-    public AverageOrderCostStats costPerOrder() {
+    public AverageOrderCostStatsDTO costPerOrder() {
         List<Order> allOrders = orderRepository.findAll();
 
-        List<OrderCostDetails> orderDetails = allOrders.stream()
-                .map(order -> new OrderCostDetails(
+        List<OrderCostDetailsDTO> orderDetails = allOrders.stream()
+                .map(order -> new OrderCostDetailsDTO(
                         order.getId(),
                         order.getCar().getId(),
                         order.getTotalPrice()
@@ -433,14 +434,14 @@ public class OrderServiceImpl implements OrderService{
                 .toList();
 
         BigDecimal total = orderDetails.stream()
-                .map(OrderCostDetails::getTotalPrice)
+                .map(OrderCostDetailsDTO::getTotalPrice)
                 .reduce(BigDecimal.ZERO, BigDecimal::add);
 
         BigDecimal average = orderDetails.isEmpty()
                 ? BigDecimal.ZERO
                 : total.divide(BigDecimal.valueOf(orderDetails.size()), 2, RoundingMode.HALF_UP);
 
-        return new AverageOrderCostStats(average, orderDetails);
+        return new AverageOrderCostStatsDTO(average, orderDetails);
     }
 
     // WIG-28-SJ

@@ -2,8 +2,8 @@ package com.wigell.wigellcarrental.services;
 
 import com.wigell.wigellcarrental.models.DTO.IncomeBetweenDatesDTO;
 import com.wigell.wigellcarrental.models.entities.Order;
-import com.wigell.wigellcarrental.models.DTO.AverageOrderCostStats;
-import com.wigell.wigellcarrental.models.DTO.AverageRentalPeriodStats;
+import com.wigell.wigellcarrental.models.DTO.AverageOrderCostStatsDTO;
+import com.wigell.wigellcarrental.models.DTO.AverageRentalPeriodStatsDTO;
 import com.wigell.wigellcarrental.models.DTO.PopularBrandStats;
 
 import java.security.Principal;
@@ -17,7 +17,9 @@ public interface OrderService {
     String cancelOrder(Long orderId, Principal principal);//SA
 
     String removeOrdersBeforeDate(LocalDate date, Principal principal);//SA
-    Order addOrder(Order order, Principal principal); // WIG-28-SJ
+
+    // WIG-28-SJ
+    Order addOrder(Order order, Principal principal);
 
     List<Order> getAllOrdersHistory();//SA
 
@@ -29,8 +31,8 @@ public interface OrderService {
     PopularBrandStats getPopularBrand(String startDate, String endDate);
 
     // WIG-97-SJ
-    AverageRentalPeriodStats getAverageRentalPeriod();
-    AverageOrderCostStats costPerOrder();
+    AverageRentalPeriodStatsDTO getAverageRentalPeriod();
+    AverageOrderCostStatsDTO costPerOrder();
 
     // WIG-25-AWS
     String removeOrderById(Long orderId, Principal principal);
