@@ -18,7 +18,7 @@ import static org.junit.jupiter.api.Assertions.*;
 
 //SA
 @DataJpaTest
-class OrderRepositoryUnitTest {
+class OrderRepositoryTest {
 
     //SA
     private final OrderRepository orderRepository;
@@ -28,6 +28,8 @@ class OrderRepositoryUnitTest {
     //SA
     private Order order;
     private Order orderIsActiveFalse;
+    private Car car;
+    private Customer customer;
     private final LocalDate BOOKED_DATE = LocalDate.of(2025, 5, 2);
     private final LocalDate START_DATE = LocalDate.of(2025, 5, 7);
     private final LocalDate END_DATE = LocalDate.of(2025, 5, 12);
@@ -35,7 +37,7 @@ class OrderRepositoryUnitTest {
 
     //SA
     @Autowired
-    public OrderRepositoryUnitTest(OrderRepository orderRepository, CarRepository carRepository, CustomerRepository customerRepository) {
+    public OrderRepositoryTest(OrderRepository orderRepository, CarRepository carRepository, CustomerRepository customerRepository) {
         this.orderRepository = orderRepository;
         this.carRepository = carRepository;
         this.customerRepository = customerRepository;
@@ -48,8 +50,8 @@ class OrderRepositoryUnitTest {
         carRepository.deleteAll();
         customerRepository.deleteAll();
 
-        Car car = new Car(null, "Kia", "84Q", "678FOW", CarStatus.AVAILABLE, BigDecimal.valueOf(299.00), List.of());
-        Customer customer = new Customer(null, "123456-7890", "John", "Smith", "john.smith@gmail.com", "098-654", "123 Street", List.of());
+        car = new Car(null, "Kia", "84Q", "678FOW", CarStatus.AVAILABLE, BigDecimal.valueOf(299.00), List.of());
+        customer = new Customer(null, "123456-7890", "John", "Smith", "john.smith@gmail.com", "098-654", "123 Street", List.of());
         order = new Order(null, BOOKED_DATE, START_DATE, END_DATE, car, customer, BigDecimal.valueOf(1495.00), true, false);
         orderIsActiveFalse = new Order(null, BOOKED_DATE, START_DATE, SECOND_END_DATE, car, customer, BigDecimal.valueOf(598.00), false, false);
 
@@ -83,10 +85,16 @@ class OrderRepositoryUnitTest {
     @Test
     void findAllByEndDateBeforeAndIsActiveFalseShouldReturnOrdersThatIsActiveFalseAndEndDateBeforeGivenDate() {
         LocalDate testDate = LocalDate.of(2025, 5, 10);
+        Order orderBeforeEndDate = new Order(null, BOOKED_DATE, START_DATE, SECOND_END_DATE, car, customer, BigDecimal.valueOf(598.00), true, false);
+        Order orderIsActiveFalse2 = new Order(null, BOOKED_DATE, START_DATE, END_DATE, car, customer, BigDecimal.valueOf(598.00), false, false);
+        orderRepository.save(orderIsActiveFalse2);
+
         List<Order> orders = orderRepository.findAllByEndDateBeforeAndIsActiveFalse(testDate);
 
         assertFalse(orders.isEmpty());
         assertFalse(orders.contains(order));
+        assertFalse(orders.contains(orderIsActiveFalse2));
+        assertFalse(orders.contains(orderBeforeEndDate));
 
         assertTrue(orders.contains(orderIsActiveFalse));
 
